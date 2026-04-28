@@ -6,14 +6,13 @@ file as the single source-of-truth for shared string and int constants.
 
 from __future__ import annotations
 
-from enum import Enum, IntEnum, unique
+from enum import IntEnum, StrEnum, unique
 from typing import List
 
-try:
-    from enum import StrEnum
-except Exception:
-    class StrEnum(str, Enum):
-        """Fallback StrEnum for older Python versions."""
+# Expose a stable name for the rest of the module while avoiding a
+# redefinition warning from static type checkers when the real StrEnum
+# is available at import time.
+StrEnum = _StrEnum  # type: ignore
 
 
 def enum_values(enum_cls: type[StrEnum]) -> List[str]:
