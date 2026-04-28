@@ -26,8 +26,8 @@ Key gaps and recommended actions (exhaustive):
  - No frontend currently; copier-fullstack-template includes a frontend template — scaffold React/Vite or chosen stack and wire to FastAPI
 
 6) IaC
- - Added `azure/iac` Bicep scaffold for core infra (ACR, Web App, KeyVault, Storage, Log Analytics, Cognitive Services)
- - Next: add role assignments, managed identity bindings, Key Vault secrets population, and environment parameterization per environment
+ - Added `azure/iac` Bicep scaffold for core infra (ACR, Web App, Storage, Log Analytics, Cognitive Services). Key Vault is optional and disabled by default in the provided parameter files.
+ - Next: add role assignments, managed identity bindings, optional Key Vault population workflows (only if Key Vault is explicitly enabled), and environment parameterization per environment
 
 7) Tests & Quality
  - Added unit tests for managers; expand coverage to core/application modules and add integration tests

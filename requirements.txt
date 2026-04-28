@@ -6,3 +6,7 @@ mypy>=1.5
 pre-commit
 psycopg2-binary
 redis
+langchain>=0.1
+openai>=1.0
+sqlalchemy>=2.0
+asyncpg>=0.28

@@ -1,12 +1,12 @@
 targetScope = 'resourceGroup'
 
-@description('Main deployment for voice-bot: ACR, App Service (container), KeyVault, Storage, Log Analytics and Cognitive Services (OpenAI)')
+@description('Main deployment for voice-bot: ACR, App Service (container), Storage, Log Analytics and Cognitive Services (OpenAI)')
 param location string = resourceGroup().location
 param environment string = 'dev'
 param acrName string = 'voiceacr${uniqueString(resourceGroup().id)}'
 param webAppName string = 'voice-backend-${environment}'
 param containerImage string
-param keyVaultName string = 'voice-kv-${uniqueString(resourceGroup().id)}'
+// Note: Key Vault integration removed per repository policy (secrets handled via env configs)
 param storageAccountName string = toLower('voice${uniqueString(resourceGroup().id)}')
 param cognitiveName string = 'voice-openai-${uniqueString(resourceGroup().id)}'
 
@@ -50,16 +50,7 @@ module webApp 'modules/webApp.bicep' = {
   }
 }
 
-// Key Vault (base) - create after webApp so we can grant the web app identity access
-module keyVault 'modules/keyVault.bicep' = {
-  name: 'keyVault'
-  params: {
-    namePrefix: 'voice'
-    location: location
-    keyVaultName: keyVaultName
-    principalIds: [webApp.outputs.principalId]
-  }
-}
+// Key Vault module removed
 
 // Storage
 module storage 'modules/storage.bicep' = {
@@ -84,5 +75,5 @@ module cognitive 'modules/cognitiveServices.bicep' = {
 // outputs
 output webAppUrl string = webApp.outputs.defaultHostName
 output acrLoginServer string = acr.outputs.loginServer
-output keyVaultId string = keyVault.outputs.keyVaultResourceId
+// keyVaultId output removed because Key Vault is not used
 output cognitiveResourceId string = cognitive.outputs.resourceId

@@ -16,7 +16,7 @@ Medium priority
 - Add CONTRIBUTING.md, SECURITY.md, ISSUE and PR templates
 - Add CODEOWNERS (done) and maintainers listing
 - Add more integration tests and a lightweight docker-compose smoke test for rendered-tests
-- Expand documentation for deployment (Key Vault secret injection, ACR build/push)
+-- Expand documentation for deployment (secret injection via environment or platform secret stores, ACR build/push)
 
 Low priority
 - Frontend scaffold to mirror copier-fullstack-template (if project requires it)

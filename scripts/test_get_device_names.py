@@ -1,8 +1,13 @@
 import sys
+
 sys.path.insert(0, 'src')
 import asyncio
+
 from voice.config.config import Config
-from voice.models.audio_streamer.audio_streamer_controller import AudioStreamerController
+from voice.models.audio_streamer.audio_streamer_controller import (
+    AudioStreamerController,
+)
+
 
 async def main():
     cfg = Config()

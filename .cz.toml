@@ -1,12 +1,13 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
-version_files = ["pyproject.toml"]
-[tool.commitizen]
-name = "cz_conventional_commits"
 tag_format = "v$version"
 version_files = ["pyproject.toml"]
 update_changelog_on_bump = true
 changelog_file = "CHANGELOG.md"
 
-# Optional: customize the types and scope here or use the defaults from
-# cz_conventional_commits. See https://commitizen-tools.github.io/commitizen/
+# This repository prefers a dedicated .cz.toml for commitizen configuration
+# to avoid duplicating TOML tables across pyproject.toml and ensure
+# pre-commit 'check-toml' hook does not flag duplicate declarations.
+# Placeholder to satisfy tools that look for .cz.toml
+# Commitizen configuration is maintained in pyproject.toml to avoid duplicate TOML declarations.
+# Intentionally left blank.

@@ -7,9 +7,14 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 
 from voice.config.config import Config
+from voice.config.logging_config import configure_logging
 from voice.infrastructure.adapters.audio_streamer_adapter import (
     create_audio_streamer_controller,
 )
+
+# Import adapters lazily in create_app() to avoid hard import-time dependency on
+# optional heavy libraries such as LangChain. This keeps tests and lightweight
+# commands fast when the ML stack is not installed.
 from voice.infrastructure.adapters.stt_adapter import create_faster_whisper_stt
 from voice.managers.queue_manager import QueueManager
 
@@ -133,6 +138,22 @@ def create_app() -> FastAPI:
     included here when migrating the API surface into `presentation/`.
     """
     app = FastAPI(lifespan=_lifespan)
+
+    # Configure structured logging and telemetry
+    configure_logging()
+
+    # Attach a LangChain-based OpenAI adapter to app.state if available.
+    # Import lazily so that environments without LangChain installed still
+    # successfully import the application module.
+    try:
+        from voice.infrastructure.adapters.langchain_adapter import (
+            LangChainOpenAIAdapter,
+        )
+
+        app.state.openai_adapter = LangChainOpenAIAdapter()
+    except Exception as e:  # pragma: no cover - optional runtime dependency
+        logger.debug("LangChain adapter not available: %s", e)
+        app.state.openai_adapter = None
 
     # TODO: Add middleware and routers here when migrating presentation layer
 

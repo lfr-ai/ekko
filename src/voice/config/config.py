@@ -28,19 +28,23 @@ class Config:
     LOGS_DIR_PATH: Path = ROOT_DIR_PATH / "logs"
     PROMPT_DIR_PATH: Path = PACKAGE_DIR_PATH / "prompts"
     INTERACTION_DIR_PATH: Path = PACKAGE_DIR_PATH / "interaction"
-    AUDIO_STREAMER_TCP_SERVER_MODULE_PATH: str = "voice.models.audio_streamer.audio_streamer_tcp_server"
+    # Use the infrastructure implementation for the audio streamer TCP server
+    AUDIO_STREAMER_TCP_SERVER_MODULE_PATH: str = "voice.infrastructure.audio_streamer.audio_streamer_tcp_server"
 
     # Server settings
     HOST: str = "127.0.0.1"
     PORT: int = 6500
     AUDIO_STREAMER_TCP_PORT: int = 6600
 
-    # Azure OpenAI settings
-    OPENAI_VERSION: str = "2025-03-01-preview"
+    # OpenAI settings (do not hardcode provider endpoints here)
+    # Prefer setting environment variables: OPENAI_API_KEY (or OPENAI_KEY), OPENAI_ENDPOINT, OPENAI_VERSION
+    OPENAI_VERSION: str = os.getenv("OPENAI_VERSION", "")
 
-    # Azure credentials
-    OPENAI_KEY: str = os.getenv("OPENAI_KEY", "")
-    OPENAI_ENDPOINT: str = "https://swedencentral.api.cognitive.microsoft.com/"
+    # Credentials: prefer OPENAI_API_KEY but fall back to OPENAI_KEY for backward compatibility
+    OPENAI_KEY: str = os.getenv("OPENAI_KEY", os.getenv("OPENAI_API_KEY", ""))
+
+    # Endpoint: leave empty by default so callers decide whether to use OpenAI or Azure OpenAI
+    OPENAI_ENDPOINT: str = os.getenv("OPENAI_ENDPOINT", "")
 
     # Audio settings
     AUDIO_FORMAT: int = paInt16

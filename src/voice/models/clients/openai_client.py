@@ -9,7 +9,7 @@ from voice.config.config import Config
 from voice.infrastructure.openai.openai_client import AzureOpenAIClient
 
 
-def create_client(cfg: Config = None):
+def create_client(cfg: Config | None = None) -> AzureOpenAIClient:
     """Create an AzureOpenAIClient instance.
 
     Kept as a convenience factory for older call sites.

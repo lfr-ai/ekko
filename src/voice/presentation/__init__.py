@@ -1,11 +1,8 @@
-"""Presentation layer (API adapters, FastAPI app)."""
+"""Presentation layer (API adapters, FastAPI app).
 
-__all__: list[str] = []
-"""Presentation layer: FastAPI endpoints, CLIs and UI assets.
-
-Presentation imports application layer only.
+Presentation contains transport-layer adapters such as FastAPI routers and
+CLI entrypoints. This layer should depend on ``application`` only and
+translate external input/output to application-level DTOs.
 """
 
-__all__ = []
-"""Presentation layer. FastAPI routers and API adapters go here."""
-__all__ = []
+__all__: list[str] = []

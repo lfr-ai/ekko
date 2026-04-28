@@ -22,3 +22,15 @@ If you prefer PDM it is still supported; the repo contains the original `pdm.loc
 
 - Branch naming: feature/..., fix/..., chore/...
 - Follow Conventional Commits; commitizen is configured in `pyproject.toml`.
+
+Commit messages
+- This repository enforces Conventional Commits. Use Commitizen for interactive, validated commit messages:
+
+```bash
+# create a commit using Commitizen
+cz commit
+# or quick alias
+cz c
+```
+
+The repository includes a `.cz.toml` configuration and a pre-commit `commit-msg` hook to validate commits.

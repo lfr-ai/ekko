@@ -5,7 +5,7 @@
     "projectName": {"value": "voice-bot"},
     "env": {"value": "dev"},
     "location": {"value": "westeurope"},
-    "keyVault": {"value": {"keyVaultName": "voicebot-dev-kv", "principalIds": [], "deploy": true}},
+    "keyVault": {"value": {"deploy": false}},
     "logAnalytics": {"value": {"workspaceName": "voicebot-dev-la", "deploy": true}},
     "appInsights": {"value": {"deploy": true}},
     "acr": {"value": {"registryName": "voicebotdevacr", "deploy": true}},

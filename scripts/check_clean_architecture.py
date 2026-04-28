@@ -8,9 +8,8 @@ This is a heuristic tool to catch obvious violations; run locally and in CI.
 from __future__ import annotations
 
 import ast
-import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "voice"

@@ -7,7 +7,8 @@ COPY requirements.txt ./
 RUN python -m venv /opt/venv \
 	&& . /opt/venv/bin/activate \
 	&& pip install --upgrade pip \
-	&& pip install -r requirements.txt
+	&& pip install -r requirements.txt \
+	&& pip install uv
 
 # Copy project sources
 COPY . .

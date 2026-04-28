@@ -12,7 +12,7 @@ VS Code Dev Container configuration for local development.
 ## Files
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `devcontainer.json` | Dev container metadata and VS Code settings. |
 | `compose.yml` | Container service wiring for development. |
 | `Containerfile.dev` | Development image definition. |

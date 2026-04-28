@@ -1,11 +1,9 @@
-"""Application layer (use-cases, services)."""
+"""Application layer (use-cases and services).
 
-__all__: list[str] = []
-"""Application layer: use-cases and services.
-
-Application code should import from core only and orchestrate business logic.
+This package contains application services and use-cases. It SHOULD only
+depend on the ``core`` package (protocols, domain objects) and expose
+implementation-agnostic service interfaces. Keep business logic here; avoid
+framework concerns.
 """
 
-__all__ = []
-"""Application layer. Use cases, services, and DTOs should live here."""
-__all__ = []
+__all__: list[str] = []

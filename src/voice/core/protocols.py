@@ -36,3 +36,34 @@ class AudioStreamerControllerProtocol(Protocol):
 
     async def send_command(self, cmd: str) -> str:
         ...
+
+
+class ChatPort(Protocol):
+    """Protocol for provider-agnostic chat/LLM adapters."""
+
+    def chat(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        deployment_name: str,
+        max_completion_tokens: int = 1024,
+        temperature: float = 0.0,
+        **kwargs: Any,
+    ) -> str:
+        ...
+
+    async def async_chat(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        deployment_name: str,
+        max_completion_tokens: int = 1024,
+        temperature: float = 0.0,
+        **kwargs: Any,
+    ) -> str:
+        ...
+
+
+# ChatPort already defined above; no duplicate definition required.

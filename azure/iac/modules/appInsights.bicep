@@ -3,7 +3,7 @@ param location string
 param workspaceResourceId string
 param kind string = 'web'
 param applicationType string = 'web'
-param retentionInDays int = 90
+// retentionInDays removed (unused) — keep this module minimal and explicit
 param tags object
 param enabled bool = true
 
@@ -20,4 +20,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = if (enabled) {
   }
 }
 
-output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
+// Use null-coalescing operator to avoid null access when the resource is not
+// fully provisioned yet during the ARM evaluation phase.
+output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey ?? ''

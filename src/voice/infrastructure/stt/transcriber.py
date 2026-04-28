@@ -14,14 +14,16 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
 try:
-    import numpy as np
+    import numpy as _np
 except Exception:  # pragma: no cover - optional runtime dependency
-    np = None
+    _np = None
+
+np: Any = _np
 
 try:
-    from faster_whisper import WhisperModel
+    from faster_whisper import WhisperModel as FasterWhisperModel
 except Exception:  # pragma: no cover - optional runtime dependency
-    WhisperModel = None
+    FasterWhisperModel = None
 
 cfg = Config()
 logger = Logger.create(__name__, cfg.LOGS_DIR_PATH / "stt.logs")
@@ -77,13 +79,13 @@ class FasterWhisperSTT:
         self._model_lock = asyncio.Lock()
 
     async def start(self) -> None:
-        if WhisperModel is None:
+        if FasterWhisperModel is None:
             raise RuntimeError("faster-whisper is not installed or failed to import")
 
         async with self._model_lock:
             if self._model is None:
                 try:
-                    self._model = WhisperModel(
+                    self._model = FasterWhisperModel(
                         self.model_name,
                         device=self.device,
                         compute_type=self.compute_type,

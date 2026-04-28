@@ -1,3 +1,16 @@
+# Architecture
+
+This repository follows Clean Architecture boundaries: presentation/infrastructure -> application -> core.
+
+- `src/voice/core/` contains protocol interfaces and enums.
+- `src/voice/application/` contains business use-cases.
+- `src/voice/infrastructure/` contains adapters for LLMs, STT, DB, and other external systems.
+- `src/voice/interaction/` contains FastAPI presentation layer.
+
+Key design decisions:
+- LLM/chat interactions are implemented via a provider-agnostic LangChain adapter (`infrastructure/llm/chat_adapter.py`).
+- Configuration uses Pydantic `AppSettings` (see `src/voice/config/settings.py`) following golden-standard practices.
+- Secrets are provided via environment variables (`.env`) and are NOT stored in Azure Key Vault.
 # Architecture analysis and migration plan
 
 This document maps the existing project layout to a Clean Architecture structure and lists recommended changes to align with the golden-standard templates (`koda_automation` and `copier-fullstack-template`).
@@ -31,6 +44,22 @@ This document maps the existing project layout to a Clean Architecture structure
 - Phase 2: Create `core`, `application`, `infrastructure`, and `presentation` folders; begin moving and refactoring modules with Protocol interfaces and unit tests.
 - Phase 3: Add frontend scaffold (from `copier-fullstack-template`) into `frontend/` or connect to existing static files; add Playwright & Vitest if desired.
 - Phase 4: Add comprehensive CI workflows (lint/test/build/release), Renovate, Dependabot, and release automation.
+
+## Tooling migration
+
+- This repository is migrating from `pdm` to `uv` (Astral's uv) as the
+  primary dependency manager and task runner. A helper script
+  `scripts/migrate_to_uv.sh` was added to run `uv sync --all-extras` and
+  generate `uv.lock`. Commit `uv.lock` after review to complete the migration.
+
+## Next steps (immediate)
+
+1. Run `./scripts/migrate_to_uv.sh` in your development environment (or run
+	`uv sync --all-extras`) and commit the generated `uv.lock` file.
+2. Run `uvx pre-commit run --all-files` and `uv run pytest -q` to surface
+	any linting or typing issues introduced by the toolchain change.
+3. Execute `python scripts/check_architecture_boundaries.py` and fix
+	reported import boundary violations in separate, small PRs.
 
 ## Implemented governance and productivity scaffolding
 

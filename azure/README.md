@@ -1,20 +1,17 @@
 Azure infrastructure for the voice-bot project
 
-This folder contains Bicep modules and deployment scripts to provision the minimal
-and recommended Azure resources for running the voice-bot application in a cloud
-environment. It is modeled after the patterns used in the organization's
-golden-standard IaC (see claim_handler_v3/azure/iac) and follows best practices:
+This folder previously contained a full set of Bicep modules. To simplify the
+repository and remove accidental dependency on Azure Key Vault, the default
+deployment templates have been reduced to a minimal set focused on provisioning
+only the resources we currently maintain in IaC here:
 
-- Separate modules (KeyVault, Log Analytics, App Insights, ACR, Container App)
-- Parameters per environment (dev/test/prod)
-- Deploy scripts for PowerShell and bash
+- OpenAI / ChatGPT endpoint wiring (where applicable)
+- Speech-to-text (STT) compute / storage scaffolding
 
-Resources provisioned (configurable):
-- Key Vault (secrets like OPENAI_KEY)
-- Azure Container Registry (for building and storing images)
-- Log Analytics workspace
-- Application Insights
-- Azure Container Apps environment + container app running the FastAPI
+For other cloud infrastructure (ACR, container apps, monitoring) prefer using
+the organization's centralized IaC repository or add explicit modules in a
+separate workstream. Secrets should be provided via environment variables or
+an external secrets manager (not Key Vault) unless explicitly enabled.
 
 Usage
 
