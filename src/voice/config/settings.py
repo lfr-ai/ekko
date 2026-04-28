@@ -72,7 +72,18 @@ class AppSettings(BaseSettings):
     postgresql_password: Optional[SecretStr] = None
 
     # Paths
+    # Derived project paths (defaults computed from source tree)
+    root_dir_path: Path = Path(__file__).resolve().parents[3]
+    src_dir_path: Path = root_dir_path / "src"
+    package_dir_path: Path = src_dir_path / "voice"
     logs_dir_path: Path = Path("./logs")
+    prompt_dir_path: Path = package_dir_path / "prompts"
+    interaction_dir_path: Path = package_dir_path / "interaction"
+
+    # Audio / IPC
+    audio_streamer_tcp_port: int = 6600
+    audio_frames_per_buffer: int = 1024
+    audio_channels: int = 2
 
     @cached_property
     def postgresql_url(self) -> str:

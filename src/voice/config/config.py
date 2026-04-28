@@ -83,6 +83,27 @@ class Config:
             self.PORT = getattr(APP_SETTINGS, "port", self.PORT)
             # logs_dir_path in AppSettings may be a Path already
             self.LOGS_DIR_PATH = Path(getattr(APP_SETTINGS, "logs_dir_path", self.LOGS_DIR_PATH))
+            # Project path mappings
+            self.ROOT_DIR_PATH = Path(getattr(APP_SETTINGS, "root_dir_path", self.ROOT_DIR_PATH))
+            self.SRC_DIR_PATH = Path(getattr(APP_SETTINGS, "src_dir_path", self.SRC_DIR_PATH))
+            self.PACKAGE_DIR_PATH = Path(getattr(APP_SETTINGS, "package_dir_path", self.PACKAGE_DIR_PATH))
+            self.PROMPT_DIR_PATH = Path(getattr(APP_SETTINGS, "prompt_dir_path", self.PROMPT_DIR_PATH))
+            self.INTERACTION_DIR_PATH = Path(
+                getattr(APP_SETTINGS, "interaction_dir_path", self.INTERACTION_DIR_PATH)
+            )
+            # Audio/IPC mappings
+            self.AUDIO_STREAMER_TCP_PORT = getattr(
+                APP_SETTINGS, "audio_streamer_tcp_port", self.AUDIO_STREAMER_TCP_PORT
+            )
+            self.AUDIO_FRAMES_PER_BUFFER = getattr(
+                APP_SETTINGS, "audio_frames_per_buffer", self.AUDIO_FRAMES_PER_BUFFER
+            )
+            # AUDIO_CHANNELS may not be defined previously; be forgiving
+            try:
+                self.AUDIO_CHANNELS = getattr(APP_SETTINGS, "audio_channels", getattr(self, "AUDIO_CHANNELS", 2))
+            except Exception:
+                # fallback if attribute access fails
+                self.AUDIO_CHANNELS = getattr(self, "AUDIO_CHANNELS", 2)
         except (AttributeError, TypeError):
             # Be forgiving: do not raise if Settings are missing or malformed
             pass

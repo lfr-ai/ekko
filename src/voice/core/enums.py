@@ -9,13 +9,10 @@ from __future__ import annotations
 from enum import IntEnum, StrEnum, unique
 from typing import List
 
-# Expose a stable name for the rest of the module while avoiding a
-# redefinition warning from static type checkers when the real StrEnum
-# is available at import time.
-StrEnum = _StrEnum  # type: ignore
-
 
 def enum_values(enum_cls: type[StrEnum]) -> List[str]:
+    """Return the string values of a StrEnum class in declaration order."""
+
     return [e.value for e in enum_cls]
 
 
@@ -34,6 +31,7 @@ class LLMProvider(StrEnum):
     AZURE_OPENAI = "azure_openai"
     ANTHROPIC = "anthropic"
     COHERE = "cohere"
+    GOOGLE = "google"
     OTHER = "other"
 
 
