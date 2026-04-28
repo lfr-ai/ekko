@@ -36,9 +36,7 @@ def configure_logging(level: Optional[str] = None) -> None:
                 "fmt": "%(asctime)s %(levelname)s [%(name)s] %(message)s",
             }
         },
-        "handlers": {
-            "console": {"class": "logging.StreamHandler", "formatter": "default", "level": level}
-        },
+        "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "default", "level": level}},
         "root": {"handlers": ["console"], "level": level},
     }
 

@@ -59,15 +59,10 @@ class FasterWhisperSTT:
         self.model_name = model_name
         self.device = device or getattr(cfg, "STT_DEVICE", "cpu")
         # ctranslate2/Whisper does not accept None for compute_type; ensure a valid default
-        self.compute_type = (
-            compute_type if compute_type is not None else getattr(cfg, "STT_COMPUTE_TYPE", "default")
-        )
+        self.compute_type = compute_type if compute_type is not None else getattr(cfg, "STT_COMPUTE_TYPE", "default")
         self.batch_seconds = float(batch_seconds)
         self.sample_rate = (
-            sample_rate
-            or getattr(cfg, "AUDIO_SAMPLE_RATE", None)
-            or getattr(cfg, "SAMPLE_RATE", None)
-            or 48000
+            sample_rate or getattr(cfg, "AUDIO_SAMPLE_RATE", None) or getattr(cfg, "SAMPLE_RATE", None) or 48000
         )
         self.channels = channels or getattr(cfg, "AUDIO_CHANNELS", None) or 2
         self.language = language

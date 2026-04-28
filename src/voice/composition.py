@@ -59,9 +59,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async def _audio_receiver(reader, writer, queue_name: str):
         try:
             while True:
-                data = await reader.read(
-                    cfg.AUDIO_FRAMES_PER_BUFFER * 2 * getattr(cfg, "AUDIO_CHANNELS", 2)
-                )
+                data = await reader.read(cfg.AUDIO_FRAMES_PER_BUFFER * 2 * getattr(cfg, "AUDIO_CHANNELS", 2))
                 if not data:
                     break
                 await app.state.stt.accept_bytes(queue_name, data)
@@ -75,15 +73,9 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             except Exception as e:
                 logger.debug("Failed to close writer: %s", e)
 
-    app.state.sys_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, "sys-queue"), host, sys_port
-    )
-    app.state.mic_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, "mic-queue"), host, mic_port
-    )
-    print(
-        f"Audio servers listening on {host}:{sys_port} (sys) and {host}:{mic_port} (mic)"
-    )
+    app.state.sys_server = await asyncio.start_server(lambda r, w: _audio_receiver(r, w, "sys-queue"), host, sys_port)
+    app.state.mic_server = await asyncio.start_server(lambda r, w: _audio_receiver(r, w, "mic-queue"), host, mic_port)
+    print(f"Audio servers listening on {host}:{sys_port} (sys) and {host}:{mic_port} (mic)")
 
     # Start audio streamer subprocess after audio servers are listening
     await app.state.controller.start()

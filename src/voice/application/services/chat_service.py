@@ -28,7 +28,7 @@ class ChatService:
         This method contains business orchestration and simple validation only.
         """
         if not user_prompt:
-            raise ValueError('user_prompt must not be empty')
+            raise ValueError("user_prompt must not be empty")
 
         return self.gateway.chat(
             system_prompt=system_prompt,

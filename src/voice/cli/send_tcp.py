@@ -3,6 +3,7 @@
 Usage: python -m voice.cli.send_tcp --host 127.0.0.1 --port 8800 --queue my-queue --file payload.bin
 Or echo text | python -m voice.cli.send_tcp --queue my-queue
 """
+
 from __future__ import annotations
 
 import argparse

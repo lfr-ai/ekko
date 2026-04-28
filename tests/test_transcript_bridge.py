@@ -8,7 +8,7 @@ from voice.composition import create_app
 def test_transcript_bridge_roundtrip():
     # choose a free ephemeral port for the audio streamer base port to avoid collisions
     s = socket.socket()
-    s.bind(('127.0.0.1', 0))
+    s.bind(("127.0.0.1", 0))
     free_port = s.getsockname()[1]
     s.close()
     # set base port such that +1/+2 are available

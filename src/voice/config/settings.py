@@ -31,7 +31,9 @@ else:
             """Lightweight compatibility wrapper used when pydantic-settings
             is not available in the environment (tests/local dev).
             """
+
             pass
+
 
 from voice.core.enums import Environment, LLMProvider
 

@@ -28,10 +28,10 @@ def tcp_server(host: str, port: int, qm: QueueManager, queue_name: str, stop_eve
 
 
 def test_tcp_to_queue_roundtrip():
-    host = '127.0.0.1'
+    host = "127.0.0.1"
     port = 55055
     qm = QueueManager()
-    queue_name = 'test-queue'
+    queue_name = "test-queue"
     qm.create_queue(queue_name)
 
     stop_event = threading.Event()
@@ -43,7 +43,7 @@ def test_tcp_to_queue_roundtrip():
     # client sends bytes
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((host, port))
-    payload = b'hello-bytes'
+    payload = b"hello-bytes"
     client.sendall(payload)
     client.close()
 

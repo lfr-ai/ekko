@@ -34,9 +34,9 @@ class LLMProvider(StrEnum):
     try:  # Python 3.11+ provides StrEnum
         from enum import StrEnum  # type: ignore
     except Exception:  # pragma: no cover - fallback for older runtimes
+
         class StrEnum(str, Enum):
             """Fallback StrEnum for older Python versions."""
-
 
     def enum_values(enum_cls: type[StrEnum]) -> List[str]:
         """Return the string values of an enum class in declaration order.
@@ -45,7 +45,6 @@ class LLMProvider(StrEnum):
         """
 
         return [e.value for e in enum_cls]
-
 
     @unique
     class Environment(StrEnum):
@@ -60,7 +59,6 @@ class LLMProvider(StrEnum):
         STAGING = "staging"
         PROD = "prod"
 
-
     @unique
     class LLMProvider(StrEnum):
         """Canonical provider identifiers for LLM adapters."""
@@ -71,7 +69,6 @@ class LLMProvider(StrEnum):
         COHERE = "cohere"
         OTHER = "other"
 
-
     @unique
     class ChatModel(StrEnum):
         """Common chat model identifiers used in the app."""
@@ -80,7 +77,6 @@ class LLMProvider(StrEnum):
         GPT_4 = "gpt-4"
         GPT_4O = "gpt-4o"
         GPT_5 = "gpt-5"
-
 
     @unique
     class STTProvider(StrEnum):
@@ -92,7 +88,6 @@ class LLMProvider(StrEnum):
         GOOGLE_SPEECH = "google_speech"
         OTHER = "other"
 
-
     @unique
     class AudioFormat(StrEnum):
         """Common audio container/encoding formats."""
@@ -103,14 +98,12 @@ class LLMProvider(StrEnum):
         OGG = "ogg"
         PCM16 = "pcm16"
 
-
     @unique
     class AudioChannel(IntEnum):
         """Audio channel counts (monophonic/stereo)."""
 
         MONO = 1
         STEREO = 2
-
 
     @unique
     class SampleRate(IntEnum):
@@ -123,7 +116,6 @@ class LLMProvider(StrEnum):
         SR_48000 = 48000
         SR_96000 = 96000
 
-
     @unique
     class BitDepth(IntEnum):
         """Common PCM bit depths."""
@@ -133,7 +125,6 @@ class LLMProvider(StrEnum):
         BITS_24 = 24
         BITS_32 = 32
 
-
     @unique
     class QueueName(StrEnum):
         """Canonical names for in-process queues used by QueueManager."""
@@ -142,7 +133,6 @@ class LLMProvider(StrEnum):
         COMMANDS = "commands"
         EVENTS = "events"
         METRICS = "metrics"
-
 
     @unique
     class TranscriptStatus(StrEnum):
@@ -155,7 +145,6 @@ class LLMProvider(StrEnum):
         FAILED = "failed"
         CANCELLED = "cancelled"
 
-
     @unique
     class MessageRole(StrEnum):
         """Roles in chat/message payloads."""
@@ -164,7 +153,6 @@ class LLMProvider(StrEnum):
         USER = "user"
         ASSISTANT = "assistant"
         TOOL = "tool"
-
 
     @unique
     class LogLevel(IntEnum):
@@ -177,7 +165,6 @@ class LLMProvider(StrEnum):
         ERROR = 40
         CRITICAL = 50
 
-
     @unique
     class DeploymentTarget(StrEnum):
         """Where the application is intended to run in a deployment pipeline."""
@@ -188,7 +175,6 @@ class LLMProvider(StrEnum):
         AZURE_CONTAINER_APPS = "azure_container_apps"
         AZURE_FUNCTIONS = "azure_functions"
 
-
     @unique
     class FeatureFlag(StrEnum):
         """Feature flags used to gate optional runtime capabilities."""
@@ -196,7 +182,6 @@ class LLMProvider(StrEnum):
         RAG_ENABLED = "rag_enabled"
         USE_AZURE_KEYVAULT = "use_azure_keyvault"
         ENABLE_TELEMETRY = "enable_telemetry"
-
 
     __all__ = [
         "Environment",
@@ -215,4 +200,3 @@ class LLMProvider(StrEnum):
         "FeatureFlag",
         "enum_values",
     ]
-

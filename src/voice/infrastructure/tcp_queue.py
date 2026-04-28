@@ -4,6 +4,7 @@ Protocol: client connects, sends a single line queue name (utf-8, terminated by 
 then sends payload bytes (raw) until connection close. The server will push the
 payload into the named queue in the provided QueueManager (creating the queue if missing).
 """
+
 from __future__ import annotations
 
 import asyncio

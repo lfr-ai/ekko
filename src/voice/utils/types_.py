@@ -26,9 +26,7 @@ class RecognitionMode(Enum):
             RecognitionMode: Corresponding RecognitionMode enumeration.
         """
         if stream_type not in ("sys", "mic"):
-            raise ValueError(
-                f"Invalid stream type: {stream_type}. Expected 'sys' or 'mic'."
-            )
+            raise ValueError(f"Invalid stream type: {stream_type}. Expected 'sys' or 'mic'.")
 
         mapping = {
             "sys": cls.CUSTOMER,
