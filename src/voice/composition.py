@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from voice.config.config import Config
 from voice.config.logging_config import configure_logging
+from voice.config.settings import get_settings
 from voice.infrastructure.adapters.audio_streamer_adapter import (
     create_audio_streamer_controller,
 )
@@ -19,6 +20,7 @@ from voice.infrastructure.adapters.stt_adapter import create_faster_whisper_stt
 from voice.managers.queue_manager import QueueManager
 
 cfg = Config()
+settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
@@ -51,7 +53,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await app.state.stt.start()
 
     # Start local servers to receive audio from subprocess
-    host = cfg.HOST
+    host = settings.host
     # Use command port +1/+2 for audio streams
     sys_port = cfg.AUDIO_STREAMER_TCP_PORT + 1
     mic_port = cfg.AUDIO_STREAMER_TCP_PORT + 2

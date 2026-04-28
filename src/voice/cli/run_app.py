@@ -12,7 +12,8 @@ import uvicorn
 
 
 def main() -> None:
-    host = os.getenv("VOICE_HOST", "0.0.0.0")
+    # Default to localhost for safety; override with VOICE_HOST to bind elsewhere
+    host = os.getenv("VOICE_HOST", "127.0.0.1")
     port = int(os.getenv("VOICE_PORT", "8000"))
     reload = os.getenv("VOICE_RELOAD", "false").lower() == "true"
     uvicorn.run("voice.interaction.main:app", host=host, port=port, reload=reload)

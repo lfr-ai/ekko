@@ -70,7 +70,8 @@ class Config:
             from voice.config.settings import get_settings
 
             APP_SETTINGS = get_settings()
-        except Exception:
+        except (ImportError, ModuleNotFoundError):
+            # Settings module unavailable in some test or packaging contexts
             APP_SETTINGS = None
 
         if APP_SETTINGS is None:
@@ -82,7 +83,7 @@ class Config:
             self.PORT = getattr(APP_SETTINGS, "port", self.PORT)
             # logs_dir_path in AppSettings may be a Path already
             self.LOGS_DIR_PATH = Path(getattr(APP_SETTINGS, "logs_dir_path", self.LOGS_DIR_PATH))
-        except Exception:
+        except (AttributeError, TypeError):
             # Be forgiving: do not raise if Settings are missing or malformed
             pass
 
@@ -94,7 +95,8 @@ class Config:
                     self.OPENAI_KEY = api_key.get_secret_value()
                 else:
                     self.OPENAI_KEY = str(api_key)
-        except Exception:
+        except (AttributeError, TypeError):
+            # Non-fatal: missing or unexpected attribute types are tolerated
             pass
 
         # Azure/OpenAI API version mapping (if provided)
@@ -102,5 +104,6 @@ class Config:
             version = getattr(APP_SETTINGS, "azure_openai_version", None)
             if version:
                 self.OPENAI_VERSION = version
-        except Exception:
+        except (AttributeError, TypeError):
+            # Non-fatal: missing or unexpected attribute types are tolerated
             pass
