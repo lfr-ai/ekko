@@ -18,20 +18,7 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # pragma: allowlist secret
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
     ports:
       - "5432:5432"
-version: '3.8'
-services:
-  backend:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.app
-    ports:
-      - '6500:6500'
-      - '6600:6600'
-    environment:
-      - OPENAI_KEY=${OPENAI_KEY}
-    volumes:
-      - ../src:/app/src:ro

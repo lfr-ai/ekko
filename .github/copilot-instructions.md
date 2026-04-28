@@ -12,9 +12,9 @@ applyTo: "**"
 - `src/voice/application/` can import from `core` and configuration, but not concrete adapters.
 - `src/voice/infrastructure/` implements protocols declared in `core`.
 
-## Tooling and Commands
+-## Tooling and Commands
 
-- Use `pdm` for dependency and command execution.
+- Use `uv` for dependency and command execution (PDM supported as fallback).
 - Preferred project commands are in `Taskfile.yml`.
 - Run `task check` (or equivalent lint + tests) before finalizing changes.
 

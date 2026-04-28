@@ -18,14 +18,14 @@ tasks:
   test:
     desc: Run default (non-integration) test suite
     cmds:
-      - uv run pytest -q || true
+      - uvx pytest -q || true
       - # Fallback: PDM
       - pdm run pytest -q || true
 
   test:integration:
     desc: Run integration tests only
     cmds:
-      - uv run pytest -q -m integration || true
+      - uvx pytest -q -m integration || true
       - # Fallback: PDM
       - pdm run pytest -q -m integration || true
 
@@ -41,9 +41,9 @@ tasks:
   architecture:
     desc: Validate Clean Architecture import boundaries
     cmds:
-      - uv run python scripts/check_architecture_boundaries.py || true
+      - uv run python scripts/check_clean_architecture.py || true
       - # Fallback: PDM
-      - pdm run python scripts/check_architecture_boundaries.py || true
+      - pdm run python scripts/check_clean_architecture.py || true
 
   format:
     desc: Format Python code
@@ -58,6 +58,69 @@ tasks:
       - uvx pre-commit run --all-files || true
       - # Fallback: PDM
       - pdm run pre-commit run --all-files || true
+
+  frontend-build:
+    desc: Build frontend assets
+    cmds:
+      - cd frontend && npm ci || true
+      - cd frontend && npm run build || true
+
+  build-exe:
+    desc: Build single-file executable with PyInstaller
+    cmds:
+      - ./scripts/build_exe.sh || true
+      - # Windows fallback
+      - powershell -File scripts\build_exe.ps1 || true
+
+  check:
+    desc: Full local quality gate
+    deps: [lint, architecture, test]
+version: "3"
+
+tasks:
+  install:
+    desc: Install project dependencies (venv + pip)
+    cmds:
+      - python -m venv .venv || true
+      - . .venv/bin/activate && python -m pip install --upgrade pip
+      - . .venv/bin/activate && pip install -r requirements.txt || true
+      - . .venv/bin/activate && pip install -r requirements-dev.txt || true
+
+  dev:
+    desc: Run FastAPI app in reload mode
+    cmds:
+      - . .venv/bin/activate && python -m uvicorn voice.interaction.main:app --reload --host 127.0.0.1 --port 8000 || true
+
+  test:
+    desc: Run default (non-integration) test suite
+    cmds:
+      - . .venv/bin/activate && pytest -q || true
+
+  test:integration:
+    desc: Run integration tests only
+    cmds:
+      - . .venv/bin/activate && pytest -q -m integration || true
+
+  lint:
+    desc: Run static checks
+    cmds:
+      - . .venv/bin/activate && ruff check src tests || true
+      - . .venv/bin/activate && mypy src || true
+
+  architecture:
+    desc: Validate Clean Architecture import boundaries
+    cmds:
+      - . .venv/bin/activate && python scripts/check_architecture_boundaries.py || true
+
+  format:
+    desc: Format Python code
+    cmds:
+      - . .venv/bin/activate && ruff format src tests || true
+
+  precommit:
+    desc: Run pre-commit hooks against all files
+    cmds:
+      - . .venv/bin/activate && pre-commit run --all-files || true
 
   check:
     desc: Full local quality gate

@@ -48,7 +48,7 @@ def create_faster_whisper_stt(cfg: Config, **kwargs) -> STTService:
     """
     try:
         # Import lazily to avoid heavy ML deps during test collection
-        from voice.models.transcribers.transcriber import FasterWhisperSTT
+        from voice.infrastructure.stt.transcriber import FasterWhisperSTT
 
         return FasterWhisperSTT(cfg=cfg, **kwargs)
     except Exception:

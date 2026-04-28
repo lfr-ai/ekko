@@ -6,7 +6,7 @@ VS Code Dev Container configuration for local development.
 
 1. Open the repository in VS Code.
 2. Run **Dev Containers: Reopen in Container**.
-3. Dependencies are installed using `pdm install -d`.
+3. Dependencies are installed using `uv sync --all-extras`.
 4. Run the app with `task dev` inside the container.
 
 ## Files

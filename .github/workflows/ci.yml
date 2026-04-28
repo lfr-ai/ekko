@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, master]
+    branches: [ main, master ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,47 +17,50 @@ jobs:
   lint-and-test:
     name: Lint, Type, and Unit Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.11"
 
-      - name: Install PDM
-        run: |
-          python -m pip install --upgrade pip
-          pip install pdm
+      - name: Install uv (package manager)
+        uses: astral-sh/setup-uv@v8.0.0
+        with:
+          enable-cache: true
 
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/pip
-            ~/.cache/pdm
-          key: ${{ runner.os }}-pdm-${{ hashFiles('**/pyproject.toml') }}
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml','**/uv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pdm-
+            ${{ runner.os }}-uv-
 
       - name: Install dependencies
-        run: pdm install -d
+        run: uv sync --all-extras
 
       - name: Run pre-commit
-        run: pdm run pre-commit run --all-files
+        run: uvx pre-commit run --all-files
 
-      - name: Type check
-        run: pdm run mypy src
+      - name: Lint (ruff)
+        run: uvx ruff check src tests
+
+      - name: Type check (mypy)
+        run: uvx mypy src
 
       - name: Run tests
-        run: pdm run pytest -q
+        run: uvx pytest -q
 
   architecture:
     name: Enforce Clean Architecture boundaries
     runs-on: ubuntu-latest
     needs: lint-and-test
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -79,7 +82,7 @@ jobs:
   links:
     name: Check links
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Check markdown links
@@ -94,7 +97,7 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 

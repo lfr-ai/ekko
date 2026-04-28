@@ -23,8 +23,10 @@ This guide describes the local developer workflow for `voice-bot`.
 
 Recommended developer setup:
 
-This repository originally used PDM. Astral's `uv` is supported as the project
-toolchain (package/runtime manager). Below
+This repository originally used PDM. Astral's `uv` is the recommended project
+toolchain (package/runtime manager). To migrate, run `scripts/migrate_to_uv.sh`.
+
+Below
 are both options; pick one and be consistent across your environment.
 
 
@@ -55,4 +57,3 @@ Devcontainer: open repository in VS Code and reopen in container to get consiste
 
 - Dev container config: `.devcontainer/`
 - Compose matrix: `docker/compose.yml` + environment overrides in `docker/compose.*.yml`
-

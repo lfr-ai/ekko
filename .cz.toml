@@ -1,0 +1,12 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_files = ["pyproject.toml"]
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_files = ["pyproject.toml"]
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+
+# Optional: customize the types and scope here or use the defaults from
+# cz_conventional_commits. See https://commitizen-tools.github.io/commitizen/

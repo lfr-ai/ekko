@@ -9,6 +9,7 @@ tiktoken = "tiktoken"
 [files]
 extend-exclude = [
   "pdm.lock",
+  "uv.lock",
   "*.lock",
   "*.egg-info/**",
   "*.baseline",

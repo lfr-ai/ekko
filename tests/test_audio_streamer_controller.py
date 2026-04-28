@@ -1,7 +1,9 @@
 import asyncio
 
 from voice.config.config import Config
-from voice.models.audio_streamer.audio_streamer_controller import AudioStreamerController
+from voice.models.audio_streamer.audio_streamer_controller import (
+    AudioStreamerController,
+)
 
 
 def test_send_command_tcp():

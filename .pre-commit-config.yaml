@@ -1,6 +1,6 @@
 minimum_pre_commit_version: "4.0"
 default_language_version:
-  python: python3.13
+  python: python3.11
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -17,15 +17,6 @@ repos:
       - id: detect-private-key
       - id: mixed-line-ending
         args: [--fix=lf]
-
-  - repo: https://github.com/psf/black
-    rev: 24.1.0
-    hooks:
-      # Black can cause issues on Windows when files are memory-mapped by the
-      # editor; run in --check mode in CI instead. Disable auto-writing here
-      # to avoid file lock errors during local pre-commit runs.
-      - id: black
-        args: ["--check", "--line-length=120"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
@@ -79,3 +70,11 @@ repos:
         # but intentionally structured functions in this repo. Adjust later
         # if you want stricter checks.
         args: [--max-absolute=C, --max-modules=B, --max-average=A, src]
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.13.9
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+      - id: commitizen-branch
+        stages: [pre-push]

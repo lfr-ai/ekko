@@ -10,7 +10,7 @@ param appInsightsInstrumentationKey string
 param postgresHost string
 param postgresUsername string
 @secure()
-param postgresPassword string
+param postgresPassword string // pragma: allowlist secret
 param keyVaultId string
 
 resource containerApp 'Microsoft.App/containerApps@2023-10-01' = {
@@ -21,7 +21,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-10-01' = {
     configuration: {
       secrets: [
         {
-          name: 'POSTGRES_PASSWORD'
+          name: 'POSTGRES_PASSWORD' // pragma: allowlist secret
           value: postgresPassword
         }
       ]
@@ -47,7 +47,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-10-01' = {
             { name: 'APPINSIGHTS_INSTRUMENTATIONKEY', value: appInsightsInstrumentationKey },
             { name: 'POSTGRES_HOST', value: postgresHost },
             { name: 'POSTGRES_USER', value: postgresUsername },
-            { name: 'POSTGRES_PASSWORD', secretRef: 'POSTGRES_PASSWORD' }
+            { name: 'POSTGRES_PASSWORD', secretRef: 'POSTGRES_PASSWORD' } // pragma: allowlist secret
           ]
           resources: {
             cpu: 0.5

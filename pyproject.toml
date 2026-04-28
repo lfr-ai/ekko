@@ -18,7 +18,7 @@ dependencies = [
         "numpy>=1.26",
 ]
 
-requires-python = "==3.13.*"
+requires-python = ">=3.11,<4.0"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -27,6 +27,7 @@ dev = [
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
     "mypy>=1.17.1",
+    "types-requests>=2.31.0",
     "bandit[toml]>=1.8.6",
     "black>=25.1.0",
     "isort>=6.0.1",
@@ -63,7 +64,7 @@ markers = [
 ignore_missing_imports = true
 disable_error_code = ["attr-defined"]
 check_untyped_defs = true
-python_version = "3.13"
+python_version = "3.11"
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -73,7 +74,7 @@ profile = "black"
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]

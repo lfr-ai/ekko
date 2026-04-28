@@ -4,18 +4,26 @@ Opinionated developer guide
 
 Quickstart
 
-1. Install the project toolchain (uv recommended):
+1. Create and activate a virtual environment, then install runtime and dev dependencies:
 
    ```bash
+   python -m venv .venv
+   # Windows
+   .\.venv\Scripts\activate
+   # macOS / Linux
+   source .venv/bin/activate
+
    python -m pip install --upgrade pip
-   pip install uv
-   uv sync --all-extras
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt || pip install -e .[dev]
    ```
 
 2. Run locally (uvicorn):
 
    ```bash
-   task dev
+   make run
+   # or
+   uvicorn voice.interaction.main:app --reload
    ```
 
 Devcontainer

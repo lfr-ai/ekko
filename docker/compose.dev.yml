@@ -13,4 +13,9 @@ services:
       - ../logs:/app/logs
     environment:
       VOICE_ENVIRONMENT: dev
-    command: ["pdm", "run", "uvicorn", "voice.interaction.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command:
+      [
+        "sh",
+        "-c",
+        "uv run uvicorn voice.interaction.main:app --host 0.0.0.0 --port 8000 --reload || python -m uvicorn voice.interaction.main:app --host 0.0.0.0 --port 8000 --reload",
+      ]

@@ -27,7 +27,7 @@ exclude_path = [
   "__pycache__",
   ".tox",
   ".*.egg-info",
-  "pdm.lock",
+  "uv.lock",
   ".env.*",
 ]
 

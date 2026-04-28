@@ -8,7 +8,7 @@ from asyncio.subprocess import Process
 from typing import Optional
 
 from voice.config.config import Config
-from voice.models.audio_streamer.audio_streamer import AudioStreamer
+from voice.infrastructure.audio_streamer.audio_streamer import AudioStreamer
 
 
 class AudioStreamerController:

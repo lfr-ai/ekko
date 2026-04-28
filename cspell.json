@@ -2,7 +2,7 @@
   "version": "0.2",
   "language": "en",
   "ignorePaths": [
-    "pdm.lock",
+    "uv.lock",
     ".venv/**",
     "node_modules/**",
     "build/**",

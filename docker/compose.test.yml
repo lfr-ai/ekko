@@ -7,4 +7,4 @@ services:
         required: false
     environment:
       VOICE_ENVIRONMENT: test
-    command: ["pdm", "run", "pytest", "-q"]
+    command: ["sh", "-c", "uv run pytest -q || pytest -q"]
