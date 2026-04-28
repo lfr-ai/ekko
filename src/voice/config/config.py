@@ -62,13 +62,18 @@ class Config:
         that instantiate :class:`Config` continue to work while the codebase
         migrates to the new :mod:`voice.config.settings` usage.
         """
+        # Lazily attempt to read the canonical AppSettings. Use get_settings()
+        # to avoid importing a module-level `SETTINGS` object which would
+        # make assigning ``None`` in the except-block type-unstable for mypy.
+        APP_SETTINGS = None
         try:
-            # Import lazily to avoid import-time cycles during module import.
-            from voice.config.settings import SETTINGS as APP_SETTINGS
+            from voice.config.settings import get_settings
+
+            APP_SETTINGS = get_settings()
         except Exception:
             APP_SETTINGS = None
 
-        if not APP_SETTINGS:
+        if APP_SETTINGS is None:
             return
 
         # Map well-known, overlapping settings where present in AppSettings

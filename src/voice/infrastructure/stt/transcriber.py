@@ -13,6 +13,7 @@ from voice.utils.logger import Logger
 if TYPE_CHECKING:
     from numpy import ndarray
 
+_np: Any = None
 try:
     import numpy as _np
 except Exception:  # pragma: no cover - optional runtime dependency
@@ -20,6 +21,7 @@ except Exception:  # pragma: no cover - optional runtime dependency
 
 np: Any = _np
 
+FasterWhisperModel: Any = None
 try:
     from faster_whisper import WhisperModel as FasterWhisperModel
 except Exception:  # pragma: no cover - optional runtime dependency

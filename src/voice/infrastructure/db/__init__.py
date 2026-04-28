@@ -7,9 +7,9 @@ factory and a declarative base for models.
 from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-Base = declarative_base()
+from .base import Base
 
 
 def create_engine(database_url: str, echo: bool = False) -> AsyncEngine:
