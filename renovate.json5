@@ -1,0 +1,54 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":automergeMinor",
+    "schedule:earlyMondays"
+  ],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Group Python dependencies",
+      "matchManagers": ["pip_requirements", "pep621"],
+      "groupName": "python dependencies",
+      "automerge": false
+    },
+    {
+      "description": "Group GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "automerge": true
+    },
+    {
+      "description": "Group npm/bun dependencies",
+      "matchManagers": ["npm"],
+      "groupName": "frontend dependencies",
+      "automerge": false
+    },
+    {
+      "description": "Group pre-commit hooks",
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks",
+      "automerge": true
+    },
+    {
+      "description": "Group Docker dependencies",
+      "matchManagers": ["dockerfile"],
+      "fileMatch": ["docker/Containerfile", "caddy/Containerfile", ".devcontainer/Containerfile.dev"],
+      "groupName": "docker",
+      "automerge": false
+    },
+    {
+      "description": "Auto-merge patch updates for dev dependencies",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}

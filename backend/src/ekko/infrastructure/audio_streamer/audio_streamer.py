@@ -1,11 +1,14 @@
 import asyncio
+import logging
 from typing import Any
 
 import pyaudiowpatch as pyaudio
 from pyaudiowpatch import Stream
 
 from ekko.config.settings import BaseAppConfig
-from ekko.utils.types_ import RecognitionMode
+from ekko.core.enums import RecognitionMode
+
+logger = logging.getLogger(__name__)
 
 
 class AudioStreamer:
@@ -16,7 +19,6 @@ class AudioStreamer:
         self.running = False
         self.sending = False
         self.group: asyncio.TaskGroup | None = None
-        from typing import Any
 
         # PyAudio instance (lazy-created in _initialize)
         self.p: Any = None
@@ -63,8 +65,8 @@ class AudioStreamer:
                     await asyncio.sleep(self.settings.sleep_delay_seconds)
         except asyncio.CancelledError:
             pass
-        except Exception as e:
-            print(f"Error in _stream_audio: {e}")
+        except Exception:
+            logger.exception("Error in _stream_audio")
 
     def _initialize(self):
         # create a TaskGroup instance; we'll enter it in async start()
@@ -113,8 +115,8 @@ class AudioStreamer:
                 task.cancel()
             try:
                 await group.__aexit__(None, None, None)
-            except Exception as e:
-                print(f"Error while stopping AudioStreamer: {e}")
+            except Exception:
+                logger.exception("Error while stopping AudioStreamer")
         for stream_attr in ("stream_sys", "stream_mic"):
             stream = getattr(self, stream_attr, None)
             if stream:

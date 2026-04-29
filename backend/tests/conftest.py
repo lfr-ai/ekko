@@ -40,8 +40,7 @@ def app(settings):
     """Create a FastAPI test app with dependency overrides."""
     from ekko.composition import create_app
 
-    application = create_app()
-    return application
+    return create_app()
 
 
 @pytest.fixture

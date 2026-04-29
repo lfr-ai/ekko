@@ -8,7 +8,7 @@ from ekko.infrastructure.audio_streamer.audio_streamer import AudioStreamer
 logger = logging.getLogger(__name__)
 
 
-async def _ipc_handler(
+async def _ipc_handler(  # noqa: C901, PLR0915
     reader: StreamReader,
     writer: StreamWriter,
     audio_streamer: AudioStreamer,
@@ -33,7 +33,7 @@ async def _ipc_handler(
                 # System audio
                 if audio_streamer.sys_sending_task is None or audio_streamer.sys_sending_task.done():
                     try:
-                        sys_r, sys_w = await asyncio.open_connection(
+                        _, sys_w = await asyncio.open_connection(
                             settings.host,
                             settings.audio_streamer_tcp_port + 1,
                         )
@@ -58,12 +58,12 @@ async def _ipc_handler(
                         audio_streamer.sys_sending_task = asyncio.create_task(
                             _send_loop(audio_streamer.stream_sys, sys_w)
                         )
-                    except Exception as e:
-                        print(f"[Streamer] Failed to connect for sys audio: {e}")
+                    except Exception:
+                        logger.exception("Failed to connect for sys audio")
                 # Microphone audio
                 if audio_streamer.mic_sending_task is None or audio_streamer.mic_sending_task.done():
                     try:
-                        mic_r, mic_w = await asyncio.open_connection(
+                        _, mic_w = await asyncio.open_connection(
                             settings.host,
                             settings.audio_streamer_tcp_port + 2,
                         )
@@ -88,8 +88,8 @@ async def _ipc_handler(
                         audio_streamer.mic_sending_task = asyncio.create_task(
                             _send_loop_mic(audio_streamer.stream_mic, mic_w)
                         )
-                    except Exception as e:
-                        print(f"[Streamer] Failed to connect for mic audio: {e}")
+                    except Exception:
+                        logger.exception("Failed to connect for mic audio")
 
                 writer.write(b"started")
 
@@ -108,8 +108,8 @@ async def _ipc_handler(
         writer.close()
         await writer.wait_closed()
 
-    except Exception as e:
-        logger.exception("Unhandled exception in IPC handler: %s", e)
+    except Exception:
+        logger.exception("Unhandled exception in IPC handler")
         try:
             writer.write(b"error")
             await writer.drain()
@@ -131,14 +131,14 @@ async def main():
         host=settings.host,
         port=settings.audio_streamer_tcp_port,
     )
-    print(f"IPC server started on {settings.host}:{settings.audio_streamer_tcp_port}")
+    logger.info("IPC server started on %s:%s", settings.host, settings.audio_streamer_tcp_port)
 
     try:
         async with server:
             await stop_event.wait()
     finally:
         await audio_streamer.stop()
-        print("IPC server shutting down")
+        logger.info("IPC server shutting down")
 
 
 if __name__ == "__main__":

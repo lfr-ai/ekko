@@ -5,13 +5,14 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Final
 
 import jwt
 
 logger = logging.getLogger(__name__)
 
-ALGORITHM = "HS256"
-_DEFAULT_EXPIRE_MINUTES = 30
+ALGORITHM: Final[str] = "HS256"
+_DEFAULT_EXPIRE_MINUTES: Final[int] = 30
 
 
 @dataclass(frozen=True, slots=True)

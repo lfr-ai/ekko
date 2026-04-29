@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
+from ekko.core.enums import QueueName
+
 router = APIRouter(tags=["health"])
 
 
@@ -24,7 +26,7 @@ async def health(request: Request) -> dict:
         ok = False
     else:
         try:
-            details["transcripts_queue_present"] = "transcripts" in qm.queues
+            details["transcripts_queue_present"] = QueueName.TRANSCRIPTS in qm.queues
         except Exception:
             details["transcripts_queue_present"] = False
             ok = False

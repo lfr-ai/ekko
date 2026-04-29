@@ -13,10 +13,12 @@ from queue import Empty
 
 from fastapi import FastAPI
 
+from ekko import __version__
 from ekko.composition.container import Container
 from ekko.config.logging_config import configure_logging
 from ekko.config.settings import get_settings
-from ekko.managers.queue_manager import QueueManager
+from ekko.core.enums import AudioQueueName, QueueName
+from ekko.infrastructure.concurrency.queue_manager import QueueManager
 from ekko.presentation.api.routes import auth_router, health_router, stream_router
 
 logger = logging.getLogger(__name__)
@@ -46,8 +48,12 @@ async def _start_audio_servers(app: FastAPI, settings, host: str) -> None:
             except Exception as e:
                 logger.debug("Failed to close writer: %s", e)
 
-    app.state.sys_server = await asyncio.start_server(lambda r, w: _audio_receiver(r, w, "sys-queue"), host, sys_port)
-    app.state.mic_server = await asyncio.start_server(lambda r, w: _audio_receiver(r, w, "mic-queue"), host, mic_port)
+    app.state.sys_server = await asyncio.start_server(
+        lambda r, w: _audio_receiver(r, w, AudioQueueName.SYSTEM), host, sys_port,
+    )
+    app.state.mic_server = await asyncio.start_server(
+        lambda r, w: _audio_receiver(r, w, AudioQueueName.MICROPHONE), host, mic_port,
+    )
     logger.info("Audio servers listening on %s:%s (sys) and %s:%s (mic)", host, sys_port, host, mic_port)
 
 
@@ -57,7 +63,7 @@ async def _start_transcript_bridge(app: FastAPI) -> None:
 
     async def _drain():
         qm = app.state.queue_manager
-        q = qm.get_queue("transcripts")
+        q = qm.get_queue(QueueName.TRANSCRIPTS)
         try:
             while True:
                 try:
@@ -104,9 +110,12 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Queue manager
     app.state.queue_manager = QueueManager()
     try:
-        app.state.queue_manager.create_queue("transcripts")
+        app.state.queue_manager.create_queue(QueueName.TRANSCRIPTS)
     except Exception as e:
-        logger.debug("Queue 'transcripts' already present or failed to create: %s", e)
+        logger.debug("Queue %r already present or failed to create: %s", QueueName.TRANSCRIPTS, e)
+
+    # CrewAI / HMAS service (PII anonymization wired internally)
+    app.state.crewai_service = container.crewai_service
 
     # Audio controller
     app.state.controller = container.audio_controller
@@ -114,18 +123,18 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # STT with transcript bridge callback
     def _on_transcript(transcript):
         try:
-            app.state.queue_manager.put_in_queue("transcripts", transcript)
+            app.state.queue_manager.put_in_queue(QueueName.TRANSCRIPTS, transcript)
         except Exception as e:
             logger.debug("Failed to put transcript into queue: %s", e)
 
     from ekko.infrastructure.adapters.stt_adapter import create_faster_whisper_stt
 
     app.state.stt = create_faster_whisper_stt(
-        settings=settings, model_name="small", batch_seconds=5, on_transcript=_on_transcript
+        settings=settings, on_transcript=_on_transcript
     )
 
-    await app.state.stt.ensure_queue("sys-queue")
-    await app.state.stt.ensure_queue("mic-queue")
+    await app.state.stt.ensure_queue(AudioQueueName.SYSTEM)
+    await app.state.stt.ensure_queue(AudioQueueName.MICROPHONE)
     await app.state.stt.start()
 
     await _start_audio_servers(app, settings, settings.host)
@@ -181,7 +190,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Ekko API",
         description="AI-powered voice assistant platform",
-        version="0.1.0",
+        version=__version__,
         lifespan=_lifespan,
     )
 

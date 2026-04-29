@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover
         pass
 
 
-from ekko.core.enums import Environment, LLMProvider
+from ekko.core.enums import ChatModel, Environment, LLMProvider
 
 
 class BaseAppConfig(BaseSettings):
@@ -58,7 +58,7 @@ class BaseAppConfig(BaseSettings):
 
     # ── RAG ───────────────────────────────────────────────────
     rag_embedding_model: str = "text-embedding-3-small"
-    rag_llm_model: str = "gpt-4o"
+    rag_llm_model: str = ChatModel.GPT_4O
 
     # ── Database ──────────────────────────────────────────────
     postgresql_user: str = "postgres"
@@ -72,7 +72,7 @@ class BaseAppConfig(BaseSettings):
     src_dir_path: Path = root_dir_path / "src"
     package_dir_path: Path = src_dir_path / "ekko"
     logs_dir_path: Path = Path("./logs")
-    prompt_dir_path: Path = package_dir_path / "prompts"
+    prompt_dir_path: Path = package_dir_path / "ai" / "prompts"
     interaction_dir_path: Path = package_dir_path / "interaction"
 
     # ── Audio / IPC ───────────────────────────────────────────

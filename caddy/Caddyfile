@@ -12,7 +12,7 @@
         Referrer-Policy "strict-origin-when-cross-origin"
         Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
         Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
-        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Permissions-Policy "camera=(), microphone=(self), geolocation=()"
         -Server
     }
 
@@ -30,8 +30,14 @@
     handle /graphql {
         reverse_proxy app:8000
     }
+    handle /graphql/* {
+        reverse_proxy app:8000
+    }
 
-    # ── Frontend (SPA) ────────────────────────────────────────
+    # ── WebSocket ─────────────────────────────────────────────
+    handle /ws/* {
+        reverse_proxy app:8000
+    }
     handle {
         # Immutable asset caching
         @immutable path *.js *.css *.woff2 *.png *.jpg *.svg *.ico

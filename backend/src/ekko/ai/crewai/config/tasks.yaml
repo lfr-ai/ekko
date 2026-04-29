@@ -1,15 +1,60 @@
+# Ekko Voice Tasks Configuration
+# Each task references an agent and has a description + expected output.
+
+detect_intent:
+  description: >
+    Analyze the following transcript segment and classify the user's intent.
+    Transcript: {transcript}
+
+    Classify into one of: question, request, information, complaint,
+    greeting, farewell, confirmation, denial, clarification, other.
+    Also extract any key entities mentioned.
+  expected_output: >
+    A JSON object with fields: intent (string), confidence (float 0-1),
+    entities (dict of entity_type to value).
+  agent: intent_detector
+
+route_conversation:
+  description: >
+    Given the detected intent "{intent}" with confidence {confidence},
+    determine the appropriate response strategy.
+
+    Available strategies: direct_answer, escalate_human, trigger_action,
+    ask_clarification, acknowledge, farewell_close.
+  expected_output: >
+    A JSON object with: strategy (string), reasoning (string),
+    suggested_response_template (string).
+  agent: conversation_router
+
+summarize_conversation:
+  description: >
+    Summarize the following conversation transcript:
+    {transcript}
+
+    Identify the main topics, decisions, action items, and overall sentiment.
+  expected_output: >
+    A JSON object with: summary (string), key_topics (list of strings),
+    sentiment (string), action_items (list of strings), decision_count (int).
+  agent: summarizer
+
 respond_to_query:
   description: >
     Respond to the user's voice query: "{query}"
     Use the conversation context to provide a relevant and helpful answer.
-  expected_output: "A concise, natural-language response suitable for voice delivery."
+    Keep the response concise and natural for spoken delivery.
+  expected_output: >
+    A concise, natural-language response suitable for voice delivery.
+    Maximum 3 sentences unless the query requires more detail.
   agent: voice_assistant
 
 analyze_transcript:
   description: >
     Analyze the following conversation transcript and extract key insights:
     {transcript}
+
+    Evaluate: response accuracy, conversation flow, user satisfaction
+    indicators, and areas for improvement.
   expected_output: >
-    A structured summary containing: key topics discussed, overall sentiment,
-    action items identified, and any follow-up questions that should be addressed.
+    A structured analysis with: quality_score (1-10), strengths (list),
+    weaknesses (list), recommendations (list), metrics (dict).
   agent: transcript_analyzer

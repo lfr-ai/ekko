@@ -1,35 +1,16 @@
-from collections import namedtuple
-from enum import Enum, auto
+"""Shared type aliases and value objects."""
 
-TranscriptionEntry = namedtuple("TranscriptionEntry", ["text", "offset"])
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, slots=True)
+class TranscriptionEntry:
+    """A single transcription segment with offset."""
+
+    text: str
+    offset: float
+
+
 Transcription = list[TranscriptionEntry]
-
-
-class RecognitionMode(Enum):
-    """
-    Enumeration of recognition modes.
-    """
-
-    ADVISOR = auto()
-    CUSTOMER = auto()
-
-    @classmethod
-    def from_stream_type(cls: type["RecognitionMode"], stream_type: str):
-        """
-        Map stream type string to RecognitionMode enumeration.
-
-        Args:
-            stream_type (str): Type of stream.
-
-        Returns:
-            RecognitionMode: Corresponding RecognitionMode enumeration.
-        """
-        if stream_type not in ("sys", "mic"):
-            raise ValueError(f"Invalid stream type: {stream_type}. Expected 'sys' or 'mic'.")
-
-        mapping = {
-            "sys": cls.CUSTOMER,
-            "mic": cls.ADVISOR,
-        }
-
-        return mapping[stream_type]

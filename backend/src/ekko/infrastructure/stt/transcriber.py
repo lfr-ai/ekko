@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import os
+import contextlib
 import tempfile
 import wave
-from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from ekko.config.settings import BaseAppConfig, get_settings
 from ekko.utils.logger import Logger
@@ -30,7 +33,7 @@ _settings = get_settings()
 logger = Logger.create(__name__, _settings.logs_dir_path / "stt.logs")
 
 
-@dataclass
+@dataclass(slots=True)
 class Transcript:
     stream_name: str
     text: str
@@ -170,9 +173,9 @@ class FasterWhisperSTT:
         channels: int,
     ) -> str:
         try:
-            import numpy as np
-        except Exception:  # pragma: no cover - optional runtime dependency
-            raise RuntimeError("numpy is required for STT processing")
+            import numpy as np  # noqa: PLC0415
+        except Exception as err:  # pragma: no cover - optional runtime dependency
+            raise RuntimeError("numpy is required for STT processing") from err
 
         arr = np.frombuffer(raw_bytes, dtype=np.int16)
         if channels > 1:
@@ -183,9 +186,8 @@ class FasterWhisperSTT:
         else:
             mono = arr
 
-        temp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
-        temp_name = temp.name
-        temp.close()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp:
+            temp_name = temp.name
 
         with wave.open(temp_name, "wb") as wav_file:
             wav_file.setnchannels(1)
@@ -207,7 +209,5 @@ class FasterWhisperSTT:
             text = "".join([getattr(seg, "text", str(seg)) for seg in segs])
             return segs, info, text
         finally:
-            try:
-                os.remove(temp_path)
-            except OSError:
-                pass
+            with contextlib.suppress(OSError):
+                Path(temp_path).unlink()

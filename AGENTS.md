@@ -1,89 +1,209 @@
-# AGENTS.md — Ekko Repository Guide
+# AGENTS.md
 
-## Architecture
+This file provides instructions for AI coding agents (GitHub Copilot, Cursor, Cline, etc.)
+working within this codebase.
 
-Clean Architecture with strict dependency direction:
-`presentation/infrastructure → application → core`
+## Documentation and Code-Example Search Policy
 
+- When you need official library/framework documentation, **use Context7 tools first**.
+- In prompts, explicitly request these tools when relevant:
+  - `use context7`
+- Prefer Context7 for authoritative API/reference answers.
+
+---
+
+## Architecture Overview
+
+This project follows **Clean Architecture** with strict separation of concerns.
+The **Dependency Rule** is the fundamental invariant: source-code dependencies always
+point **inward**, never from core toward frameworks/adapters.
+
+```text
+┌─────────────────────────────────────────────────────┐
+│  Presentation (API routes, middleware, DI)          │  <- FastAPI entry points
+├─────────────────────────────────────────────────────┤
+│  Application (orchestration, use case services)     │  <- Use case orchestration
+├─────────────────────────────────────────────────────┤
+│  Core (entities, value objects, domain services)    │  <- Business logic
+├─────────────────────────────────────────────────────┤
+│  Infrastructure (DB repos, external clients, auth)  │  <- External integrations
+├─────────────────────────────────────────────────────┤
+│  AI (CrewAI HMAS, PII, chains, embeddings, RAG)    │  <- AI pipeline
+├─────────────────────────────────────────────────────┤
+│  Config (frozen settings, environment-specific)     │  <- Configuration
+├─────────────────────────────────────────────────────┤
+│  Utils (logger, common helpers, types)              │  <- Cross-cutting concerns
+└─────────────────────────────────────────────────────┘
 ```
-src/ekko/
-  ai/               # CrewAI agents, PII anonymization, chains, embeddings, prompts
-  core/             # Domain: enums, interfaces, exceptions, entities, value_objects
-  application/      # Use cases: services, DTOs, handlers, mappers
-  composition/      # DI container (Container dataclass + cached_property), app factory
-  config/           # Settings: base + per-env subclasses (local/dev/test/staging/prod), logging
-  infrastructure/   # Adapters: STT, audio streaming, OpenAI, persistence, LLM, auth
-  presentation/     # API routes, GraphQL (Strawberry), middleware, schemas
-  cli/              # CLI entry points
-  utils/            # Common helpers, logger, types
 
-frontend/
-  src/
-    application/    # hooks, stores (zustand)
-    domain/         # models, types, schemas (zod)
-    infrastructure/ # api clients, config
-    lib/            # utilities (cn helper)
-    presentation/   # components (ui/common/layout), pages, features, styles
-    router/         # React Router config
+### Project Structure
+
+```text
+backend/src/ekko/
+├── presentation/        # FastAPI routes, GraphQL, middleware, schemas
+│   ├── api/             # REST routes, dependencies, middleware
+│   └── graphql/         # Strawberry GraphQL schema, queries, mutations
+├── application/         # Use case orchestration
+│   ├── dtos/            # Data transfer objects
+│   ├── handlers/        # Application handlers
+│   ├── mappers/         # Entity <-> DTO mappers
+│   └── services/        # Orchestration services (chat, summarizer)
+├── core/                # Domain entities, value objects, business rules
+│   ├── entities/        # Domain entities
+│   ├── enums/           # Domain enumerations (base, ai, audio, messaging, etc.)
+│   ├── exceptions/      # Domain exception hierarchy
+│   ├── interfaces/      # Port protocols (audio, chat, embedding, llm, auth, pii)
+│   ├── protocols.py     # Shared protocols
+│   ├── value_objects/   # Immutable value objects
+│   └── registry_constants.py  # Generated naming constants
+├── infrastructure/      # External integrations, persistence
+│   ├── adapters/        # Audio, STT adapters
+│   ├── auth/            # JWT adapter
+│   ├── concurrency/     # QueueManager, ThreadManager
+│   ├── db/              # SQLAlchemy engine, session, models
+│   ├── llm/             # LLM chat adapters
+│   └── stt/             # Speech-to-text transcriber
+├── ai/                  # AI vertical
+│   ├── chains/          # Conversational chains
+│   ├── crewai/          # HMAS multi-agent system
+│   ├── embeddings/      # Embedding service
+│   ├── llm/             # LLM adapter
+│   ├── pii/             # PII anonymization (regex-based)
+│   └── prompts/         # Prompt templates
+├── composition/         # DI container + app factory
+├── config/              # Frozen settings, logging
+├── cli/                 # CLI entry points
+└── utils/               # Logger, common helpers, types
 
 tests/
-  unit/             # Mirrors src/ structure
-  integration/      # API integration tests
-  property/         # Hypothesis property-based tests
-  performance/      # Benchmarks (pytest-benchmark)
-  e2e/              # End-to-end tests
-  database/         # Migration and ORM model tests
-  factories/        # factory-boy factories
-  fixtures/         # Shared test data
-  mocks/            # Reusable mock objects
-  utils/            # assertion_helpers, mock_builder
+├── unit/                # Fast, isolated, no I/O
+├── integration/         # Database, API, external services
+├── property/            # Hypothesis property-based tests
+├── performance/         # Benchmark and timing tests
+├── e2e/                 # End-to-end tests
+├── database/            # Migration and ORM model tests
+├── factories/           # factory-boy factories
+├── fixtures/            # Shared test data
+├── mocks/               # Reusable mock objects
+└── utils/               # Assertion helpers
 
-registry/           # Naming registry (JSON → generated constants)
+frontend/src/
+├── application/         # Hooks and state management (stores)
+├── domain/              # Models, types, schemas (Zod)
+├── infrastructure/      # API clients, config
+├── lib/                 # Utilities (cn helper)
+├── presentation/        # Components (ui/common/layout), pages, features, styles
+└── router/              # React Router config
+
+docker/                  # Containerfile + compose files (dev/prod/staging/test)
+tasks/                   # Split Taskfile includes (backend, frontend, docker)
+tools/                   # Convention checkers and security audits
+registry/                # Naming registry (JSON -> generated constants)
 ```
 
-## Tooling
+### Dependency Rule
 
-| Tool | Purpose |
-|------|---------|
-| uv | Python dependency management and command execution |
-| Bun | Frontend runtime and package manager |
-| Taskfile.yml | Task runner (`task test`, `task lint`, `task dev`, etc.) |
-| Ruff | Python linting (30+ rule groups) + formatting |
-| Biome | Frontend linting + formatting |
-| Pre-commit | Git hooks (ruff, biome, gitleaks, commitizen, etc.) |
-| Vitest | Frontend unit testing |
-| Playwright | Frontend E2E testing |
-| pytest | Backend testing (unit, integration, property, performance, e2e) |
-| shadcn | UI component CLI (see `.github/skills/frontend-react-stack/`) |
+| Layer | May Import From | NEVER Imports From |
+| --- | --- | --- |
+| **utils/** | stdlib ONLY | ALL other project layers |
+| **config/** | utils/, external libs | presentation/, application/, core/ |
+| **core/** | utils/, config/ | presentation/, application/, infrastructure/ |
+| **infrastructure/** | core/, config/, utils/, external libs | presentation/, application/ |
+| **ai/** | config/, utils/, core/ | presentation/, application/, infrastructure/ |
+| **application/** | core/, infrastructure/, ai/, config/, utils/ | presentation/ |
+| **presentation/** | application/, core/, config/, utils/ | (top layer) |
+
+---
+
+## Coding Standards
+
+- **Python 3.12**, uv for dependency management, Taskfile for task running
+- **FastAPI** + Uvicorn for HTTP
+- **SQLAlchemy 2.0+** async ORM with asyncpg driver
+- **Pydantic v2** for validation with `Annotated` + `Field`
+- **ruff** for linting/formatting (config in `backend/ruff.toml`), **mypy** for type checking
+- **structlog** for structured logging (never `print()`)
+- Full type hints on all functions, methods, class attributes
+- Google-style docstrings on all public APIs
+- `Final` for constants, `@final` for sealed classes/methods
+- Keyword-only arguments with `*` separator for 3+ params
+- `frozen=True, slots=True` on all dataclasses
+- Exception chaining: `raise NewError(...) from original_error`
+- `bun` for frontend package management
+- **Biome** for frontend linting/formatting
+
+### String Constant Consistency
+
+- **No hardcoded magic strings** -- extract repeated or semantically meaningful strings
+  into `Final[str]` constants at the module or package level.
+- Registry-generated constants (`core/registry_constants.py`) are the single source of truth
+  for ORM field names, API field names, route paths, and status enums. Never duplicate them.
+- Enum values must be used instead of string literals when referencing strategy names,
+  status codes, or other enumerated domain values.
+
+### Docstring Raises Policy
+
+- **Only document exceptions directly raised by the function body** -- never document
+  exceptions raised by called functions, dependencies, or downstream services.
+- Every `raise` statement in a function must have a corresponding `Raises:` entry.
+- If a function has no direct `raise` statements, omit the `Raises:` section entirely.
+
+---
+
+## Skill Packs (`.github/skills/`)
+
+| Skill | Path | Scope |
+| --- | --- | --- |
+| **Clean Architecture** | `.github/skills/clean-architecture/SKILL.md` | Layer boundaries, dependency rules |
+| **Frontend React Stack** | `.github/skills/frontend-react-stack/SKILL.md` | React + TypeScript + Vite + shadcn/ui |
+| **Python Conventions** | `.github/skills/python-conventions/SKILL.md` | Naming, typing, Pydantic, logging |
+| **Testing Conventions** | `.github/skills/testing-conventions/SKILL.md` | Pytest fixtures, factories, coverage |
+| **Naming Registry** | `.github/skills/naming-registry/SKILL.md` | Registry-first constant generation |
+
+---
+
+## Agent Hooks
+
+| Hook | File | Events | Purpose |
+| --- | --- | --- | --- |
+| **Tool Guardian** | `tool-guardian.json` | `PreToolUse` | Block destructive ops (rm -rf, force push, DROP TABLE) |
+| **License Checker** | `dependency-license-checker.json` | `Stop` | Block copyleft / unapproved licenses |
+
+---
 
 ## Key Commands
 
 ```bash
-task install          # Install all dependencies
-task dev              # Run backend + frontend in dev mode
-task test:unit        # Run unit tests
-task test:property    # Run property-based tests
-task test:coverage    # Tests with coverage report
-task lint             # Run all linters
-task format           # Format all code
-task check            # Full quality gate
-task db:migrate       # Run alembic migrations
-task storybook        # Run Storybook dev server
+task dev                  # Start backend + frontend in dev mode
+task install              # Install all dependencies
+task test                 # Run default tests
+task test:unit            # Unit tests only
+task test:integration     # Integration tests
+task test:property        # Property-based tests (Hypothesis)
+task test:performance     # Performance benchmarks
+task test:e2e             # End-to-end tests
+task test:frontend        # Frontend unit tests (Vitest)
+task test:coverage        # Tests with coverage reports
+task lint                 # Run all linters
+task format               # Format all code
+task typecheck            # Type check (mypy + frontend)
+task xenon                # Cyclomatic complexity gate
+task check                # Full quality gate
+task pre-commit           # Run all pre-commit hooks
+task registry:generate    # Regenerate constants from naming_registry.json
+task db:migrate           # Run Alembic migrations
+task docker:build         # Build Docker images
+task docker:up            # Start all services
+task clean                # Clean all build artifacts
 ```
-
-## Skills
-
-See `.github/skills/` for coding convention skills:
-- `clean-architecture` — Layer boundaries and dependency direction
-- `python-conventions` — Typing, logging, maintainability
-- `testing-conventions` — Test quality and structure
-- `frontend-react-stack` — React, shadcn/ui, Tailwind, Vitest conventions
-- `naming-registry` — Canonical naming definitions
 
 ## Configuration
 
-- Environment settings: `src/ekko/config/settings/` (base → local/dev/test/staging/prod)
+- Environment settings: `backend/src/ekko/config/settings/` (base -> local/dev/test/staging/prod)
 - Settings factory: `get_settings()` with `EKKO_ENVIRONMENT` env var
-- Naming registry: `registry/naming_registry.json` → `src/ekko/core/registry_constants.py`
+- Naming registry: `registry/naming_registry.json` -> `backend/src/ekko/core/registry_constants.py`
+- Docker: `docker/` folder with compose files per environment
+- JWT setup: `docs/JWT_SETUP.md`
 - GraphQL: Strawberry schema at `/graphql` with subscriptions
-- CrewAI agents: YAML-based config in `src/ekko/ai/crewai/config/`
+- CrewAI agents: YAML config in `backend/src/ekko/ai/crewai/config/`
+- PII: Regex-based anonymization in `backend/src/ekko/ai/pii/`

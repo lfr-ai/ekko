@@ -2,14 +2,16 @@
 
 import importlib
 
+import ekko.config.settings
+import ekko.core.enums
+
 
 class TestImportPerformance:
     def test_settings_import_fast(self, benchmark):
         """Settings module should import within a reasonable time."""
 
         def import_settings():
-
-            importlib.reload(voice.config.settings)
+            importlib.reload(ekko.config.settings)
 
         benchmark(import_settings)
 
@@ -17,7 +19,6 @@ class TestImportPerformance:
         """Enums module should import within a reasonable time."""
 
         def import_enums():
-
-            importlib.reload(voice.core.enums)
+            importlib.reload(ekko.core.enums)
 
         benchmark(import_enums)

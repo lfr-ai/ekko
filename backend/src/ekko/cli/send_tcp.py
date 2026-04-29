@@ -9,10 +9,11 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+from pathlib import Path
 
 
 async def send(host: str, port: int, queue: str, data: bytes) -> None:
-    reader, writer = await asyncio.open_connection(host, port)
+    _reader, writer = await asyncio.open_connection(host, port)
     try:
         writer.write(queue.encode("utf-8") + b"\n")
         writer.write(data)
@@ -31,7 +32,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.file:
-        with open(args.file, "rb") as f:
+        with Path(args.file).open("rb") as f:
             data = f.read()
     else:
         data = sys.stdin.buffer.read()

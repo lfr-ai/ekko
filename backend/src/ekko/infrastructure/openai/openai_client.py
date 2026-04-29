@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from ekko.config.settings import BaseAppConfig
 from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
+
+if TYPE_CHECKING:
+    from ekko.config.settings import BaseAppConfig
 
 
 class AzureOpenAIClient:
@@ -14,7 +16,7 @@ class AzureOpenAIClient:
     LangChain-based `ChatModelAdapter`.
     """
 
-    def __init__(self, settings: BaseAppConfig | None = None) -> None:
+    def __init__(self, settings: BaseAppConfig | None = None) -> None:  # noqa: ARG002
         self._adapter = ChatModelAdapter()
 
     def chat(

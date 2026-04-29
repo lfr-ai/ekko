@@ -9,52 +9,22 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:24-dind
-        options: --privileged
-        ports:
-          - 2375:2375
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: Set up Docker Compose
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Cache python deps
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pre-commit
-
-      - name: Run pre-commit
-        run: pre-commit run --all-files
-
-      - name: Build and bring up docker-compose
-        run: |
-          docker compose -f docker/docker-compose.yml up -d --build
+      - name: Build and bring up services
+        run: docker compose -f docker/compose.yml up -d --build
 
       - name: Wait for services
-        run: |
-          sleep 5
+        run: sleep 5
 
-      - name: Run integration tests
+      - name: Health check
         run: |
-          pytest -q tests/integration || true
+          curl --fail --retry 5 --retry-delay 2 http://localhost:8000/health || exit 1
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker/docker-compose.yml down --volumes --remove-orphans
+        run: docker compose -f docker/compose.yml down --volumes --remove-orphans

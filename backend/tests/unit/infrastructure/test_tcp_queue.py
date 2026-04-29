@@ -3,8 +3,8 @@ import socket
 import threading
 import time
 
+from ekko.infrastructure.concurrency.queue_manager import QueueManager
 from ekko.infrastructure.tcp_queue import TCPQueueServer
-from ekko.managers.queue_manager import QueueManager
 
 
 def tcp_server(host: str, port: int, qm: QueueManager, queue_name: str, stop_event):
@@ -17,7 +17,7 @@ def tcp_server(host: str, port: int, qm: QueueManager, queue_name: str, stop_eve
         while not stop_event.is_set():
             try:
                 conn, _ = s.accept()
-            except Exception:
+            except Exception:  # noqa: S112
                 continue
             with conn:
                 data = conn.recv(1024)
@@ -63,7 +63,7 @@ def test_tcp_queue_end_to_end():
         server = TCPQueueServer(host="127.0.0.1", port=8800, qm=qm)
         await server.start()
 
-        reader, writer = await asyncio.open_connection("127.0.0.1", 8800)
+        _, writer = await asyncio.open_connection("127.0.0.1", 8800)
         # send queue name and payload
         writer.write(b"test-queue\n")
         writer.write(b"hello-from-tcp")

@@ -1,66 +1,48 @@
-# voice-bot
+# Ekko
 
-Opinionated developer guide
+AI-powered voice assistant platform with CrewAI agents, GraphQL, and PII anonymization.
 
-Quickstart
+## Quickstart
 
-1. Create and activate a virtual environment, then install runtime and dev dependencies:
-
-   ```bash
-   python -m venv .venv
-   # Windows
-   .\.venv\Scripts\activate
-   # macOS / Linux
-   source .venv/bin/activate
-
-   python -m pip install --upgrade pip
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt || pip install -e .[dev]
-   ```
-
-2. Run locally (uvicorn):
-
-   ```bash
-   make run
-   # or
-   uvicorn voice.interaction.main:app --reload
-   ```
-
-Devcontainer
-
-Open in VS Code and choose "Reopen in Container". The dev container provisions
-the `uv` toolchain, pre-commit tooling, and VS Code settings/extensions automatically.
-
-CI
-
-A GitHub Actions workflow runs:
-
-- pre-commit hooks
-- mypy type-checking
-- tests
-- clean architecture import boundary checks
-- markdown link checks
-- shell script linting
-
-Developer quickstart
-
-1. Create a virtual environment and install dev deps:
+1. Install dependencies:
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-pip install --upgrade pip
-pip install -e .[dev]
+uv sync --all-extras
+cd frontend && bun install
 ```
 
-1. Run linters and tests:
+2. Run locally:
+
+```bash
+task dev
+```
+
+3. Run tests:
 
 ```bash
 task check
 ```
 
-1. Run the app locally:
+## Devcontainer
 
-```bash
-uvicorn voice.interaction.main:app --reload
-```
+Open in VS Code and choose "Reopen in Container". The dev container provisions
+the `uv` toolchain, pre-commit tooling, Bun, and VS Code settings/extensions.
+
+## Architecture
+
+Clean Architecture with strict dependency direction:
+`presentation/infrastructure → application → core`
+
+- **Backend**: FastAPI, Strawberry GraphQL, CrewAI, SQLAlchemy, PostgreSQL
+- **Frontend**: React 19, Vite, Tailwind, shadcn, Storybook
+- **Infra**: Caddy reverse proxy, Docker Compose, Alembic migrations
+- **AI**: CrewAI HMAS agents, PII anonymization before LLM calls
+
+## CI
+
+GitHub Actions workflow runs:
+- Pre-commit hooks
+- Type checking (mypy)
+- Unit, integration, and property-based tests
+- Architecture boundary checks
+- Security scanning

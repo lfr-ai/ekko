@@ -1,16 +1,15 @@
 {
-  "name": "ekko Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.12",
-  "runArgs": [
-    "--init"
-  ],
+  "name": "Ekko Dev Container",
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "pip install --upgrade pip && pip install uv pre-commit && uv sync --all-extras && uvx pre-commit install",
+  "postCreateCommand": "zsh scripts/bootstrap-uv.sh 2>/dev/null || bash -c 'pip install --upgrade pip && pip install uv pre-commit && cd backend && uv sync --all-extras && cd ../frontend && bun install && cd .. && uvx pre-commit install'",
   "remoteUser": "vscode",
-  "forwardPorts": [8000, 3000, 5432],
+  "forwardPorts": [8000, 3000, 5432, 6006],
   "mounts": [
-    "source=voice-uv-cache,target=/home/vscode/.cache/uv,type=volume",
-    "source=voice-precommit-cache,target=/home/vscode/.cache/pre-commit,type=volume"
+    "source=ekko-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+    "source=ekko-precommit-cache,target=/home/vscode/.cache/pre-commit,type=volume",
+    "source=ekko-zsh-history,target=/home/vscode/.zsh_history,type=volume"
   ],
   "customizations": {
     "vscode": {
@@ -25,20 +24,28 @@
         "editorconfig.editorconfig",
         "DavidAnson.vscode-markdownlint",
         "streetsidesoftware.code-spell-checker",
-        "github.copilot-chat"
+        "github.copilot-chat",
+        "bradlc.vscode-tailwindcss",
+        "exiasr.hadolint",
+        "timonwong.shellcheck",
+        "samuelcolvin.jinjahtml"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "python.defaultInterpreterPath": "/workspace/.venv/bin/python",
+        "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
         "python.terminal.activateEnvironment": false,
         "editor.formatOnSave": true,
         "files.trimTrailingWhitespace": true,
+        "files.eol": "\n",
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.codeActionsOnSave": {
             "source.fixAll": "explicit",
             "source.organizeImports": "explicit"
           }
+        },
+        "[typescript][typescriptreact][javascript][json]": {
+          "editor.defaultFormatter": "biomejs.biome"
         }
       }
     }

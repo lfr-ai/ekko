@@ -1,5 +1,5 @@
 from ekko.config.settings import BaseAppConfig
-from ekko.core.protocols import AudioStreamerControllerProtocol
+from ekko.core.interfaces import AudioStreamerControllerProtocol
 from ekko.infrastructure.audio_streamer.audio_streamer_controller import (
     AudioStreamerController,
 )

@@ -1,21 +1,11 @@
 services:
   app:
-    ports:
-      - "${VOICE_PORT:-8000}:8000"
-      - "${AUDIO_STREAMER_PORT:-5050}:5050"
-    env_file:
-      - path: ../.env
-        required: false
-      - path: ../.env.local
-        required: false
+    build:
+      target: dev
     volumes:
-      - ../src:/app/src
-      - ../logs:/app/logs
+      - ../backend/src:/app/src
     environment:
-      VOICE_ENVIRONMENT: dev
-    command:
-      [
-        "sh",
-        "-c",
-        "uv run uvicorn voice.interaction.main:app --host 0.0.0.0 --port 8000 --reload || python -m uvicorn voice.interaction.main:app --host 0.0.0.0 --port 8000 --reload",
-      ]
+      EKKO_ENVIRONMENT: local
+      EKKO_DEBUG: "true"
+    ports:
+      - "8000:8000"

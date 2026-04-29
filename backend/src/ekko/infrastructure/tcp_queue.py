@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from ekko.managers.queue_manager import QueueManager
+from ekko.infrastructure.concurrency.queue_manager import QueueManager
 
 logger = logging.getLogger(__name__)
 

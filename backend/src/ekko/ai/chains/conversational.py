@@ -10,11 +10,12 @@ if TYPE_CHECKING:
     from ekko.ai.llm.adapter import LLMAdapter
 
 from ekko.ai.prompts.templates import CONVERSATIONAL_SYSTEM
+from ekko.core.enums import MessageRole
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class ConversationalChain:
     """Simple conversational chain with context injection.
 
@@ -35,7 +36,7 @@ class ConversationalChain:
 
     async def run(self, user_message: str) -> str:
         """Process a user message and return the assistant's response."""
-        self.history.append({"role": "user", "content": user_message})
+        self.history.append({"role": MessageRole.USER, "content": user_message})
 
         context = self._build_context()
         system_prompt = CONVERSATIONAL_SYSTEM.format(context=context)
@@ -45,7 +46,7 @@ class ConversationalChain:
             user_prompt=user_message,
         )
 
-        self.history.append({"role": "assistant", "content": response})
+        self.history.append({"role": MessageRole.ASSISTANT, "content": response})
         return response
 
     def clear_history(self) -> None:

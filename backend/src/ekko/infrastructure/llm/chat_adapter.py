@@ -11,17 +11,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from langchain.chat_models import init_chat_model
-from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from ekko.config.settings import AppSettings, get_settings
 from ekko.core.enums import LLMProvider
-from ekko.core.protocols import ChatPort
+from ekko.core.interfaces import ChatPort
 from ekko.infrastructure.helpers.retry import (
     api_retry,  # create a small retry helper below
 )
 
 if TYPE_CHECKING:
+    from langchain_core.language_models.chat_models import BaseChatModel
+
     from ekko.config.settings import AppSettings as SettingsType
 
 

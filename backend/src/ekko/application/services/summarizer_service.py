@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ekko.config.settings import BaseAppConfig, get_settings
-from ekko.core.gateways.openai_gateway import OpenAIGateway
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from ekko.core.interfaces import OpenAIGateway
 
 
-@dataclass
+@dataclass(slots=True)
 class SummarizerService:
     gateway: OpenAIGateway
     settings: BaseAppConfig | None = None

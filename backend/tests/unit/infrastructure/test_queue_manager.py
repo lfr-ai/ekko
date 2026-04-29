@@ -1,4 +1,4 @@
-from ekko.managers.queue_manager import QueueManager
+from ekko.infrastructure.concurrency.queue_manager import QueueManager
 
 
 def test_queue_create_and_put_get():

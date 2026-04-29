@@ -17,14 +17,14 @@ between backend enums, frontend display strings, and documentation.
 |------|---------|
 | `registry/naming_registry.json` | Canonical definitions |
 | `registry/generate_registry.py` | Code generator |
-| `src/ekko/core/registry_constants.py` | Generated Python constants |
+| `backend/src/ekko/core/registry_constants.py` | Generated Python constants |
 
 ## Workflow
 
 1. Edit `registry/naming_registry.json` to add/modify names
 2. Run `task registry:generate` (or `python registry/generate_registry.py`)
-3. Generated constants are written to `src/ekko/core/registry_constants.py`
-4. Import from `voice.core.registry_constants` in backend code
+3. Generated constants are written to `backend/src/ekko/core/registry_constants.py`
+4. Import from `ekko.core.registry_constants` in backend code
 
 ## Schema
 

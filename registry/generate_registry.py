@@ -5,7 +5,7 @@ Usage::
     python registry/generate_registry.py
 
 Reads ``registry/naming_registry.json`` and writes
-``src/voice/core/registry_constants.py``.
+``backend/src/ekko/core/registry_constants.py``.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = ROOT / "registry" / "naming_registry.json"
-OUTPUT_PATH = ROOT / "src" / "ekko" / "core" / "registry_constants.py"
+OUTPUT_PATH = ROOT / "backend" / "src" / "ekko" / "core" / "registry_constants.py"
 
 HEADER = '''\
 """Auto-generated registry constants — DO NOT EDIT.

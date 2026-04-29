@@ -1,6 +1,6 @@
 import time
 
-from ekko.managers.thread_manager import ThreadManager
+from ekko.infrastructure.concurrency.thread_manager import ThreadManager
 
 
 def test_start_and_stop_thread():

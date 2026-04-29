@@ -1,10 +1,36 @@
 services:
   app:
-    env_file:
-      - path: ../.env
-        required: false
-      - path: ../.env.test
-        required: false
+    build:
+      context: ..
+      dockerfile: docker/Containerfile
+      target: dev
     environment:
-      VOICE_ENVIRONMENT: test
-    command: ["sh", "-c", "uv run pytest -q || pytest -q"]
+      EKKO_ENVIRONMENT: test
+      EKKO_POSTGRESQL_HOST: db
+      EKKO_POSTGRESQL_PORT: "5432"
+      EKKO_POSTGRESQL_USER: postgres
+      EKKO_POSTGRESQL_PASSWORD: postgres  # pragma: allowlist secret
+      EKKO_POSTGRESQL_NAME: ekko_test
+    command: ["uv", "run", "pytest", "tests/", "-v", "--tb=short"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres  # pragma: allowlist secret
+      POSTGRES_DB: ekko_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - backend
+
+networks:
+  backend:

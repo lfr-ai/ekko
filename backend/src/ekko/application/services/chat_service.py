@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from ekko.core.gateways.openai_gateway import OpenAIGateway
+from ekko.core.enums import ChatModel
+
+if TYPE_CHECKING:
+    from ekko.core.interfaces import OpenAIGateway
 
 
-@dataclass
+@dataclass(slots=True)
 class ChatService:
     """Application service for chat-related use-cases.
 
@@ -19,7 +23,7 @@ class ChatService:
         *,
         system_prompt: str,
         user_prompt: str,
-        model: str = "gpt-4o",
+        model: str = ChatModel.GPT_4O,
         temperature: float = 0.0,
         max_completion_tokens: int = 1024,
     ) -> str:

@@ -1,12 +1,26 @@
-# CODEOWNERS
+# CODEOWNERS — Ekko
+# GitHub reads this file to assign reviewers automatically.
 
-Synced from the repository root for tooling compatibility.
+# Default: all files
+* @lfr-ai
 
-Primary CODEOWNERS are maintained at the repository root; this file is kept
-in sync for GitHub tools that expect a `.github/CODEOWNERS` file.
+# Backend
+/backend/ @lfr-ai
 
-Adjust ownership patterns here as needed. Current fallback maintainers:
+# Frontend
+/frontend/ @lfr-ai
 
-* @your-org/your-team
-* @lfr-team
-* @your-github-username
+# Infrastructure / Docker
+/docker/ @lfr-ai
+/caddy/ @lfr-ai
+/.devcontainer/ @lfr-ai
+/azure/ @lfr-ai
+
+# Tasks
+/tasks/ @lfr-ai
+
+# CI/CD
+/.github/workflows/ @lfr-ai
+
+# Registry
+/registry/ @lfr-ai

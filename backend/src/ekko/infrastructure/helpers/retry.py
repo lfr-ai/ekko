@@ -9,7 +9,7 @@ from typing import TypeVar
 F = TypeVar("F", bound=Callable[..., object])
 
 
-def api_retry(_func: F | None = None, *, max_attempts: int = 3, backoff_seconds: float = 0.5):
+def api_retry(_func: F | None = None, *, max_attempts: int = 3, backoff_seconds: float = 0.5):  # noqa: UP047
     """Decorator that retries a function or coroutine on exception.
 
     Supports both usage forms:

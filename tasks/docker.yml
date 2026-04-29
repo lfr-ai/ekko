@@ -1,0 +1,47 @@
+# https://taskfile.dev
+---
+version: "3"
+
+vars:
+  COMPOSE_DIR: docker
+
+tasks:
+  build:
+    desc: "Build Docker images"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.yml build {{.CLI_ARGS}}
+
+  up:
+    desc: "Start all services (dev)"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.yml -f {{.COMPOSE_DIR}}/compose.dev.yml up -d {{.CLI_ARGS}}
+
+  down:
+    desc: "Stop all services"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.yml down {{.CLI_ARGS}}
+
+  logs:
+    desc: "Tail service logs"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.yml logs -f {{.CLI_ARGS}}
+
+  test:
+    desc: "Run tests in Docker"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.test.yml up --build --abort-on-container-exit
+
+  up:prod:
+    desc: "Start production services"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.prod.yml up -d {{.CLI_ARGS}}
+
+  up:staging:
+    desc: "Start staging services"
+    cmds:
+      - docker compose -f {{.COMPOSE_DIR}}/compose.staging.yml up -d {{.CLI_ARGS}}
+
+  prune:
+    desc: "Remove stopped containers and dangling images"
+    cmds:
+      - docker system prune -f

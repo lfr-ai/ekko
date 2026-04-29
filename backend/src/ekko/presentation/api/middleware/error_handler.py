@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 from ekko.core.exceptions import (
     AudioDeviceError,
     ConfigurationError,
+    EkkoError,
     LLMError,
     PromptNotFoundError,
     STTError,
-    VoiceBotError,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,8 +46,8 @@ def register_error_handlers(app: FastAPI) -> None:
     async def _llm_error(request: Request, exc: LLMError) -> JSONResponse:
         return JSONResponse(status_code=503, content={"detail": "LLM service error"})
 
-    @app.exception_handler(VoiceBotError)
-    async def _domain_error(request: Request, exc: VoiceBotError) -> JSONResponse:
+    @app.exception_handler(EkkoError)
+    async def _domain_error(request: Request, exc: EkkoError) -> JSONResponse:
         return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     @app.exception_handler(Exception)
