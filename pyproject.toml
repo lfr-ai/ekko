@@ -6,7 +6,7 @@ authors = [
     {name = "Laurits Fromberg", email = "lfr@tik-ai.dk"},
 ]
 dependencies = [
-    "fastapi>=0.116.1",
+    "fastapi>=0.136.1",
     "uvicorn>=0.35.0",
     "openai>=1.101.0",
     "pydantic>=2.5.0",
