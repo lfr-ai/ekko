@@ -21,15 +21,12 @@ export function TranscriptViewer({
 }: TranscriptViewerProps) {
   const [filter, setFilter] = useState<"all" | "microphone" | "system">("all");
 
-  const filtered =
-    filter === "all" ? entries : entries.filter((e) => e.source === filter);
+  const filtered = filter === "all" ? entries : entries.filter((e) => e.source === filter);
 
   return (
     <div className={cn("rounded-lg border bg-card p-4", className)}>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-card-foreground">
-          Transcript
-        </h3>
+        <h3 className="font-semibold text-card-foreground text-sm">Transcript</h3>
         <div className="flex gap-1">
           {(["all", "microphone", "system"] as const).map((f) => (
             <button
@@ -55,9 +52,7 @@ export function TranscriptViewer({
         aria-live="polite"
       >
         {filtered.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No transcript entries yet.
-          </p>
+          <p className="text-muted-foreground text-sm">No transcript entries yet.</p>
         ) : (
           filtered.map((entry) => (
             <div
@@ -69,7 +64,7 @@ export function TranscriptViewer({
                   : "bg-gray-50 dark:bg-gray-900",
               )}
             >
-              <span className="text-xs font-medium uppercase text-muted-foreground">
+              <span className="font-medium text-muted-foreground text-xs uppercase">
                 {entry.source}
               </span>
               <p className="mt-0.5">{entry.text}</p>

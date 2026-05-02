@@ -9,14 +9,20 @@ in multiple formats: JSON, YAML, and HTML documentation.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Final
 
 import yaml
 from fastapi.openapi.utils import get_openapi
 
+# Ensure backend/src is importable when this script is run from repository root.
+BACKEND_SRC: Final[Path] = Path(__file__).parent.parent / "backend" / "src"
+if str(BACKEND_SRC) not in sys.path:
+    sys.path.insert(0, str(BACKEND_SRC))
+
 # Constants
-OUTPUT_DIR: Final[Path] = Path(__file__).parent.parent.parent / "docs" / "api"
+OUTPUT_DIR: Final[Path] = Path(__file__).parent.parent / "docs" / "api"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 OPENAPI_JSON: Final[Path] = OUTPUT_DIR / "openapi.json"
@@ -31,7 +37,7 @@ def generate_openapi_spec() -> dict:
     Returns:
         OpenAPI specification dictionary.
     """
-    from ekko.composition.container import Container
+    from ekko.composition.app_factory import create_app
     from ekko.config.openapi_config import (
         OPENAPI_CONTACT,
         OPENAPI_DESCRIPTION,
@@ -43,9 +49,8 @@ def generate_openapi_spec() -> dict:
         OPENAPI_VERSION,
     )
 
-    # Create container and get FastAPI app
-    container = Container()
-    app = container.app
+    # Create FastAPI app from composition root
+    app = create_app()
 
     # Generate OpenAPI schema
     openapi_schema = get_openapi(

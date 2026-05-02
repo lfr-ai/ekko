@@ -151,7 +151,7 @@ task verify  # Checks everything before commit
 ## 🎯 Success Criteria
 
 **You're done when**:
-1. ✅ Claude responds "Claude 3.5 Sonnet"
+1. ✅ Claude responds with a Claude model
 2. ✅ Agents work ("As a backend developer...")
 3. ✅ `task verify` passes
 4. ✅ `task dev` starts
@@ -165,10 +165,7 @@ task verify  # Checks everything before commit
 
 ### Copilot Not Responding with Claude
 **Fix**:
-1. Check `.vscode/settings.json` has:
-   ```json
-   "github.copilot.chat.model": "claude-3.5-sonnet"
-   ```
+1. Open Copilot Chat and confirm a Claude model is selected in the model picker
 2. Restart VS Code
 3. Sign out/in to GitHub Copilot
 

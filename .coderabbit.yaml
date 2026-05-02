@@ -1,147 +1,86 @@
-# CodeRabbit Configuration for Ekko
-# https://docs.coderabbit.ai/guides/review-instructions
+# .coderabbit.yaml — CodeRabbit AI Code Review Configuration
+# Docs: https://docs.coderabbit.ai/guides/configuration
 
-# Language-specific settings
-language: "en-US"
+language: en-US
 
-# Review settings
 reviews:
-  # Request review on all PRs
-  request_changes_workflow: true
-  
-  # Auto-review settings
   auto_review:
     enabled: true
     drafts: false
-    base_branches:
-      - main
-      - develop
-  
-  # Review scope
-  path_filters:
-    - "!**/*.lock"
-    - "!**/*.log"
-    - "!**/dist/**"
-    - "!**/build/**"
-    - "!**/.venv/**"
-    - "!**/node_modules/**"
-    - "!**/__pycache__/**"
-    - "!**/.pytest_cache/**"
-    - "!**/.mypy_cache/**"
-    - "!**/.ruff_cache/**"
-  
-  # Review levels
-  profile: "chill" # Options: chill, assertive
-  
-  # Enable concise comments
-  collapse_walkthrough: false
-  
-  # Review focus areas
-  focus:
-    - security
-    - performance
-    - maintainability
-    - best_practices
-    - bugs
 
-# Project-specific instructions
-instructions: |
-  ## Architecture Requirements
-  
-  This project follows Clean Architecture with strict layer boundaries:
-  - **Core** (domain): No external dependencies
-  - **Application**: Can depend on core
-  - **Infrastructure**: Implements core interfaces
-  - **Presentation**: Uses application services
-  
-  ## Python-Specific Rules
-  
-  1. **Type Safety**
-     - All functions must have full type hints
-     - Use `Final[type]` for constants
-     - Use `@dataclass(frozen=True, slots=True)` for immutable data
-     - Avoid `Any` type unless truly necessary
-  
-  2. **Error Handling**
-     - Use exception chaining: `raise NewError(...) from original`
-     - Only document exceptions directly raised in function body
-     - Use custom exceptions from `ekko.core.exceptions`
-  
-  3. **Code Style**
-     - Use keyword-only args (`*`) for 3+ parameters
-     - Use `structlog` for logging (never `print()`)
-     - Google-style docstrings for all public APIs
-     - Extract magic strings to `Final[str]` constants
-  
-  4. **Dependencies**
-     - Core must not import from infrastructure/presentation
-     - Use protocols from `ekko.core.interfaces` for abstractions
-     - Register implementations in `ekko.composition.Container`
-  
-  ## Frontend-Specific Rules
-  
-  1. **React Patterns**
-     - Use React 19 features (new hooks, concurrent features)
-     - Prefer function components with hooks
-     - Use TypeScript strict mode
-     - Use Zod for runtime validation
-  
-  2. **State Management**
-     - Use Zustand for global state
-     - Use TanStack Query for server state
-     - Keep state close to where it's used
-  
-  3. **Styling**
-     - Use Tailwind CSS v4 with semantic tokens
-     - Use `cn()` helper for class merging
-     - Use shadcn/ui components via CLI (never copy-paste)
-  
-  4. **Testing**
-     - Use Vitest + React Testing Library
-     - Use fast-check for property-based testing
-     - Use Playwright for E2E tests
-  
-  ## Security Checks
-  
-  - Flag any hardcoded secrets or API keys
-  - Check for SQL injection vulnerabilities
-  - Verify input validation on all endpoints
-  - Check for XSS vulnerabilities in React components
-  - Verify CORS configuration
-  
-  ## Performance Checks
-  
-  - Flag N+1 query patterns in SQLAlchemy
-  - Check for missing database indexes
-  - Verify async/await usage in I/O operations
-  - Check for unnecessary re-renders in React
-  - Verify proper memoization usage
-  
-  ## Testing Requirements
-  
-  - All new features must include tests
-  - Maintain minimum 70% code coverage
-  - Use appropriate test markers (unit, integration, e2e)
-  - Use factory-boy for test data generation
+  request_changes_workflow: false
+  profile: assertive
 
-# Chat settings
+  instructions: |
+    This project follows strict Clean Architecture with dependency direction:
+    core -> utils -> config -> infrastructure -> application -> composition -> presentation.
+    No use of `Any` in type annotations. Use `BaseDict`/`JSONDict` instead of bare dict.
+    All dataclasses must use frozen=True, slots=True (except Container).
+    Use structlog for logging, never print(). Use keyword-only args (*) for 3+ params.
+    Always chain exceptions: raise NewError(...) from original_error.
+    Use Final[type] for module-level constants.
+
+  path_instructions:
+    - path: "backend/src/ekko/core/**"
+      instructions: |
+        Domain core layer (Clean Architecture). Must have ZERO framework imports.
+        No SQLAlchemy, no FastAPI, no LangChain. Only stdlib, utils, and config imports.
+        All classes should use @dataclass(frozen=True, slots=True).
+        No use of `Any` in type annotations.
+
+    - path: "backend/src/ekko/presentation/**"
+      instructions: |
+        Outermost layer (Clean Architecture). May import from application, core,
+        config, and utils. Use fastapi.status constants instead of raw HTTP integers.
+        Use structlog, never print().
+
+    - path: "backend/src/ekko/infrastructure/**"
+      instructions: |
+        Infrastructure layer. May import from core, config, utils, and external libs.
+        Must NOT import from presentation or application layers.
+
+    - path: "backend/src/ekko/application/**"
+      instructions: |
+        Application layer. May import from core, infrastructure, ai, config, utils.
+        Must NOT import from presentation layer.
+
+    - path: "backend/src/ekko/ai/**"
+      instructions: |
+        AI vertical layer. May import from core, config, utils only.
+        Must NOT import from application, infrastructure, or presentation.
+
+    - path: "frontend/src/**"
+      instructions: |
+        React 19 + TypeScript frontend. Uses Vite, shadcn/ui, Tailwind CSS v4,
+        Zustand for state, TanStack React Query. Follow Clean Architecture with
+        domain/application/infrastructure/presentation layers.
+
+    - path: "tests/**"
+      instructions: |
+        Test files. Must use pytest markers (@pytest.mark.unit, @pytest.mark.integration).
+        Use factory-boy for test data. Use hypothesis for property-based tests.
+
+  tools:
+    ruff:
+      enabled: true
+    biome:
+      enabled: true
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+
 chat:
   auto_reply: true
 
-# Knowledge base
-knowledge_base:
-  # Learnings from previous reviews
-  opt_out: false
-  
-  # Use project patterns
-  learnings:
-    scope: "project" # project, repository, or organization
-
-# Early access features
-early_access: true
-
-# Review effort settings
-tone_instructions: |
-  Be concise, clear, and constructive. Focus on actionable feedback.
-  Prioritize critical issues (security, bugs) over style preferences.
-  Praise good patterns and well-written code.
+path_filters:
+  - "!**/*.lock"
+  - "!**/bun.lock"
+  - "!**/*.min.js"
+  - "!**/*.min.css"
+  - "!**/dist/**"
+  - "!**/node_modules/**"
+  - "!**/__pycache__/**"
+  - "!**/*.pyc"
+  - "!**/migrations/versions/**"
+  - "!backend/src/ekko/core/registry_constants.py"

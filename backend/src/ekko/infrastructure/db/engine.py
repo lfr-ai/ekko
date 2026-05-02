@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from sqlalchemy import event
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from ekko.config.settings import get_settings
 
@@ -29,7 +28,7 @@ def create_engine() -> AsyncEngine:
     return engine
 
 
-def create_session_factory(engine: AsyncEngine | None = None) -> sessionmaker:
+def create_session_factory(engine: AsyncEngine | None = None) -> async_sessionmaker[AsyncSession]:
     if engine is None:
         engine = create_engine()
-    return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

@@ -102,3 +102,12 @@ jobs:
           if [ -d scripts ]; then
             shellcheck --severity=warning scripts/*.sh || true
           fi
+
+  actionlint:
+    name: Lint GitHub Actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run actionlint
+        uses: rhysd/actionlint@v1.7.12

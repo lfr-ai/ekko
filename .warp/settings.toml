@@ -1,0 +1,38 @@
+# Ekko — Warp Terminal Team Settings
+[general]
+session_restore = true
+tab_placement = "top"
+
+[appearance.text]
+font_name = "JetBrains Mono"
+font_size = 13
+line_height_ratio = 1.4
+ligatures = true
+
+[appearance.themes]
+theme = "ekko"
+
+[appearance.cursor]
+blinking = true
+
+[terminal.input]
+syntax_highlighting = true
+honor_ps1 = true
+
+[text_editing]
+vim_mode_enabled = false
+
+[agents.profiles.default]
+allowed_commands = [
+  "cat", "ls", "find", "grep", "rg", "head", "tail", "wc", "diff",
+  "git status", "git log", "git diff", "git branch",
+  "task --list", "task lint", "task format", "task typecheck", "task test:unit",
+  "bun --version", "python --version", "uv --version",
+]
+denied_commands = [
+  "rm -rf", "git push --force", "git reset --hard", "sudo rm",
+  "DROP TABLE", "DROP DATABASE",
+]
+
+[agents.warp_agent.input]
+auto_complete = true

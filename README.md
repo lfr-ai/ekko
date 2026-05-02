@@ -198,7 +198,7 @@ Advanced Git workflow automation.
 task tools:gitnexus:validate
 ```
 
-Configuration: `.gitnexus/config.yaml`
+Configuration: `.gitnexus/config.json`
 
 ### Check All Tools
 

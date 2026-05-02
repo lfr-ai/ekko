@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "indexing": {
+    "languages": ["typescript", "python"],
+    "include": [
+      "backend/src/**",
+      "backend/tests/**",
+      "frontend/src/**",
+      "frontend/tests/**",
+      "tasks/**",
+      "tools/**"
+    ],
+    "exclude": [
+      "**/.git/**",
+      "**/.venv/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/__pycache__/**",
+      "**/.pytest_cache/**",
+      "**/.mypy_cache/**",
+      "**/.ruff_cache/**",
+      "**/.tox/**",
+      "**/coverage/**",
+      "**/backend/alembic/versions/**",
+      "**/*.min.js",
+      "**/*.min.css"
+    ],
+    "skipEmbeddings": false,
+    "workerTimeout": 60
+  },
+  "mcp": {
+    "autoStart": true,
+    "tools": [
+      "query",
+      "context",
+      "impact",
+      "detect_changes",
+      "rename"
+    ]
+  },
+  "hooks": {
+    "postCommit": {
+      "enabled": true,
+      "action": "incremental-index"
+    }
+  }
+}

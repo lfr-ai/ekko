@@ -1,0 +1,7 @@
+---
+name: Run All Tests
+command: task test
+tags: [test, ci]
+description: Run the full test suite (backend + frontend)
+arguments: []
+---

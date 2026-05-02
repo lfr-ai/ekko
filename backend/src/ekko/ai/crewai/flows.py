@@ -25,10 +25,10 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import StrEnum, auto, unique
-from typing import TYPE_CHECKING, Any, final
+from typing import TYPE_CHECKING, Any, cast, final
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
@@ -86,8 +86,19 @@ class FlowRunner:
 
         try:
             # crewai.Flow exposes kickoff() — use async variant if available
-            kickoff = getattr(flow, "akickoff", None) or flow.kickoff
-            result = await kickoff(inputs=inputs or {}) if _is_async(kickoff) else kickoff(inputs=inputs or {})
+            kickoff_obj = getattr(flow, "akickoff", None)
+            if not callable(kickoff_obj):
+                kickoff_obj = getattr(flow, "kickoff", None)
+
+            if not callable(kickoff_obj):
+                _raise_missing_kickoff(name)
+
+            kickoff = cast("Callable[..., object]", kickoff_obj)
+            if _is_async(kickoff):
+                async_kickoff = cast("Callable[..., Awaitable[object]]", kickoff)
+                result = await async_kickoff(inputs=inputs or {})
+            else:
+                result = kickoff(inputs=inputs or {})
             elapsed = time.monotonic() - start
 
             logger.info("Flow [%s] completed in %.2fs", name, elapsed)
@@ -166,3 +177,8 @@ def _is_async(fn: object) -> bool:
     import asyncio
 
     return asyncio.iscoroutinefunction(fn)
+
+
+def _raise_missing_kickoff(name: str) -> None:
+    """Raise a consistent error when a flow lacks kickoff methods."""
+    raise TypeError(f"Flow [{name}] does not expose kickoff/akickoff methods")

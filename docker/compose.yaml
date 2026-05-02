@@ -4,7 +4,9 @@ name: ekko
 
 x-ekko-env-files: &ekko_env_files
   - path: ../.env
+    required: false
   - path: ../.env.local
+    required: false
 
 services:
   app:

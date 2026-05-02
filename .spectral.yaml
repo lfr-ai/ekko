@@ -1,0 +1,17 @@
+# .spectral.yaml — Spectral OpenAPI Linting Rules
+# Docs: https://docs.stoplight.io/docs/spectral
+
+extends: ["spectral:oas"]
+
+rules:
+  # Naming conventions
+  oas3-api-servers: warn
+  operation-operationId: error
+  operation-description: warn
+  operation-tags: warn
+
+  # Response standards
+  oas3-valid-media-example: warn
+
+  # Security
+  oas3-operation-security-defined: warn

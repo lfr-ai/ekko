@@ -29,9 +29,7 @@ class LLMAdapter:
         settings: BaseAppConfig | None = None,
     ) -> None:
         self._settings = settings or get_settings()
-        self._default_deployment = (
-            self._settings.llm_default_deployment or self._settings.rag_llm_model
-        )
+        self._default_deployment = self._settings.llm_default_deployment or self._settings.rag_llm_model
         self._chat_adapter = chat_adapter
 
     @property

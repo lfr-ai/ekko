@@ -8,7 +8,7 @@
 - CodeRabbit AI code review (`.coderabbit.yaml`)
 - OpenSpec API docs (`backend/src/ekko/config/openapi_config.py`, `tools/generate_openapi.py`)
 - Warp terminal (`.warp/launch_configurations/`, `.warp/workflows/`)
-- GitNexus Git automation (`.gitnexus/config.yaml`)
+- GitNexus knowledge graph config (`.gitnexus/config.json`)
 - Claude via GitHub Copilot (`.vscode/settings.json` enhanced)
 - Custom VS Code agents (7 agents in `.github/agents/`)
 - Documentation guides (4 comprehensive guides in `docs/`)

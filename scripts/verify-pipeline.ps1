@@ -1,5 +1,6 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$PSNativeCommandUseErrorActionPreference = $true
 
 function Invoke-Step {
     param(
@@ -25,7 +26,7 @@ Invoke-Step -Name "Backend lint" -Action {
 Invoke-Step -Name "Backend typecheck" -Action {
     Push-Location backend
     try {
-        uv run mypy --config-file mypy.ini src
+        uv run ty check src/ekko
     }
     finally {
         Pop-Location
@@ -35,7 +36,7 @@ Invoke-Step -Name "Backend typecheck" -Action {
 Invoke-Step -Name "Backend tests" -Action {
     Push-Location backend
     try {
-        uv run pytest tests -q
+        uv run python -m pytest tests -q
     }
     finally {
         Pop-Location
@@ -70,6 +71,25 @@ Invoke-Step -Name "Frontend tests" -Action {
     finally {
         Pop-Location
     }
+}
+
+Invoke-Step -Name "Frontend build" -Action {
+    Push-Location frontend
+    try {
+        bun run build
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+Write-Host "`n=== Workflow lint (optional local) ===" -ForegroundColor Cyan
+if (Get-Command actionlint -ErrorAction SilentlyContinue) {
+    actionlint -color
+    Write-Host "[ok] actionlint completed" -ForegroundColor Green
+}
+else {
+    Write-Host "[warn] actionlint not installed locally; CI workflow validates this" -ForegroundColor Yellow
 }
 
 Write-Host "`nPipeline verification completed successfully." -ForegroundColor Green

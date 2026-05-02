@@ -18,13 +18,13 @@ This guide explains how to use Claude (Anthropic) as your AI coding assistant wi
 
 1. Open VS Code Settings (`Ctrl+,` or `Cmd+,`)
 2. Search for "Copilot Chat Model"
-3. Set `github.copilot.chat.model` to `claude-3.5-sonnet`
+3. Select a Claude model from the Copilot Chat model picker
 
-Or add to `.vscode/settings.json`:
+Optional workspace default (if supported in your Copilot version):
 
 ```json
 {
-  "github.copilot.chat.model": "claude-3.5-sonnet"
+   "github.copilot.chat.defaultModel": "claude-sonnet-4"
 }
 ```
 
@@ -32,7 +32,7 @@ Or add to `.vscode/settings.json`:
 
 GitHub Copilot supports these Claude models:
 
-- **claude-3.5-sonnet** (Recommended)
+- **Claude Sonnet family** (Recommended)
   - Most capable model
   - Best for complex reasoning and code generation
   - 200K context window
@@ -56,7 +56,7 @@ GitHub Copilot supports these Claude models:
 
 1. Open GitHub Copilot Chat (click the chat icon in the sidebar or use `Ctrl+Shift+I`)
 2. Ask: "What model are you?"
-3. Claude should identify itself as Claude 3.5 Sonnet (or your selected model)
+3. Claude should identify itself as a Claude model (or your selected model)
 
 ## Features
 

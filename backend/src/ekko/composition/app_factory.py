@@ -51,10 +51,14 @@ async def _start_audio_servers(app: FastAPI, settings, host: str) -> None:
                 logger.debug("Failed to close writer: %s", e)
 
     app.state.sys_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, AudioQueueName.SYSTEM), host, sys_port,
+        lambda r, w: _audio_receiver(r, w, AudioQueueName.SYSTEM),
+        host,
+        sys_port,
     )
     app.state.mic_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, AudioQueueName.MICROPHONE), host, mic_port,
+        lambda r, w: _audio_receiver(r, w, AudioQueueName.MICROPHONE),
+        host,
+        mic_port,
     )
     logger.info("Audio servers listening on %s:%s (sys) and %s:%s (mic)", host, sys_port, host, mic_port)
 
@@ -131,9 +135,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     from ekko.infrastructure.adapters.stt_adapter import create_faster_whisper_stt
 
-    app.state.stt = create_faster_whisper_stt(
-        settings=settings, on_transcript=_on_transcript
-    )
+    app.state.stt = create_faster_whisper_stt(settings=settings, on_transcript=_on_transcript)
 
     await app.state.stt.ensure_queue(AudioQueueName.SYSTEM)
     await app.state.stt.ensure_queue(AudioQueueName.MICROPHONE)

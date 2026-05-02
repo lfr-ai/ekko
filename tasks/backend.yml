@@ -22,37 +22,37 @@ tasks:
   test:
     desc: "Run full backend test suite"
     cmds:
-      - uv run pytest tests/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/ -v --tb=short {{.CLI_ARGS}}
 
   test:unit:
     desc: "Run unit tests only"
     cmds:
-      - uv run pytest tests/unit/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/unit/ -v --tb=short {{.CLI_ARGS}}
 
   test:integration:
     desc: "Run integration tests"
     cmds:
-      - uv run pytest tests/integration/ -v --tb=short -m integration {{.CLI_ARGS}}
+      - uv run python -m pytest tests/integration/ -v --tb=short -m integration {{.CLI_ARGS}}
 
   test:property:
     desc: "Run property-based tests"
     cmds:
-      - uv run pytest tests/property/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/property/ -v --tb=short {{.CLI_ARGS}}
 
   test:performance:
     desc: "Run performance benchmarks"
     cmds:
-      - uv run pytest tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
+      - uv run python -m pytest tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
 
   test:e2e:
     desc: "Run end-to-end tests"
     cmds:
-      - uv run pytest tests/e2e/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/e2e/ -v --tb=short {{.CLI_ARGS}}
 
   test:coverage:
     desc: "Run tests with coverage report"
     cmds:
-      - uv run pytest tests/ --cov=src/ekko --cov-report=term-missing --cov-report=html {{.CLI_ARGS}}
+      - uv run python -m pytest tests/ --cov=src/ekko --cov-report=term-missing --cov-report=html {{.CLI_ARGS}}
 
   # ── Linting ──────────────────────────────────────────────────
   lint:
@@ -74,12 +74,12 @@ tasks:
   typecheck:
     desc: "Run type checker"
     cmds:
-      - uv run mypy --config-file mypy.ini src
+      - uv run ty check src/ekko
 
   xenon:
     desc: "Cyclomatic complexity gate"
     cmds:
-      - uv run xenon --max-absolute=C --max-modules=B --max-average=A src
+      - uv run python -m xenon --max-absolute=C --max-modules=B --max-average=A src
 
   # ── Security ─────────────────────────────────────────────────
   security:audit:

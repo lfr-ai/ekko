@@ -170,5 +170,5 @@ uv run alembic upgrade head
 - Run tests: `task test` or `cd backend && uv run pytest`
 - Run linter: `task lint` or `cd backend && uv run ruff check .`
 - Format code: `task format` or `cd backend && uv run ruff format .`
-- Type check: `task typecheck` or `cd backend && uv run mypy src/`
+- Type check: `task typecheck` or `cd backend && uv run ty check src/ekko`
 - Generate migration: `cd backend && uv run alembic revision --autogenerate -m "msg"`

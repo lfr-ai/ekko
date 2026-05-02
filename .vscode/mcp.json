@@ -9,6 +9,12 @@
       "command": "npx",
       "args": ["shadcn@latest", "mcp"],
       "cwd": "${workspaceFolder}/frontend"
+    },
+    "gitnexus": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["gitnexus@latest", "mcp"],
+      "cwd": "${workspaceFolder}"
     }
   }
 }

@@ -135,7 +135,7 @@ OPENAPI_SCHEMA_EXTRA: Final[dict[str, object]] = {
 }
 
 # Response examples
-OPENAPI_RESPONSES: Final[dict[int, dict[str, str]]] = {
+OPENAPI_RESPONSES: Final[dict[int, dict[str, object]]] = {
     400: {
         "description": "Bad Request - Invalid input parameters",
         "content": {

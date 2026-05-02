@@ -112,7 +112,7 @@ task tools:status   # Check tools
 
 ### Issue: Claude not responding
 **Fix**:
-1. Check `.vscode/settings.json` has: `"github.copilot.chat.model": "claude-3.5-sonnet"`
+1. Open Copilot Chat and verify a Claude model is selected in the model picker
 2. Restart VS Code
 3. Sign out/in to GitHub Copilot
 
@@ -136,7 +136,7 @@ Full troubleshooting: `docs/VERIFY_COPILOT_INTEGRATION.md`
 **Status**: 85% complete  
 
 ## ONE-LINE SUMMARY
-**Test Copilot with `Ctrl+Shift+I` → "What model are you?" (should say Claude 3.5 Sonnet), then run `task verify` to complete the remaining 15%.**
+**Test Copilot with `Ctrl+Shift+I` → "What model are you?" (should say a Claude model), then run `task verify` to complete the remaining 15%.**
 
 ---
 

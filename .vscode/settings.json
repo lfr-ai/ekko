@@ -40,7 +40,8 @@
 
   // Use Claude via GitHub Copilot (requires GitHub Copilot subscription with model choice)
   // Note: This requires GitHub Copilot with model selection enabled
-  "github.copilot.chat.model": "claude-3.5-sonnet",
+  "github.copilot.chat.defaultModel": "claude-sonnet-4",
+  "chat.agent.defaultModel": "claude-sonnet-4",
 
   // Copilot agent customizations
   "github.copilot.chat.codeGeneration.instructions": [
@@ -71,6 +72,7 @@
   "chat.instructionsFilesLocations": {
     ".github/instructions": true
   },
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "chat.agent.maxRequests": 250,
   "chat.detectParticipant.enabled": false,
   "chat.useAgentSkills": true,
@@ -250,7 +252,14 @@
     "tailwindcss",
     "biome",
     "biomejs",
-    "vite"
+    "vite",
+    "gitnexus",
+    "coderabbit",
+    "spectral",
+    "redocly",
+    "commitizen",
+    "hadolint",
+    "actionlint"
   ],
 
   // ═══════════════════════════════════════════════════════════════════════════

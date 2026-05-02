@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol, cast
 
 if TYPE_CHECKING:
     from ekko.config.settings.base import BaseAppConfig
+
+
+class EmbeddingModelProtocol(Protocol):
+    """Protocol for async embedding models used by this service."""
+
+    async def aembed_query(self, text: str) -> list[float]: ...
+
+    async def aembed_documents(self, texts: list[str]) -> list[list[float]]: ...
 
 logger = logging.getLogger(__name__)
 
@@ -19,16 +27,21 @@ class EmbeddingService:
 
     def __init__(self, *, settings: BaseAppConfig) -> None:
         self._settings = settings
-        self._model = None
+        self._model: EmbeddingModelProtocol | None = None
 
-    def _get_model(self):
+    def _get_model(self) -> EmbeddingModelProtocol:
         if self._model is None:
             from langchain_openai import OpenAIEmbeddings
 
-            kwargs = {"model": self._settings.rag_embedding_model}
             if self._settings.openai_api_key:
-                kwargs["api_key"] = self._settings.openai_api_key.get_secret_value()
-            self._model = OpenAIEmbeddings(**kwargs)
+                model = OpenAIEmbeddings(
+                    model=self._settings.rag_embedding_model,
+                    api_key=self._settings.openai_api_key,
+                )
+            else:
+                model = OpenAIEmbeddings(model=self._settings.rag_embedding_model)
+
+            self._model = cast("EmbeddingModelProtocol", model)
         return self._model
 
     async def embed_text(self, text: str) -> list[float]:

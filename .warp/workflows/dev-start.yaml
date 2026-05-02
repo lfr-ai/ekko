@@ -1,0 +1,7 @@
+---
+name: Start Development
+command: task dev
+tags: [dev, start]
+description: Start all development servers (backend + frontend)
+arguments: []
+---

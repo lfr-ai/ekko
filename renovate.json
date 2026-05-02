@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":rebaseStalePrs",
+    ":enablePreCommit"
+  ],
+  "configMigration": true,
+  "enabledManagers": [
+    "pep621",
+    "pre-commit",
+    "github-actions"
+  ],
+  "prCreation": "not-pending",
+  "packageRules": [
+    {
+      "matchManagers": ["pep621"],
+      "groupName": "python dependencies"
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions dependencies"
+    }
+  ]
+}

@@ -9,9 +9,12 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Any, final
+from typing import TYPE_CHECKING, Any, final
 
 from crewai import Agent, Crew, Process, Task
+
+if TYPE_CHECKING:
+    from crewai.tools import BaseTool
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +36,13 @@ class EkkoCrew:
     Agents and tasks are defined in YAML config files under ``config/``.
     """
 
-    def __init__(self, *, tools: list[object] | None = None, verbose: bool = False) -> None:
+    def __init__(self, *, tools: list[BaseTool] | None = None, verbose: bool = False) -> None:
         self._agents_config = _load_yaml("agents.yaml")
         self._tasks_config = _load_yaml("tasks.yaml")
-        self._tools = tools or []
+        self._tools: list[BaseTool] = tools or []
         self._verbose = verbose
 
-    def _build_agent(self, agent_key: str, *, tools: list[object] | None = None) -> Agent:
+    def _build_agent(self, agent_key: str, *, tools: list[BaseTool] | None = None) -> Agent:
         """Create an Agent from YAML config."""
         cfg = self._agents_config[agent_key]
         return Agent(

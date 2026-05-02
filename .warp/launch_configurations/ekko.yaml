@@ -38,7 +38,7 @@ startup_commands:
 ai_context:
   # Project type
   project_type: "full-stack"
-  
+
   # Technology stack
   technologies:
     - Python 3.12
@@ -49,7 +49,7 @@ ai_context:
     - TypeScript
     - Vite
     - Tailwind CSS v4
-  
+
   # Architecture notes
   architecture: |
     This project follows Clean Architecture:
@@ -57,36 +57,36 @@ ai_context:
     - Application: Use case orchestration
     - Infrastructure: External integrations
     - Presentation: API/UI layer
-  
+
   # Common tasks
   common_commands:
     - command: "task dev"
       description: "Start backend + frontend in development mode"
-    
+
     - command: "task test"
       description: "Run all tests"
-    
+
     - command: "task lint"
       description: "Run linters (ruff, biome, mypy)"
-    
+
     - command: "task format"
       description: "Format all code"
-    
+
     - command: "task check"
       description: "Full quality gate (lint + test + typecheck)"
-    
+
     - command: "task db:migrate"
       description: "Run database migrations"
-    
+
     - command: "task registry:generate"
       description: "Regenerate constants from naming registry"
-    
+
     - command: "cd backend && uv run python -m pytest"
       description: "Run backend tests"
-    
+
     - command: "cd frontend && bun test"
       description: "Run frontend tests"
-    
+
     - command: "cd backend && uv run alembic revision --autogenerate -m 'description'"
       description: "Create new database migration"
 
@@ -97,28 +97,28 @@ workflows:
     commands:
       - "task install"
       - "task dev"
-  
+
   - name: "Backend Development"
     description: "Backend-focused development"
     commands:
       - "cd backend"
       - "uv sync"
       - "uv run uvicorn ekko.cli.run_app:app --reload"
-  
+
   - name: "Frontend Development"
     description: "Frontend-focused development"
     commands:
       - "cd frontend"
       - "bun install"
       - "bun dev"
-  
+
   - name: "Run Quality Checks"
     description: "Lint, type check, and test"
     commands:
       - "task lint"
       - "task typecheck"
       - "task test"
-  
+
   - name: "Database Management"
     description: "Common database operations"
     commands:
@@ -133,72 +133,72 @@ drive_commands:
   - alias: "dev:all"
     command: "task dev"
     description: "Start all services"
-  
+
   - alias: "dev:backend"
     command: "cd backend && uv run uvicorn ekko.cli.run_app:app --reload --port 8000"
     description: "Start backend only"
-  
+
   - alias: "dev:frontend"
     command: "cd frontend && bun dev"
     description: "Start frontend only"
-  
+
   # Testing
   - alias: "test:all"
     command: "task test"
     description: "Run all tests"
-  
+
   - alias: "test:unit"
     command: "task test:unit"
     description: "Run unit tests"
-  
+
   - alias: "test:watch"
     command: "cd backend && uv run pytest --watch"
     description: "Run tests in watch mode"
-  
+
   - alias: "test:cov"
     command: "task test:coverage"
     description: "Run tests with coverage"
-  
+
   # Quality
   - alias: "check:all"
     command: "task check"
     description: "Run all quality checks"
-  
+
   - alias: "check:types"
     command: "task typecheck"
     description: "Type check all code"
-  
+
   - alias: "fix:all"
     command: "task format && task lint:fix"
     description: "Auto-fix formatting and linting issues"
-  
+
   # Database
   - alias: "db:migrate"
     command: "cd backend && uv run alembic upgrade head"
     description: "Run pending migrations"
-  
+
   - alias: "db:rollback"
     command: "cd backend && uv run alembic downgrade -1"
     description: "Rollback last migration"
-  
+
   - alias: "db:reset"
     command: "cd backend && rm -f ekko.db && uv run alembic upgrade head"
     description: "Reset database"
-  
+
   # Build
   - alias: "build:backend"
     command: "task build:exe"
     description: "Build standalone executable"
-  
+
   - alias: "build:frontend"
     command: "cd frontend && bun run build"
     description: "Build frontend for production"
-  
+
   # Git workflows
   - alias: "git:sync"
     command: "git pull --rebase origin main && task install"
     description: "Sync with main and update dependencies"
-  
+
   - alias: "git:clean"
     command: "git clean -fdx && task install"
     description: "Clean all generated files and reinstall"
@@ -206,7 +206,7 @@ drive_commands:
 # AI assistant configuration
 ai_assistant:
   enabled: true
-  
+
   # Context about the project
   context_hints:
     - "This is a Python + React full-stack application"
@@ -215,17 +215,17 @@ ai_assistant:
     - "Frontend uses React 19 + TypeScript + Vite"
     - "Testing uses pytest for backend, Vitest for frontend"
     - "Always run 'task check' before committing"
-  
+
   # Suggested commands based on context
   smart_suggestions:
     after_git_pull:
       - "task install"
       - "task db:migrate"
-    
+
     after_new_file:
       - "task format"
       - "task lint"
-    
+
     after_test_failure:
       - "task test:unit --lf"  # Run last failed
       - "task lint"

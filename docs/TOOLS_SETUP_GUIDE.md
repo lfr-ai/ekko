@@ -126,18 +126,13 @@ task dev:frontend  # Frontend only (port 5173)
    - Ensure you have GitHub Copilot subscription
 
 3. **Enable Claude Model**
-   
-   The project's `.vscode/settings.json` already includes:
-   ```json
-   {
-     "github.copilot.chat.model": "claude-3.5-sonnet"
-   }
-   ```
+
+   In Copilot Chat, use the model picker and select an available Claude model for your account/plan.
 
 4. **Verify Claude is Active**
    - Open GitHub Copilot Chat (`Ctrl+Shift+I` or `Cmd+Shift+I`)
    - Ask: "What model are you?"
-   - Should respond as "Claude 3.5 Sonnet"
+   - Should respond with a Claude model name
 
 #### Features
 
@@ -317,7 +312,7 @@ GitNexus provides advanced Git workflow automation.
 
 #### Configuration
 
-The project includes `.gitnexus/config.yaml` with:
+The project includes `.gitnexus/config.json` with:
 - Branch protection rules
 - Auto-labeling
 - PR templates
@@ -438,7 +433,7 @@ CodeRabbit:
   ✓ Configured (.coderabbit.yaml)
 
 GitNexus:
-  ✓ Configured (.gitnexus/config.yaml)
+   ✓ Configured (.gitnexus/config.json)
 
 OpenAPI:
   ✓ Generated (docs/api/)
@@ -493,7 +488,7 @@ task tools:openapi:generate
 **Solution**:
 1. Verify subscription includes model selection
 2. Restart VS Code
-3. Check `.vscode/settings.json` has `"github.copilot.chat.model": "claude-3.5-sonnet"`
+3. Open Copilot Chat and confirm a Claude model is selected in the model picker
 4. Sign out and sign in to GitHub Copilot
 
 **Issue**: Agent instructions not working
@@ -535,7 +530,7 @@ task tools:openapi:generate
 **Issue**: Branch protection not working
 
 **Solution**:
-1. Verify `.gitnexus/config.yaml` is valid
+1. Verify `.gitnexus/config.json` is valid
 2. Check GitHub repository settings
 3. Ensure branch protection rules are enabled
 4. Verify you have admin permissions

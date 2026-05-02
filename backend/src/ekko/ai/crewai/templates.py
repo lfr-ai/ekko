@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, final
+from typing import TYPE_CHECKING, Any, final
 
 from crewai import Crew, Process
 
@@ -27,6 +27,9 @@ from ekko.ai.crewai.constants import (
 from ekko.ai.crewai.crew import EkkoCrew
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from crewai.tools import BaseTool
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,7 +47,7 @@ class CrewSpec:
     verbose: bool = DEFAULT_CREW_VERBOSE
     max_rpm: int = DEFAULT_CREW_MAX_RPM
     model: str = DEFAULT_AGENT_MODEL
-    tools: list[object] = field(default_factory=list)
+    tools: list[BaseTool] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -68,8 +71,8 @@ class CrewTemplateBuilder:
     factory method, forwarding inputs as keyword arguments.
     """
 
-    def __init__(self, *, tools: list[object] | None = None) -> None:
-        self._tools = tools or []
+    def __init__(self, *, tools: list[BaseTool] | None = None) -> None:
+        self._tools: list[BaseTool] = tools or []
 
     def build(self, spec: CrewSpec) -> Crew:
         """Build a ``Crew`` from a ``CrewSpec``."""

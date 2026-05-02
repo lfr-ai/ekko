@@ -51,7 +51,8 @@ class QueryTimingExtension(SchemaExtension):
         start = time.monotonic()
         yield
         elapsed = time.monotonic() - start
-        operation_name = getattr(self.execution_context.operation, "name", "anonymous")
+        operation = getattr(self.execution_context, "operation", None)
+        operation_name = getattr(operation, "name", "anonymous")
         logger.info("GraphQL operation %s completed in %.3fs", operation_name, elapsed)
 
 

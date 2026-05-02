@@ -1,0 +1,7 @@
+---
+name: Lint & Format
+command: task lint && task format
+tags: [lint, format, quality]
+description: Run all linters and auto-format code (Ruff + Biome)
+arguments: []
+---

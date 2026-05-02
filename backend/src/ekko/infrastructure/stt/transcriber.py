@@ -6,7 +6,7 @@ import tempfile
 import wave
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -14,18 +14,12 @@ if TYPE_CHECKING:
 from ekko.config.settings import BaseAppConfig, get_settings
 from ekko.utils.logger import Logger
 
-if TYPE_CHECKING:
-    from numpy import ndarray  # noqa: F401
-
-np: Any = None
-try:
-    import numpy as np
-except Exception:  # pragma: no cover - optional runtime dependency
-    np = None
-
 # faster-whisper is an optional runtime dependency; import only when available.
+FasterWhisperModel: object | None
 try:
-    from faster_whisper import WhisperModel as FasterWhisperModel
+    from faster_whisper import WhisperModel as _FasterWhisperModel
+
+    FasterWhisperModel = _FasterWhisperModel
 except Exception:  # pragma: no cover - optional runtime dependency
     FasterWhisperModel = None
 
@@ -81,7 +75,8 @@ class FasterWhisperSTT:
         async with self._model_lock:
             if self._model is None:
                 try:
-                    self._model = FasterWhisperModel(
+                    model_cls = cast("type[object]", FasterWhisperModel)
+                    self._model = model_cls(
                         self.model_name,
                         device=self.device,
                         compute_type=self.compute_type,

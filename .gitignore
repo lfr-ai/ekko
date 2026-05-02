@@ -79,6 +79,13 @@ data/*
 .claude/rules/
 .agents/
 
+# GitNexus (commit config/hooks only)
+.gitnexus/*
+!.gitnexus/README.md
+!.gitnexus/config.json
+!.gitnexus/hooks/
+!.gitnexus/hooks/*
+
 # Documentation (generated)
 docs/api/openapi.json
 docs/api/openapi.yaml

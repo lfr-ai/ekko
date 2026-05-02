@@ -43,6 +43,7 @@ class BaseAppConfig(BaseSettings):
     debug: bool = False
     host: str = "127.0.0.1"
     port: int = 8000
+    reload: bool = False
     log_level: str = str(logging.INFO)
 
     # ── LLM / OpenAI ─────────────────────────────────────────

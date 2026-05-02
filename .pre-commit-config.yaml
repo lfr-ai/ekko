@@ -112,7 +112,7 @@ repos:
 
   # -- GitHub Actions ------------------------------------------------------
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
+    rev: v1.7.12
     hooks:
       - id: actionlint
 
@@ -128,7 +128,11 @@ repos:
 
       - id: module-docstrings
         name: check module docstrings
-        entry: bash -c 'cd backend && find src/ekko -name "*.py" ! -name "__init__.py" ! -path "*/__pycache__/*" | while read f; do head -5 "$f" | grep -q "\"\"\"" || echo "Missing docstring: $f"; done | (! grep .)'
+        entry: >
+          bash -c 'cd backend &&
+          find src/ekko -name "*.py" ! -name "__init__.py" ! -path "*/__pycache__/*" |
+          while read f; do head -5 "$f" | grep -q "\"\"\"" || echo "Missing docstring: $f"; done |
+          (! grep .)'
         language: system
         pass_filenames: false
         types: [python]
@@ -144,7 +148,7 @@ repos:
         name: jscpd copy-paste detection
         entry: npx jscpd --config .jscpd.json
         language: node
-        types_or: [python, javascript, typescript, tsx]
+        types_or: [python, javascript, ts, tsx]
         stages: [manual]
 
       - id: lychee
@@ -168,12 +172,12 @@ repos:
         entry: bash -c 'cd frontend && bun run biome check .'
         language: system
         pass_filenames: false
-        types_or: [javascript, typescript, tsx, json]
+        types_or: [javascript, ts, tsx, json]
 
       - id: frontend-test-suite
         name: frontend tests
         entry: bash -c 'cd frontend && bun run test'
         language: system
         pass_filenames: false
-        types_or: [javascript, typescript, tsx]
+        types_or: [javascript, ts, tsx]
         stages: [pre-push]

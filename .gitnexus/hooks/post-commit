@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+# GitNexus post-commit hook — triggers incremental index update
+emulate -L zsh
+
+if command -v gitnexus &>/dev/null; then
+  gitnexus analyze --incremental &>/dev/null &
+elif command -v npx &>/dev/null; then
+  npx -y gitnexus@latest analyze --incremental &>/dev/null &
+fi
