@@ -23,8 +23,11 @@ uvx pytest -q
 If you prefer PDM it is still supported; the repo contains the original
 `pdm.lock`.
 
+> Note: this repository is standardized on `uv`; PDM is not part of the
+> supported contributor workflow.
+
 - Branch naming: `feature/...`, `fix/...`, `chore/...`
-- Follow Conventional Commits; commitizen is configured in `pyproject.toml`.
+- Follow Conventional Commits; commitizen is configured in `.cz.toml`.
 
 Commit messages
 

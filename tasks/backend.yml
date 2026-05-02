@@ -74,7 +74,7 @@ tasks:
   typecheck:
     desc: "Run type checker"
     cmds:
-      - uv run mypy --config-file pyproject.toml src
+      - uv run mypy --config-file mypy.ini src
 
   xenon:
     desc: "Cyclomatic complexity gate"

@@ -1,4 +1,4 @@
-# voice-bot docs
+# Ekko docs
 
 This folder contains developer-facing documentation for architecture, adapters, DB setup, and IaC.
 

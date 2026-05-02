@@ -1,24 +1,60 @@
-Param()
-Set-StrictMode -Version Latest
-
-Write-Host "Building standalone executable with PyInstaller..."
-
-if (Get-Command uv -ErrorAction SilentlyContinue) {
-    uv run pyinstaller --clean --onefile --name voice-bot-app src/voice/cli/run_app.py
-} else {
-    pyinstaller --clean --onefile --name voice-bot-app src/voice/cli/run_app.py
-}
-
-Write-Host "Build complete: dist/voice-bot-app.exe"
+<#
+.SYNOPSIS
+    Build Ekko as a standalone Windows EXE (onedir).
+.DESCRIPTION
+    1. Builds the frontend (bun run build)
+    2. Runs PyInstaller via the ekko.spec file
+    3. Smoke-tests the resulting executable
+#>
 param(
-    [string]$Entry = 'src\voice\interaction\main.py',
-    [string]$Name = 'voice-bot'
+    [switch]$SkipFrontend,
+    [switch]$Debug
 )
 
-Write-Host "Building $Name from $Entry"
+$ErrorActionPreference = "Stop"
+$Root = Split-Path -Parent $PSScriptRoot
 
-Remove-Item -Recurse -Force build, dist, "$Name.spec" -ErrorAction SilentlyContinue
+Write-Host "=== Ekko EXE Build ===" -ForegroundColor Cyan
 
-pyinstaller --noconfirm --clean --onefile --name $Name $Entry
+# ── Frontend ──────────────────────────────────────────────
+if (-not $SkipFrontend) {
+    Write-Host "`n>> Building frontend..." -ForegroundColor Yellow
+    Push-Location "$Root\frontend"
+    bun install
+    bun run build
+    Pop-Location
+    Write-Host "   Frontend built -> frontend/dist/" -ForegroundColor Green
+} else {
+    Write-Host "`n>> Skipping frontend build" -ForegroundColor DarkGray
+}
 
-Write-Host "Build complete. Executable is in ./dist"
+# ── Clean previous build ─────────────────────────────────
+$distDir = "$Root\dist\ekko"
+if (Test-Path $distDir) {
+    Write-Host "`n>> Cleaning previous build..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force $distDir
+}
+
+# ── PyInstaller ───────────────────────────────────────────
+Write-Host "`n>> Running PyInstaller..." -ForegroundColor Yellow
+Push-Location "$Root\backend"
+
+$pyiArgs = @("run", "pyinstaller", "--noconfirm", "$Root\ekko.spec")
+if ($Debug) {
+    $pyiArgs += "--log-level=DEBUG"
+}
+
+uv @pyiArgs
+Pop-Location
+
+# ── Verify ────────────────────────────────────────────────
+$exe = "$Root\dist\ekko\ekko.exe"
+if (Test-Path $exe) {
+    Write-Host "`n>> Build successful: $exe" -ForegroundColor Green
+    Write-Host "   Size: $([math]::Round((Get-Item $exe).Length / 1MB, 1)) MB" -ForegroundColor Green
+} else {
+    Write-Host "`n>> ERROR: EXE not found at $exe" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "`n=== Done ===" -ForegroundColor Cyan

@@ -1,26 +1,47 @@
-# CODEOWNERS — Ekko
-# GitHub reads this file to assign reviewers automatically.
+# CODEOWNERS file for Ekko
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Default: all files
+# Default owner
 * @lfr-ai
 
-# Backend
-/backend/ @lfr-ai
+# Backend layers
+/backend/src/ekko/core/        @lfr-ai
+/backend/src/ekko/application/ @lfr-ai
+/backend/src/ekko/infrastructure/ @lfr-ai
+/backend/src/ekko/presentation/ @lfr-ai
+/backend/src/ekko/ai/          @lfr-ai
+/backend/src/ekko/config/      @lfr-ai
 
 # Frontend
-/frontend/ @lfr-ai
+/frontend/                     @lfr-ai
 
-# Infrastructure / Docker
-/docker/ @lfr-ai
-/caddy/ @lfr-ai
-/.devcontainer/ @lfr-ai
-/azure/ @lfr-ai
+# Tests
+/backend/tests/                @lfr-ai
 
-# Tasks
-/tasks/ @lfr-ai
+# GitHub / CI
+/.github/                      @lfr-ai
 
-# CI/CD
-/.github/workflows/ @lfr-ai
+# Docker / Caddy
+/docker/                       @lfr-ai
+/caddy/                        @lfr-ai
+/.devcontainer/                @lfr-ai
+
+# Build configuration
+/backend/pyproject.toml        @lfr-ai
+/frontend/package.json         @lfr-ai
+/Taskfile.yml                  @lfr-ai
+
+# Database / Migrations
+/backend/alembic/              @lfr-ai
+
+# Security
+/.pre-commit-config.yaml       @lfr-ai
+/.secrets.baseline             @lfr-ai
+/SECURITY.md                   @lfr-ai
+
+# Documentation
+/*.md                          @lfr-ai
+/docs/                         @lfr-ai
 
 # Registry
-/registry/ @lfr-ai
+/registry/                     @lfr-ai

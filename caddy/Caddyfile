@@ -1,48 +1,19 @@
+# Local HTTPS reverse proxy.
+#
+# Docker:  docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up
+# Native:  UPSTREAM=localhost:$EKKO_PORT caddy run --config caddy/Caddyfile --adapter caddyfile
+#
+# Trust the CA to silence browser warnings: caddy trust
+
+import snippets/*.caddy
+
 {
-    admin off
+	import global_base
 }
 
-{$CADDY_DOMAIN:localhost} {
-    encode gzip zstd
+localhost, 127.0.0.1, ::1 {
+	tls internal
 
-    # ── Security headers ──────────────────────────────────────
-    header {
-        X-Frame-Options "DENY"
-        X-Content-Type-Options "nosniff"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
-        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
-        Permissions-Policy "camera=(), microphone=(self), geolocation=()"
-        -Server
-    }
-
-    # ── Health probe (no proxy needed) ────────────────────────
-    handle /health {
-        respond "OK" 200
-    }
-
-    # ── API (REST) ────────────────────────────────────────────
-    handle /api/* {
-        reverse_proxy app:8000
-    }
-
-    # ── GraphQL ───────────────────────────────────────────────
-    handle /graphql {
-        reverse_proxy app:8000
-    }
-    handle /graphql/* {
-        reverse_proxy app:8000
-    }
-
-    # ── WebSocket ─────────────────────────────────────────────
-    handle /ws/* {
-        reverse_proxy app:8000
-    }
-    handle {
-        # Immutable asset caching
-        @immutable path *.js *.css *.woff2 *.png *.jpg *.svg *.ico
-        header @immutable Cache-Control "public, max-age=31536000, immutable"
-
-        reverse_proxy frontend:3000
-    }
+	import security_headers_base
+	import app_routes {$UPSTREAM}
 }

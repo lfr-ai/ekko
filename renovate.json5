@@ -3,15 +3,17 @@
   "extends": [
     "config:recommended",
     ":semanticCommits",
-    ":automergeMinor",
+    ":rebaseStalePrs",
+    ":enablePreCommit",
     "schedule:earlyMondays"
   ],
   "labels": ["dependencies"],
   "prConcurrentLimit": 5,
+  "enabledManagers": ["pep621", "pre-commit", "github-actions", "npm"],
   "packageRules": [
     {
       "description": "Group Python dependencies",
-      "matchManagers": ["pip_requirements", "pep621"],
+      "matchManagers": ["pep621"],
       "groupName": "python dependencies",
       "automerge": false
     },
@@ -32,13 +34,6 @@
       "matchManagers": ["pre-commit"],
       "groupName": "pre-commit hooks",
       "automerge": true
-    },
-    {
-      "description": "Group Docker dependencies",
-      "matchManagers": ["dockerfile"],
-      "fileMatch": ["docker/Containerfile", "caddy/Containerfile", ".devcontainer/Containerfile.dev"],
-      "groupName": "docker",
-      "automerge": false
     },
     {
       "description": "Auto-merge patch updates for dev dependencies",

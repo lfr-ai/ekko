@@ -1,103 +1,124 @@
-# OS
+# OS / editors
 .DS_Store
 Thumbs.db
 Desktop.ini
+.idea/
+*.swp
+*~
 
-# Editors / IDEs
+# VS Code (keep tracked files)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
-*.swp
-*.swo
-*~
-.idea/
 
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.egg-info/
-*.egg
 dist/
 build/
-.eggs/
+
+# Virtual env / caches
 .venv/
-venv/
-.Python
-
-# Python — uv
-.python-version
-!backend/.python-version
-
-# Python — linters / type checkers / testing
+backend/.venv/
 .ruff_cache/
 .mypy_cache/
-.dmypy.json
+.pytest_cache/
+.hypothesis/
 .ty/
 .tox/
 .nox/
-.pytest_cache/
-.hypothesis/
 htmlcov/
 .coverage
 .coverage.*
 coverage.xml
+.lycheecache
+.benchmarks/
 
-# Node.js / Frontend
+# Frontend
 node_modules/
-.bun/
-.vite/
-coverage/
-playwright-report/
-test-results/
 frontend/dist/
+frontend/build/
+frontend/.storybook-static/
+frontend/playwright-report/
+frontend/test-results/
 
 # Logs
 *.log
 logs/*
 !logs/.gitkeep
 
-# Environment / secrets
-.env
+# Env / secrets
+/.env
 .env.local
-.env.dev
-.env.test
-.env.staging
-.env.prod
 .env.*.local
+/.env.dev
+/.env.prod
 !.env.example
-!.env.*.example
 *.pem
 *.key
 *.crt
+secrets/
+
+# Local data
+backend/ekko.db
+backend/ekko.db-*
+*.sqlite
+*.sqlite3
+uploads/
+storage/
+data/*
+!data/.gitkeep
+
+# AI tools
+.claude/agents/
+.claude/skills/
+.claude/rules/
+.agents/
+
+# Documentation (generated)
+docs/api/openapi.json
+docs/api/openapi.yaml
+docs/api/index.html
 
 # Build artifacts
-*.whl
-*.tar.gz
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg
+*.manifest
+MANIFEST
 
-# Databases
-*.db
+# Jupyter
+.ipynb_checkpoints
 
-# Docker
-.bake-cache/
+# Type checkers
+.pyre/
+.pytype/
+.dmypy.json
+dmypy.json
+cython_debug/
 
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-.terraform.lock.hcl
+# Project specific
+README_OLD.md
+.bg-shell/
 
-# Task runners / tools
-.task/
-.lycheecache
-jscpd-report/
-profiles/
-tmp/
-
-# Project-specific
+# ── GSD baseline (auto-generated) ──
+.gsd
+.gsd-id
+*.swo
+.vscode/
 *.code-workspace
-.benchmarks/
+.env
+.env.*
+.next/
+venv/
+target/
+vendor/
+coverage/
+.cache/
+tmp/

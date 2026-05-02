@@ -10,4 +10,4 @@ class TestingConfig(BaseAppConfig):
     environment: Environment = Environment.TEST
     debug: bool = False
     log_level: str = "WARNING"
-    postgresql_name: str = "ekko_test"
+    database_path: str = "./ekko_test.db"

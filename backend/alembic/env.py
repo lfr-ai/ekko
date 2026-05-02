@@ -1,4 +1,4 @@
-"""Alembic env.py configured for async SQLAlchemy engines.
+"""Alembic env.py configured for SQLite via synchronous engine.
 
 This file resolves the database URL from the application's settings
 via :func:`ekko.config.settings.get_settings`.
@@ -6,12 +6,10 @@ via :func:`ekko.config.settings.get_settings`.
 
 from __future__ import annotations
 
-import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool, text
+from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import create_async_engine
 
 # ruff: noqa: I001
 
@@ -40,13 +38,7 @@ def _get_url() -> str:
     url = config.get_main_option("sqlalchemy.url")
     if url:
         return url
-    return get_settings().postgresql_url
-
-
-async def _ensure_extensions(connection: Connection) -> None:
-    """Create required PostgreSQL extensions if they don't exist."""
-    await connection.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
-    await connection.commit()
+    return get_settings().database_sync_url
 
 
 def run_migrations_offline() -> None:
@@ -64,17 +56,16 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
-async def run_migrations_online() -> None:
-    connectable = create_async_engine(_get_url(), poolclass=pool.NullPool)
+def run_migrations_online() -> None:
+    connectable = create_engine(_get_url(), poolclass=pool.NullPool)
 
-    async with connectable.connect() as connection:
-        await _ensure_extensions(connection)
-        await connection.run_sync(do_run_migrations)
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
 
-    await connectable.dispose()
+    connectable.dispose()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -19,7 +21,7 @@ from ekko.config.logging_config import configure_logging
 from ekko.config.settings import get_settings
 from ekko.core.enums import AudioQueueName, QueueName
 from ekko.infrastructure.concurrency.queue_manager import QueueManager
-from ekko.presentation.api.routes import auth_router, health_router, stream_router
+from ekko.presentation.api.routes import health_router, stream_router
 
 logger = logging.getLogger(__name__)
 
@@ -168,14 +170,29 @@ def _register_middleware(app: FastAPI, container: Container) -> None:
 
     # Middleware stack — order: Request ID → Security → Timing → Auth
     # (added in reverse because Starlette executes last-added first)
-    app.add_middleware(
-        AuthenticationMiddleware,
-        environment=container.settings.environment,
-        jwt_adapter=container.jwt_adapter,
-    )
+    app.add_middleware(AuthenticationMiddleware)
     app.add_middleware(TimingMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RequestIdMiddleware)
+
+
+# ── Static frontend serving (frozen EXE) ────────────────────
+
+
+def _mount_frontend(app: FastAPI) -> None:
+    """In a frozen PyInstaller bundle, serve the built frontend at /."""
+    bundle_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else None
+    if bundle_dir is None:
+        return
+
+    frontend_dir = bundle_dir / "frontend"
+    if not frontend_dir.is_dir():
+        logger.warning("No frontend/ directory found in bundle at %s", frontend_dir)
+        return
+
+    from starlette.staticfiles import StaticFiles
+
+    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
 # ── Factory ──────────────────────────────────────────────────
@@ -203,11 +220,13 @@ def create_app() -> FastAPI:
     # REST routers
     app.include_router(health_router)
     app.include_router(stream_router)
-    app.include_router(auth_router)
 
     # GraphQL router
     from ekko.presentation.graphql.router import graphql_router
 
     app.include_router(graphql_router, prefix="/graphql")
+
+    # Serve built frontend when running as frozen EXE
+    _mount_frontend(app)
 
     return app

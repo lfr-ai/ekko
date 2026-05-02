@@ -1,0 +1,16 @@
+[tool.bandit]
+skips = ["B101", "B614"]
+exclude_dirs = [
+    "backend/tests",
+    "frontend/node_modules",
+    ".venv",
+    "backend/.venv",
+    ".tox",
+    "build",
+    "dist",
+    "scripts"
+]
+targets = ["backend/src/ekko"]
+
+[tool.bandit.assert_used]
+skips = ["backend/tests/**/*.py"]

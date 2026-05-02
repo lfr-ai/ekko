@@ -11,8 +11,6 @@ if TYPE_CHECKING:
 
     from ekko.config.settings.base import BaseAppConfig
 
-from ekko.core.enums import Environment
-
 _LOCAL_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
@@ -22,14 +20,10 @@ _LOCAL_ORIGINS = [
 
 
 def setup_cors(app: FastAPI, *, settings: BaseAppConfig) -> None:
-    """Add CORS middleware with environment-appropriate origins."""
-    origins: list[str] = []
-    if settings.environment in {Environment.LOCAL, Environment.DEV, Environment.TEST}:
-        origins.extend(_LOCAL_ORIGINS)
-
+    """Add CORS middleware allowing localhost origins (local-only app)."""
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=_LOCAL_ORIGINS,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["Authorization", "Content-Type", "X-Request-ID"],

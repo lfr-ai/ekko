@@ -1,0 +1,22 @@
+# Routes snippet -- common routing patterns.
+#
+# Usage:
+#   import app_routes <upstream>
+#   import app_routes_healthcheck <upstream>
+
+(app_routes) {
+	@root path /
+	redir @root /docs 308
+
+	reverse_proxy {args[0]}
+}
+
+(app_routes_healthcheck) {
+	@root path /
+	redir @root /docs 308
+
+	reverse_proxy {args[0]} {
+		health_uri /api/health
+		fail_duration 30s
+	}
+}

@@ -3,8 +3,18 @@ name: Playwright E2E
 on:
   push:
     branches: [main, master]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/playwright.yml'
   pull_request:
     branches: [main, master]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/playwright.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   e2e:

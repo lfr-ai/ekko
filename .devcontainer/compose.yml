@@ -1,5 +1,11 @@
 name: ekko-dev
 
+x-ekko-env-files: &ekko_env_files
+  - path: ../.env
+    required: false
+  - path: ../.env.local
+    required: false
+
 services:
   app:
     build:
@@ -9,42 +15,8 @@ services:
       - ..:/workspace:cached
     command: sleep infinity
     init: true
-    env_file:
-      - path: ../.env
-        required: false
-      - path: ../.env.local
-        required: false
-    environment:
-      EKKO_ENVIRONMENT: local
-      EKKO_HOST: 0.0.0.0
-      EKKO_POSTGRESQL_HOST: db
-      EKKO_POSTGRESQL_PORT: "5432"
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - backend
-
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ekko
-    volumes:
-      - devdb-data:/var/lib/postgresql/data
+    env_file: *ekko_env_files
     ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - backend
-
-volumes:
-  devdb-data:
-
-networks:
-  backend:
+      - "8000:8000"
+      - "5173:5173"
+      - "6006:6006"

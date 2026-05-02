@@ -2,18 +2,36 @@
 locale = "en-us"
 
 [default.extend-words]
-uvicorn = "uvicorn"
+ba = "ba"
+ekko = "ekko"
 fastapi = "fastapi"
+uvicorn = "uvicorn"
+sqlalchemy = "sqlalchemy"
+structlog = "structlog"
+pydantic = "pydantic"
+alembic = "alembic"
+crewai = "crewai"
+langchain = "langchain"
 tiktoken = "tiktoken"
+zustand = "zustand"
+shadcn = "shadcn"
+biome = "biome"
+biomejs = "biomejs"
 
 [files]
 extend-exclude = [
-  "pdm.lock",
-  "uv.lock",
-  "*.lock",
-  "*.egg-info/**",
-  "*.baseline",
-  "logs/**",
-  "htmlcov/**",
-  "**/prompts/**",
+    "uv.lock",
+    "backend/uv.lock",
+    "bun.lockb",
+    "frontend/bun.lockb",
+    "*.lock",
+    "*.egg-info/**",
+    "*.baseline",
+    "logs/**",
+    "htmlcov/**",
+    "jscpd-report/**",
+    "*.json",
+    "CHANGELOG.md",
+    "**/prompts/**",
+    "docs/api/**",
 ]

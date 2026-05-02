@@ -25,7 +25,6 @@ if TYPE_CHECKING:
         OpenAIGateway,
         STTService,
     )
-    from ekko.infrastructure.auth.jwt_adapter import JWTAdapter
 
 
 # Note: slots=True omitted — cached_property requires __dict__
@@ -46,17 +45,6 @@ class Container:
     def from_config(cls) -> Container:
         """Build a container from the current environment settings."""
         return cls(settings=get_settings())
-
-    # ── Auth ─────────────────────────────────────────────────
-    @cached_property
-    def jwt_adapter(self) -> JWTAdapter:
-        """Lazily build the JWT adapter."""
-        from ekko.infrastructure.auth.jwt_adapter import JWTAdapter as _JWTAdapter
-
-        return _JWTAdapter(
-            secret_key=self.settings.jwt_secret_key.get_secret_value(),
-            expire_minutes=self.settings.jwt_expire_minutes,
-        )
 
     # ── OpenAI ───────────────────────────────────────────────
     @cached_property

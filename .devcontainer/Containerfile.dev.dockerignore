@@ -1,8 +1,0 @@
-.git
-.venv
-.ruff_cache
-.mypy_cache
-.pytest_cache
-node_modules
-dist
-build

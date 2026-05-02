@@ -3,27 +3,32 @@ default_language_version:
   python: python3.12
 
 repos:
-  # ── General file checks ────────────────────────────────────
+  # -- General file checks -------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        args: [--unsafe]
       - id: check-toml
       - id: check-json
+        exclude: ^\.vscode/settings\.json$
+      - id: check-ast
       - id: check-merge-conflict
-      - id: check-added-large-files
-        args: [--maxkb=6000]
       - id: check-docstring-first
-      - id: detect-private-key
-      - id: mixed-line-ending
-        args: [--fix=lf]
+      - id: check-added-large-files
+        args: [--maxkb=1000]
       - id: check-case-conflict
+      - id: check-illegal-windows-names
       - id: check-symlinks
+      - id: destroyed-symlinks
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
       - id: fix-byte-order-marker
+      - id: mixed-line-ending
+        args: [--fix=lf]
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master]
       - id: debug-statements
@@ -31,7 +36,7 @@ repos:
         args: [--pytest-test-first]
         files: ^backend/tests/
 
-  # ── Ruff (lint + format) ───────────────────────────────────
+  # -- Ruff (lint + format) ------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.11
     hooks:
@@ -39,27 +44,34 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  # ── Security ───────────────────────────────────────────────
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.4
+  # -- Commit messages -----------------------------------------------------
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.13.10
     hooks:
-      - id: bandit
-        args: [-c, pyproject.toml, --recursive, backend/src]
-        additional_dependencies: ["bandit[toml]"]
+      - id: commitizen
+        stages: [commit-msg]
+      - id: commitizen-branch
+        stages: [pre-push]
 
+  # -- Security ------------------------------------------------------------
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        args: [--baseline, .secrets.baseline]
-        exclude: (\.lock|\.svg)$
+        args:
+          - --baseline
+          - .secrets.baseline
+          - --exclude-files
+          - (^|[\\/])tests[\\/]
 
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.3
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.4
     hooks:
-      - id: gitleaks
+      - id: bandit
+        args: [-c, backend/bandit.toml]
+        additional_dependencies: ["bandit[toml]"]
 
-  # ── YAML / Markdown / Shell ────────────────────────────────
+  # -- YAML / Markdown / Shell ---------------------------------------------
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
     hooks:
@@ -75,8 +87,18 @@ repos:
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
+        args: [--severity=warning]
+        exclude: \.zsh$
 
-  # ── Spelling / Quality ─────────────────────────────────────
+  # -- Dockerfile linting --------------------------------------------------
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+        args: [-c, .hadolint.yaml]
+        exclude: \.dockerignore$
+
+  # -- Spelling / Quality --------------------------------------------------
   - repo: https://github.com/crate-ci/typos
     rev: v1.45.1
     hooks:
@@ -88,31 +110,15 @@ repos:
       - id: xenon
         args: [--max-absolute=C, --max-modules=B, --max-average=A, backend/src]
 
-  # ── Commit messages ────────────────────────────────────────
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.13.10
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
-      - id: commitizen-branch
-        stages: [pre-push]
-
-  # ── GitHub Actions ─────────────────────────────────────────
+  # -- GitHub Actions ------------------------------------------------------
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.7
     hooks:
       - id: actionlint
 
-  # ── Docker ─────────────────────────────────────────────────
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.14.0
-    hooks:
-      - id: hadolint-docker
-
-  # ── Local hooks ────────────────────────────────────────────
+  # -- Local hooks ---------------------------------------------------------
   - repo: local
     hooks:
-      # ── Type checking (ty -- astral type checker) ──────────
       - id: ty-check
         name: ty type check
         entry: bash -c 'cd backend && uv tool run ty check src/ekko'
@@ -120,7 +126,6 @@ repos:
         pass_filenames: false
         types: [python]
 
-      # ── Module docstrings ──────────────────────────────────
       - id: module-docstrings
         name: check module docstrings
         entry: bash -c 'cd backend && find src/ekko -name "*.py" ! -name "__init__.py" ! -path "*/__pycache__/*" | while read f; do head -5 "$f" | grep -q "\"\"\"" || echo "Missing docstring: $f"; done | (! grep .)'
@@ -128,7 +133,6 @@ repos:
         pass_filenames: false
         types: [python]
 
-      # ── Dependency audit ───────────────────────────────────
       - id: dependency-audit
         name: dependency vulnerability audit
         entry: bash -c 'cd backend && uv run pip-audit --strict 2>/dev/null || true'
@@ -136,7 +140,6 @@ repos:
         pass_filenames: false
         stages: [manual]
 
-      # ── Copy-paste detection ───────────────────────────────
       - id: jscpd
         name: jscpd copy-paste detection
         entry: npx jscpd --config .jscpd.json
@@ -144,16 +147,14 @@ repos:
         types_or: [python, javascript, typescript, tsx]
         stages: [manual]
 
-      # ── Link checking ──────────────────────────────────────
       - id: lychee
         name: lychee link checker
-        entry: lychee --config .lychee.toml .
+        entry: lychee --no-progress -c .lychee.toml .
         language: system
         pass_filenames: false
         types_or: [markdown, html, rst]
         stages: [manual]
 
-      # ── Backend test suite ─────────────────────────────────
       - id: backend-test-suite
         name: backend tests
         entry: bash -c 'cd backend && uv run pytest tests/unit/ -x --tb=short -q'
@@ -162,16 +163,6 @@ repos:
         types: [python]
         stages: [pre-push]
 
-      # ── Backend integration tests ──────────────────────────
-      - id: backend-integration-tests
-        name: backend integration tests
-        entry: bash -c 'cd backend && uv run pytest tests/integration/ -x --tb=short -q -m integration'
-        language: system
-        pass_filenames: false
-        types: [python]
-        stages: [manual]
-
-      # ── Frontend checks ────────────────────────────────────
       - id: biome-check
         name: biome lint + format check
         entry: bash -c 'cd frontend && bun run biome check .'

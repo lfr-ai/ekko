@@ -3,14 +3,11 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from ekko.config.settings.dev import DevelopmentConfig
 from ekko.config.settings.local import LocalConfig
-from ekko.config.settings.prod import ProductionConfig
-from ekko.config.settings.staging import StagingConfig
 from ekko.config.settings.test_env import TestingConfig
 from ekko.core.enums import Environment
 
-ALL_CONFIG_CLASSES = [LocalConfig, DevelopmentConfig, TestingConfig, StagingConfig, ProductionConfig]
+ALL_CONFIG_CLASSES = [LocalConfig, TestingConfig]
 
 
 class TestSettingsInvariants:
@@ -25,13 +22,6 @@ class TestSettingsInvariants:
     def test_all_configs_have_valid_port(self, config_cls):
         cfg = config_cls()
         assert 0 < cfg.port < 65536
-
-    @given(st.sampled_from(ALL_CONFIG_CLASSES))
-    @settings(max_examples=10)
-    def test_prod_never_has_debug(self, config_cls):
-        cfg = config_cls()
-        if cfg.environment == Environment.PROD:
-            assert cfg.debug is False
 
     @given(st.sampled_from(ALL_CONFIG_CLASSES))
     @settings(max_examples=10)

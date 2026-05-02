@@ -1,0 +1,7 @@
+(global_base) {
+	admin off
+	log {
+		output stdout
+		format console
+	}
+}

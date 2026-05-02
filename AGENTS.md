@@ -26,7 +26,7 @@ point **inward**, never from core toward frameworks/adapters.
 ├─────────────────────────────────────────────────────┤
 │  Core (entities, value objects, domain services)    │  <- Business logic
 ├─────────────────────────────────────────────────────┤
-│  Infrastructure (DB repos, external clients, auth)  │  <- External integrations
+│  Infrastructure (DB repos, external clients)         │  <- External integrations
 ├─────────────────────────────────────────────────────┤
 │  AI (CrewAI HMAS, PII, chains, embeddings, RAG)    │  <- AI pipeline
 ├─────────────────────────────────────────────────────┤
@@ -52,15 +52,14 @@ backend/src/ekko/
 │   ├── entities/        # Domain entities
 │   ├── enums/           # Domain enumerations (base, ai, audio, messaging, etc.)
 │   ├── exceptions/      # Domain exception hierarchy
-│   ├── interfaces/      # Port protocols (audio, chat, embedding, llm, auth, pii)
+│   ├── interfaces/      # Port protocols (audio, chat, embedding, llm, pii)
 │   ├── protocols.py     # Shared protocols
 │   ├── value_objects/   # Immutable value objects
 │   └── registry_constants.py  # Generated naming constants
 ├── infrastructure/      # External integrations, persistence
 │   ├── adapters/        # Audio, STT adapters
-│   ├── auth/            # JWT adapter
 │   ├── concurrency/     # QueueManager, ThreadManager
-│   ├── db/              # SQLAlchemy engine, session, models
+│   ├── db/              # SQLAlchemy engine, models (SQLite + aiosqlite)
 │   ├── llm/             # LLM chat adapters
 │   └── stt/             # Speech-to-text transcriber
 ├── ai/                  # AI vertical
@@ -95,8 +94,7 @@ frontend/src/
 ├── presentation/        # Components (ui/common/layout), pages, features, styles
 └── router/              # React Router config
 
-docker/                  # Containerfile + compose files (dev/prod/staging/test)
-tasks/                   # Split Taskfile includes (backend, frontend, docker)
+tasks/                   # Split Taskfile includes (backend, frontend)
 tools/                   # Convention checkers and security audits
 registry/                # Naming registry (JSON -> generated constants)
 ```
@@ -119,9 +117,9 @@ registry/                # Naming registry (JSON -> generated constants)
 
 - **Python 3.12**, uv for dependency management, Taskfile for task running
 - **FastAPI** + Uvicorn for HTTP
-- **SQLAlchemy 2.0+** async ORM with asyncpg driver
+- **SQLAlchemy 2.0+** async ORM with aiosqlite driver (SQLite)
 - **Pydantic v2** for validation with `Annotated` + `Field`
-- **ruff** for linting/formatting (config in `backend/ruff.toml`), **mypy** for type checking
+- **ruff** for linting/formatting (config in `backend/ruff.toml`), **ty** for type checking
 - **structlog** for structured logging (never `print()`)
 - Full type hints on all functions, methods, class attributes
 - Google-style docstrings on all public APIs
@@ -186,24 +184,23 @@ task test:frontend        # Frontend unit tests (Vitest)
 task test:coverage        # Tests with coverage reports
 task lint                 # Run all linters
 task format               # Format all code
-task typecheck            # Type check (mypy + frontend)
+task typecheck            # Type check (ty + frontend)
 task xenon                # Cyclomatic complexity gate
 task check                # Full quality gate
 task pre-commit           # Run all pre-commit hooks
 task registry:generate    # Regenerate constants from naming_registry.json
 task db:migrate           # Run Alembic migrations
-task docker:build         # Build Docker images
-task docker:up            # Start all services
+task build:exe            # Build standalone PyInstaller EXE
 task clean                # Clean all build artifacts
 ```
 
 ## Configuration
 
-- Environment settings: `backend/src/ekko/config/settings/` (base -> local/dev/test/staging/prod)
+- Environment settings: `backend/src/ekko/config/settings/` (base -> local/test)
 - Settings factory: `get_settings()` with `EKKO_ENVIRONMENT` env var
 - Naming registry: `registry/naming_registry.json` -> `backend/src/ekko/core/registry_constants.py`
-- Docker: `docker/` folder with compose files per environment
-- JWT setup: `docs/JWT_SETUP.md`
+- Auth: Auto-authenticates as `dev-user` (local-only app, no JWT)
 - GraphQL: Strawberry schema at `/graphql` with subscriptions
 - CrewAI agents: YAML config in `backend/src/ekko/ai/crewai/config/`
 - PII: Regex-based anonymization in `backend/src/ekko/ai/pii/`
+- Deployment: Local-only desktop EXE via PyInstaller (`task build:exe`)

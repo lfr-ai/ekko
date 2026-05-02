@@ -1,0 +1,16 @@
+# Local developer override.
+
+services:
+  app:
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend/src:/app/src
+      - ../logs:/app/logs
+    command: ["uvicorn", "ekko.composition.app_factory:create_app", "--host", "0.0.0.0", "--port", "8000", "--factory", "--reload"]
+
+  caddy:
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "443:443"

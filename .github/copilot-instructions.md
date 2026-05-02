@@ -12,7 +12,7 @@ applyTo: "**"
 - `backend/src/ekko/application/` can import from `core` and configuration, but not concrete adapters.
 - `backend/src/ekko/infrastructure/` implements protocols declared in `core/interfaces/`.
 - `backend/src/ekko/composition/` wires everything together via the `Container` DI pattern.
-- `backend/src/ekko/presentation/api/routes/` contains FastAPI routers (health, stream, auth).
+- `backend/src/ekko/presentation/api/routes/` contains FastAPI routers (health, stream).
 - `backend/src/ekko/presentation/graphql/` contains Strawberry GraphQL schema, resolvers, subscriptions.
 - `backend/src/ekko/ai/` contains CrewAI agents, PII anonymization, chains, embeddings, prompts.
 
@@ -26,7 +26,7 @@ applyTo: "**"
 - PII: Regex-based anonymization in `backend/src/ekko/ai/pii/` — scrubs before LLM calls
 - Testing: pytest, hypothesis, factory-boy, pytest-asyncio, pytest-benchmark
 - Naming registry: `registry/naming_registry.json` -> generated constants
-- Linting: ruff (config in `backend/ruff.toml`), mypy for type checking
+- Linting: ruff (config in `backend/ruff.toml`), ty for type checking
 
 ## Frontend Stack
 
@@ -40,11 +40,9 @@ applyTo: "**"
 
 ## Project Layout
 
-- `docker/` — Containerfile + compose files (dev/prod/staging/test)
-- `tasks/` — Split Taskfile includes (backend.yml, frontend.yml, docker.yml)
+- `tasks/` — Split Taskfile includes (backend.yml, frontend.yml)
 - `tools/` — Convention checkers and security audits
 - `registry/` — Naming registry JSON + code generator
-- `azure/` — Azure IaC (Bicep modules) and deploy scripts
 
 ## Tooling and Commands
 
@@ -67,4 +65,4 @@ applyTo: "**"
 
 - Never commit secrets.
 - Keep `.env.example` updated when new environment variables are introduced.
-- Use `detect-secrets` and `gitleaks` via pre-commit hooks.
+- Use `detect-secrets` via pre-commit hooks.

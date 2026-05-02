@@ -1,0 +1,349 @@
+# Warp Workflows for Ekko
+# These are shareable command workflows that can be executed with Warp AI
+---
+name: "Ekko Workflows"
+version: "1.0.0"
+description: "Common development workflows for Ekko project"
+
+workflows:
+  # ============================================================================
+  # Setup and Installation
+  # ============================================================================
+  
+  - name: "Initial Setup"
+    description: "First-time project setup"
+    tags: ["setup", "install"]
+    commands:
+      - name: "Install uv (Python package manager)"
+        command: "curl -LsSf https://astral.sh/uv/install.sh | sh"
+        platform: ["macos", "linux"]
+      
+      - name: "Install uv (Windows)"
+        command: "powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+        platform: ["windows"]
+      
+      - name: "Install task (task runner)"
+        command: "brew install go-task"
+        platform: ["macos"]
+      
+      - name: "Install dependencies"
+        command: "task install"
+      
+      - name: "Setup pre-commit hooks"
+        command: "cd backend && uv run pre-commit install"
+      
+      - name: "Initialize database"
+        command: "task db:migrate"
+      
+      - name: "Verify installation"
+        command: "task check"
+  
+  # ============================================================================
+  # Development
+  # ============================================================================
+  
+  - name: "Start Development"
+    description: "Start all development services"
+    tags: ["dev", "start"]
+    commands:
+      - name: "Start backend and frontend"
+        command: "task dev"
+  
+  - name: "Backend Only Development"
+    description: "Start only the backend server"
+    tags: ["dev", "backend"]
+    commands:
+      - name: "Navigate to backend"
+        command: "cd backend"
+      
+      - name: "Start backend with reload"
+        command: "uv run uvicorn ekko.cli.run_app:app --reload --log-level debug"
+  
+  - name: "Frontend Only Development"
+    description: "Start only the frontend dev server"
+    tags: ["dev", "frontend"]
+    commands:
+      - name: "Navigate to frontend"
+        command: "cd frontend"
+      
+      - name: "Start frontend dev server"
+        command: "bun dev"
+  
+  # ============================================================================
+  # Testing
+  # ============================================================================
+  
+  - name: "Run All Tests"
+    description: "Execute complete test suite"
+    tags: ["test", "qa"]
+    commands:
+      - name: "Run backend unit tests"
+        command: "task test:unit"
+      
+      - name: "Run backend integration tests"
+        command: "task test:integration"
+      
+      - name: "Run frontend tests"
+        command: "task test:frontend"
+      
+      - name: "Generate coverage report"
+        command: "task test:coverage"
+  
+  - name: "TDD Workflow"
+    description: "Test-driven development with watch mode"
+    tags: ["test", "tdd", "watch"]
+    commands:
+      - name: "Start backend test watcher"
+        command: "cd backend && uv run pytest --watch"
+  
+  - name: "Property-Based Testing"
+    description: "Run Hypothesis property-based tests"
+    tags: ["test", "property"]
+    commands:
+      - name: "Run property tests"
+        command: "task test:property"
+  
+  - name: "Performance Testing"
+    description: "Run benchmark and performance tests"
+    tags: ["test", "performance", "benchmark"]
+    commands:
+      - name: "Run performance benchmarks"
+        command: "task test:performance"
+  
+  # ============================================================================
+  # Code Quality
+  # ============================================================================
+  
+  - name: "Quality Gate"
+    description: "Full quality check (lint, format, typecheck, test)"
+    tags: ["qa", "quality", "ci"]
+    commands:
+      - name: "Run linters"
+        command: "task lint"
+      
+      - name: "Run type checkers"
+        command: "task typecheck"
+      
+      - name: "Check complexity"
+        command: "task xenon"
+      
+      - name: "Run tests"
+        command: "task test"
+  
+  - name: "Fix Code Issues"
+    description: "Auto-fix formatting and linting issues"
+    tags: ["fix", "format", "lint"]
+    commands:
+      - name: "Format backend code"
+        command: "cd backend && uv run ruff format ."
+      
+      - name: "Fix backend linting issues"
+        command: "cd backend && uv run ruff check --fix ."
+      
+      - name: "Format frontend code"
+        command: "cd frontend && bun run format"
+      
+      - name: "Fix frontend linting issues"
+        command: "cd frontend && bun run lint:fix"
+  
+  - name: "Pre-commit Checks"
+    description: "Run all pre-commit hooks"
+    tags: ["git", "pre-commit", "hooks"]
+    commands:
+      - name: "Run pre-commit on all files"
+        command: "cd backend && uv run pre-commit run --all-files"
+  
+  # ============================================================================
+  # Database Operations
+  # ============================================================================
+  
+  - name: "Database Migration"
+    description: "Create and apply database migration"
+    tags: ["db", "migration", "alembic"]
+    commands:
+      - name: "Create migration"
+        command: "cd backend && uv run alembic revision --autogenerate -m \"${MIGRATION_NAME}\""
+      
+      - name: "Review migration"
+        command: "cat backend/alembic/versions/*.py | tail -50"
+      
+      - name: "Apply migration"
+        command: "cd backend && uv run alembic upgrade head"
+  
+  - name: "Database Reset"
+    description: "Reset database and re-run migrations"
+    tags: ["db", "reset"]
+    commands:
+      - name: "Remove database file"
+        command: "rm -f backend/ekko.db"
+      
+      - name: "Run migrations"
+        command: "cd backend && uv run alembic upgrade head"
+      
+      - name: "Verify database"
+        command: "cd backend && uv run python -c \"from ekko.infrastructure.db.engine import engine; print('Database OK')\""
+  
+  - name: "Database Rollback"
+    description: "Rollback last database migration"
+    tags: ["db", "rollback"]
+    commands:
+      - name: "Downgrade one revision"
+        command: "cd backend && uv run alembic downgrade -1"
+      
+      - name: "Show current revision"
+        command: "cd backend && uv run alembic current"
+  
+  # ============================================================================
+  # Build and Deploy
+  # ============================================================================
+  
+  - name: "Build Executable"
+    description: "Build standalone desktop application"
+    tags: ["build", "pyinstaller", "exe"]
+    commands:
+      - name: "Clean previous builds"
+        command: "task clean"
+      
+      - name: "Build executable"
+        command: "task build:exe"
+      
+      - name: "Test executable"
+        command: "./dist/ekko/ekko --version"
+  
+  - name: "Build Frontend"
+    description: "Build optimized frontend for production"
+    tags: ["build", "frontend", "production"]
+    commands:
+      - name: "Type check"
+        command: "cd frontend && bun run typecheck"
+      
+      - name: "Build"
+        command: "cd frontend && bun run build"
+      
+      - name: "Preview build"
+        command: "cd frontend && bun run preview"
+  
+  # ============================================================================
+  # Git Workflows
+  # ============================================================================
+  
+  - name: "Sync with Main"
+    description: "Pull latest changes and update dependencies"
+    tags: ["git", "sync", "update"]
+    commands:
+      - name: "Stash local changes"
+        command: "git stash"
+      
+      - name: "Pull with rebase"
+        command: "git pull --rebase origin main"
+      
+      - name: "Update dependencies"
+        command: "task install"
+      
+      - name: "Run migrations"
+        command: "task db:migrate"
+      
+      - name: "Pop stash"
+        command: "git stash pop"
+  
+  - name: "Clean Repository"
+    description: "Remove all build artifacts and caches"
+    tags: ["clean", "git"]
+    commands:
+      - name: "Clean build artifacts"
+        command: "task clean"
+      
+      - name: "Remove git-ignored files"
+        command: "git clean -fdX"
+      
+      - name: "Reinstall dependencies"
+        command: "task install"
+  
+  - name: "Feature Branch"
+    description: "Create and setup feature branch"
+    tags: ["git", "branch", "feature"]
+    commands:
+      - name: "Ensure on main"
+        command: "git checkout main"
+      
+      - name: "Pull latest"
+        command: "git pull --rebase origin main"
+      
+      - name: "Create feature branch"
+        command: "git checkout -b feature/${FEATURE_NAME}"
+      
+      - name: "Push branch"
+        command: "git push -u origin feature/${FEATURE_NAME}"
+  
+  # ============================================================================
+  # Documentation
+  # ============================================================================
+  
+  - name: "Generate API Documentation"
+    description: "Generate OpenAPI specification and docs"
+    tags: ["docs", "openapi", "api"]
+    commands:
+      - name: "Generate OpenAPI spec"
+        command: "cd backend && uv run python ../tools/generate_openapi.py"
+      
+      - name: "Open documentation"
+        command: "open docs/api/index.html"
+        platform: ["macos"]
+  
+  - name: "Start Storybook"
+    description: "Launch Storybook component documentation"
+    tags: ["docs", "storybook", "frontend"]
+    commands:
+      - name: "Start Storybook"
+        command: "cd frontend && bun run storybook"
+  
+  # ============================================================================
+  # Debugging
+  # ============================================================================
+  
+  - name: "Debug Backend"
+    description: "Start backend with debugger"
+    tags: ["debug", "backend"]
+    commands:
+      - name: "Start with debugpy"
+        command: "cd backend && uv run python -m debugpy --listen 5678 -m uvicorn ekko.cli.run_app:app --reload"
+  
+  - name: "View Logs"
+    description: "Tail application logs"
+    tags: ["logs", "debug"]
+    commands:
+      - name: "Tail backend logs"
+        command: "tail -f logs/ekko.log"
+  
+  # ============================================================================
+  # Maintenance
+  # ============================================================================
+  
+  - name: "Update Dependencies"
+    description: "Update all project dependencies"
+    tags: ["update", "dependencies", "maintenance"]
+    commands:
+      - name: "Update Python dependencies"
+        command: "cd backend && uv lock --upgrade"
+      
+      - name: "Update frontend dependencies"
+        command: "cd frontend && bun update"
+      
+      - name: "Reinstall"
+        command: "task install"
+      
+      - name: "Run tests"
+        command: "task test"
+  
+  - name: "Security Audit"
+    description: "Run security checks on dependencies"
+    tags: ["security", "audit"]
+    commands:
+      - name: "Audit Python packages"
+        command: "cd backend && uv run pip-audit"
+      
+      - name: "Scan for secrets"
+        command: "cd backend && uv run detect-secrets scan"
+      
+      - name: "Run bandit security check"
+        command: "cd backend && uv run bandit -r src/"

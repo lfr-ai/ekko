@@ -1,8 +1,0 @@
-FROM caddy:2-alpine
-
-COPY Caddyfile /etc/caddy/Caddyfile
-
-EXPOSE 80 443
-
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -qO- http://localhost/health || exit 1

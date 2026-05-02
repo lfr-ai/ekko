@@ -1,6 +1,6 @@
 # Prompts and Templates
 
-This document describes the canonical prompt templates used by the voice-bot application.
+This document describes the canonical prompt templates used by Ekko.
 
 Location
 

@@ -2,7 +2,6 @@
 
 from ekko.composition.container import Container
 from ekko.config.settings import BaseAppConfig
-from ekko.infrastructure.auth.jwt_adapter import JWTAdapter
 
 
 class TestContainer:
@@ -14,16 +13,3 @@ class TestContainer:
         settings = BaseAppConfig()
         container = Container(settings=settings)
         assert container.settings is settings
-
-    def test_jwt_adapter(self):
-        settings = BaseAppConfig()
-        container = Container(settings=settings)
-        adapter = container.jwt_adapter
-        assert isinstance(adapter, JWTAdapter)
-
-    def test_jwt_adapter_cached(self):
-        settings = BaseAppConfig()
-        container = Container(settings=settings)
-        first = container.jwt_adapter
-        second = container.jwt_adapter
-        assert first is second

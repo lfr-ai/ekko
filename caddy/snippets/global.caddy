@@ -1,0 +1,26 @@
+# Global options snippet -- shared across all environments.
+
+(global_base) {
+	admin off
+}
+
+(global_logging_json) {
+	log default {
+		output stdout
+		format json
+	}
+}
+
+(global_logging_console) {
+	log default {
+		output stdout
+		format console
+	}
+}
+
+(global_servers) {
+	servers {
+		protocols h2
+		trusted_proxies static private_ranges
+	}
+}

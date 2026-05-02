@@ -1,3 +1,0 @@
-# Local-only overrides (not committed — add to .gitignore if needed).
-# Use this file for personal port remaps, extra volumes, or debug flags.
-services: {}

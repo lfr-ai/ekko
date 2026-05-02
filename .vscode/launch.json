@@ -2,25 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run FastAPI (uvicorn)",
-      "type": "python",
-      "request": "launch",
-      "module": "uvicorn",
-      "args": ["voice.interaction.main:app", "--reload", "--host", "127.0.0.1", "--port", "8000"],
-      "jinja": true
-    }
-  ]
-}
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "voice-bot: FastAPI (uvicorn)",
+      "name": "Ekko: FastAPI (uvicorn)",
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
       "args": [
-        "voice.interaction.main:app",
+        "ekko.composition.app_factory:create_app",
+        "--factory",
         "--host",
         "127.0.0.1",
         "--port",
@@ -28,9 +16,9 @@
         "--reload"
       ],
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
+        "PYTHONPATH": "${workspaceFolder}/backend/src"
       },
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/backend",
       "justMyCode": true
     }
   ]

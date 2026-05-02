@@ -16,19 +16,13 @@ from pathlib import Path
 from dotenv import dotenv_values
 
 from ekko.config.settings.base import BaseAppConfig
-from ekko.config.settings.dev import DevelopmentConfig
 from ekko.config.settings.local import LocalConfig
-from ekko.config.settings.prod import ProductionConfig
-from ekko.config.settings.staging import StagingConfig
 from ekko.config.settings.test_env import TestingConfig
 from ekko.core.enums import Environment
 
 _ROOT_DIR = Path(__file__).resolve().parents[4]
 _ENV_FILE_BY_ENV: dict[Environment, Path] = {
-    Environment.DEV: _ROOT_DIR / ".env.dev",
     Environment.TEST: _ROOT_DIR / ".env.test",
-    Environment.STAGING: _ROOT_DIR / ".env.staging",
-    Environment.PROD: _ROOT_DIR / ".env.prod",
 }
 _LOCAL_OVERRIDE_FILE = _ROOT_DIR / ".env.local"
 
@@ -39,7 +33,7 @@ def _load_environment_file(*, environment: Environment) -> None:
     Precedence:
     1) existing process environment variables
     2) optional local override (``.env.local``)
-    3) environment-specific dotenv (e.g. ``.env.dev``)
+    3) environment-specific dotenv (e.g. ``.env.test``)
     4) base ``.env``
     """
     existing_keys = set(os.environ.keys())
@@ -60,10 +54,7 @@ def _load_environment_file(*, environment: Environment) -> None:
 
 _SETTINGS_MAP: dict[Environment, type[BaseAppConfig]] = {
     Environment.LOCAL: LocalConfig,
-    Environment.DEV: DevelopmentConfig,
     Environment.TEST: TestingConfig,
-    Environment.STAGING: StagingConfig,
-    Environment.PROD: ProductionConfig,
 }
 
 
@@ -95,11 +86,8 @@ __all__ = [
     "SETTINGS",
     "AppSettings",
     "BaseAppConfig",
-    "DevelopmentConfig",
     "LocalConfig",
-    "ProductionConfig",
     "Settings",
-    "StagingConfig",
     "TestingConfig",
     "get_settings",
 ]

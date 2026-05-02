@@ -1,0 +1,5 @@
+[tool.bandit]
+skips = ["B101"]
+exclude_dirs = ["tests", ".venv", ".tox", "build", "dist", "scripts"]
+targets = ["src/ekko"]
+assert_used = { skips = ["tests/**/*.py"] }

@@ -4,10 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from ekko.config.settings import BaseAppConfig, get_settings
-from ekko.config.settings.dev import DevelopmentConfig
 from ekko.config.settings.local import LocalConfig
-from ekko.config.settings.prod import ProductionConfig
-from ekko.config.settings.staging import StagingConfig
 from ekko.config.settings.test_env import TestingConfig
 from ekko.core.enums import Environment
 
@@ -32,15 +29,6 @@ class TestBaseAppConfig:
         with pytest.raises(ValidationError):
             cfg.host = "0.0.0.0"  # noqa: S104
 
-    def test_postgresql_url(self):
-        cfg = BaseAppConfig(
-            postgresql_user="user",
-            postgresql_host="localhost",
-            postgresql_port=5432,
-            postgresql_name="db",
-        )
-        assert "postgresql://user@localhost:5432/db" in cfg.postgresql_url
-
     def test_audio_settings_present(self):
         cfg = BaseAppConfig()
         assert cfg.audio_streamer_tcp_port == 6600
@@ -57,25 +45,9 @@ class TestEnvironmentConfigs:
         assert cfg.debug is True
         assert cfg.environment == Environment.LOCAL
 
-    def test_dev_debug_on(self):
-        cfg = DevelopmentConfig()
-        assert cfg.debug is True
-        assert cfg.environment == Environment.DEV
-
     def test_test_debug_off(self):
         cfg = TestingConfig()
         assert cfg.debug is False
-        assert cfg.postgresql_name == "voice_test"
-
-    def test_staging_debug_off(self):
-        cfg = StagingConfig()
-        assert cfg.debug is False
-        assert cfg.environment == Environment.STAGING
-
-    def test_prod_debug_off(self):
-        cfg = ProductionConfig()
-        assert cfg.debug is False
-        assert cfg.environment == Environment.PROD
 
 
 class TestGetSettings:

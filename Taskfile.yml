@@ -11,9 +11,6 @@ includes:
   frontend:
     taskfile: ./tasks/frontend.yml
     dir: frontend
-  docker:
-    taskfile: ./tasks/docker.yml
-    dir: .
 
 tasks:
   default:
@@ -170,6 +167,16 @@ tasks:
       - task: typecheck
       - task: xenon
 
+  ci:local:
+    desc: "Pre-push CI validation (mirrors GitHub Actions pipeline)"
+    cmds:
+      - task: lint
+      - task: typecheck
+      - task: test
+      - task: xenon
+      - task: security:audit
+      - task: pre-commit
+
   # ── Architecture ─────────────────────────────────────────────
   architecture:
     desc: "Validate Clean Architecture import boundaries"
@@ -180,7 +187,7 @@ tasks:
   pre-commit:
     desc: "Run pre-commit on all files"
     cmds:
-      - cd backend && uv run pre-commit run --all-files
+      - uvx pre-commit run --all-files
 
   # ── Database ─────────────────────────────────────────────────
   db:migrate:
@@ -199,9 +206,10 @@ tasks:
       - task: backend:db:downgrade
 
   db:reset:
-    desc: "Drop, recreate, and migrate the database"
+    desc: "Delete SQLite DB and re-migrate"
     cmds:
-      - task: backend:db:reset
+      - cmd: rm -f backend/ekko.db
+      - task: backend:db:migrate
 
   # ── Registry ─────────────────────────────────────────────────
   registry:generate:
@@ -224,6 +232,34 @@ tasks:
       - task: frontend:build
       - task: backend:build
 
+  build:exe:
+    desc: "Build standalone Windows EXE (frontend + PyInstaller)"
+    cmds:
+      - task: frontend:build
+      - cmd: cd backend && uv run pyinstaller --noconfirm ../ekko.spec
+
+  build:exe:debug:
+    desc: "Build standalone Windows EXE with debug logging"
+    cmds:
+      - task: frontend:build
+      - cmd: cd backend && uv run pyinstaller --noconfirm --log-level=DEBUG ../ekko.spec
+
+  # ── Containers ───────────────────────────────────────────────
+  docker:up:
+    desc: "Run local backend container stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml up --build
+
+  docker:up:caddy:
+    desc: "Run local backend + Caddy HTTPS stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up --build
+
+  docker:down:
+    desc: "Stop local container stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml down
+
   # ── Security ─────────────────────────────────────────────────
   security:audit:
     desc: "Run security audits on all dependencies"
@@ -236,6 +272,7 @@ tasks:
     cmds:
       - task: backend:clean
       - task: frontend:clean
+      - cmd: rm -rf dist/ build/
 
   # ── Versioning (Commitizen) ──────────────────────────────────
   version-cz:
@@ -252,3 +289,120 @@ tasks:
     desc: "Bump version with commitizen"
     cmds:
       - uv run cz bump --yes
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Tool Management (CodeRabbit, OpenSpec, Warp, GitNexus)
+  # ══════════════════════════════════════════════════════════════════════════
+  
+  tools:openapi:generate:
+    desc: "Generate OpenAPI specification (JSON, YAML, HTML)"
+    cmds:
+      - cd backend && uv run python ../tools/generate_openapi.py
+    
+  tools:openapi:view:
+    desc: "Open generated OpenAPI documentation in browser"
+    cmds:
+      - cmd: open docs/api/index.html
+        platforms: [darwin]
+      - cmd: xdg-open docs/api/index.html
+        platforms: [linux]
+      - cmd: start docs/api/index.html
+        platforms: [windows]
+  
+  tools:coderabbit:validate:
+    desc: "Validate CodeRabbit configuration"
+    cmds:
+      - |
+        if [ -f .coderabbit.yaml ]; then
+          echo "✓ CodeRabbit configuration found"
+        else
+          echo "✗ CodeRabbit configuration missing"
+          exit 1
+        fi
+  
+  tools:gitnexus:validate:
+    desc: "Validate GitNexus configuration"
+    cmds:
+      - |
+        if [ -f .gitnexus/config.yaml ]; then
+          echo "✓ GitNexus configuration found"
+        else
+          echo "✗ GitNexus configuration missing"
+          exit 1
+        fi
+  
+  tools:warp:install:
+    desc: "Install Warp terminal configurations"
+    cmds:
+      - mkdir -p ~/.warp/launch_configurations
+      - mkdir -p ~/.warp/workflows
+      - cp .warp/launch_configurations/ekko.yaml ~/.warp/launch_configurations/
+      - cp .warp/workflows/ekko-workflows.yaml ~/.warp/workflows/
+      - echo "✓ Warp configurations installed"
+  
+  tools:setup:
+    desc: "Setup all development tools (CodeRabbit, OpenSpec, Warp, GitNexus)"
+    cmds:
+      - task: tools:coderabbit:validate
+      - task: tools:gitnexus:validate
+      - task: tools:openapi:generate
+      - task: tools:warp:install
+      - echo "✓ All tools configured successfully"
+  
+  tools:status:
+    desc: "Check status of all configured tools"
+    cmds:
+      - |
+        echo "=== Tool Configuration Status ==="
+        echo ""
+        echo "CodeRabbit:"
+        if [ -f .coderabbit.yaml ]; then
+          echo "  ✓ Configured (.coderabbit.yaml)"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "GitNexus:"
+        if [ -f .gitnexus/config.yaml ]; then
+          echo "  ✓ Configured (.gitnexus/config.yaml)"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "OpenAPI:"
+        if [ -f docs/api/openapi.json ]; then
+          echo "  ✓ Generated (docs/api/)"
+        else
+          echo "  ⚠ Not yet generated (run: task tools:openapi:generate)"
+        fi
+        echo ""
+        echo "Warp:"
+        if [ -f .warp/launch_configurations/ekko.yaml ]; then
+          echo "  ✓ Project configs present"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "VS Code:"
+        if [ -f .vscode/settings.json ]; then
+          echo "  ✓ Configured (.vscode/settings.json)"
+          if grep -q "claude" .vscode/settings.json; then
+            echo "  ✓ Claude via GitHub Copilot configured"
+          fi
+        else
+          echo "  ✗ Not configured"
+        fi
+
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Pipeline Verification
+  # ══════════════════════════════════════════════════════════════════════════
+  
+  verify:
+    desc: "Verify that CI/CD pipeline will pass before pushing"
+    cmds:
+      - cmd: bash scripts/verify-pipeline.sh
+        platforms: [darwin, linux]
+      - cmd: pwsh -NoProfile -File scripts/verify-pipeline.ps1
+        platforms: [windows]
+

@@ -1,0 +1,260 @@
+# GitNexus Configuration for Ekko
+
+# Project information
+project:
+  name: ekko
+  description: "AI-powered voice assistant platform"
+  repository: "https://github.com/yourusername/ekko"
+  
+# Branch strategy
+branches:
+  main:
+    protection:
+      required_reviews: 1
+      require_code_owner_review: true
+      dismiss_stale_reviews: true
+      require_status_checks: true
+      strict_status_checks: true
+      required_checks:
+        - "lint"
+        - "typecheck"
+        - "test"
+    auto_merge: false
+    
+  develop:
+    protection:
+      required_reviews: 0
+      require_status_checks: true
+      required_checks:
+        - "lint"
+        - "test"
+    auto_merge: false
+    
+  feature:
+    naming_pattern: "feature/*"
+    auto_delete: true
+    source_branch: "develop"
+    
+  bugfix:
+    naming_pattern: "bugfix/*"
+    auto_delete: true
+    source_branch: "develop"
+    
+  release:
+    naming_pattern: "release/*"
+    auto_delete: false
+    source_branch: "develop"
+    target_branch: "main"
+
+# Commit conventions (Conventional Commits)
+commits:
+  format: "conventional"
+  types:
+    - feat      # New feature
+    - fix       # Bug fix
+    - docs      # Documentation only
+    - style     # Code style (formatting, semicolons, etc.)
+    - refactor  # Code refactoring
+    - perf      # Performance improvement
+    - test      # Adding or updating tests
+    - build     # Build system or dependencies
+    - ci        # CI configuration
+    - chore     # Other changes
+  scopes:
+    # Backend scopes
+    - core
+    - application
+    - infrastructure
+    - presentation
+    - ai
+    - config
+    # Frontend scopes
+    - frontend
+    - ui
+    - hooks
+    - stores
+    # Cross-cutting
+    - deps
+    - docs
+    - tests
+  require_scope: false
+  max_length: 100
+
+# Pull Request templates
+pull_requests:
+  title_pattern: "[A-Z]+-[0-9]+: .*"  # Jira ticket format (optional)
+  require_description: true
+  require_changelog: false
+  
+  labels:
+    auto_assign:
+      - label: "backend"
+        paths:
+          - "backend/**"
+      - label: "frontend"
+        paths:
+          - "frontend/**"
+      - label: "docs"
+        paths:
+          - "docs/**"
+          - "*.md"
+      - label: "tests"
+        paths:
+          - "tests/**"
+          - "**/*.test.*"
+          - "**/*.spec.*"
+      - label: "dependencies"
+        paths:
+          - "**/pyproject.toml"
+          - "**/package.json"
+          - "**/uv.lock"
+          - "**/bun.lockb"
+    
+  checks:
+    require_all_pass: true
+    block_merge_on_failure: true
+
+# Code review
+code_review:
+  auto_assign_reviewers: true
+  reviewers:
+    # Auto-assign based on file patterns
+    - paths:
+        - "backend/src/ekko/core/**"
+      reviewers: ["backend-team", "architects"]
+    - paths:
+        - "backend/src/ekko/infrastructure/**"
+      reviewers: ["backend-team"]
+    - paths:
+        - "frontend/**"
+      reviewers: ["frontend-team"]
+    - paths:
+        - "**/*.test.*"
+        - "**/*.spec.*"
+      reviewers: ["qa-team"]
+  
+  require_codeowners_review: true
+  codeowners_path: ".github/CODEOWNERS"
+
+# Automated workflows
+workflows:
+  auto_update_branches:
+    enabled: true
+    target_branches:
+      - "feature/*"
+      - "bugfix/*"
+    from_branch: "develop"
+  
+  auto_close_stale:
+    enabled: true
+    days_until_stale: 30
+    days_until_close: 7
+    exempt_labels:
+      - "pinned"
+      - "security"
+      - "keep-open"
+  
+  auto_label:
+    enabled: true
+    rules:
+      - label: "breaking-change"
+        title_pattern: ".*BREAKING CHANGE.*"
+      - label: "security"
+        body_pattern: ".*security.*|.*vulnerability.*"
+      - label: "bug"
+        title_pattern: "^fix.*"
+      - label: "enhancement"
+        title_pattern: "^feat.*"
+
+# Release management
+releases:
+  versioning: "semver"  # Semantic versioning
+  changelog:
+    enabled: true
+    generator: "conventional-commits"
+    sections:
+      - title: "🚀 Features"
+        types: ["feat"]
+      - title: "🐛 Bug Fixes"
+        types: ["fix"]
+      - title: "📚 Documentation"
+        types: ["docs"]
+      - title: "🎨 Code Style"
+        types: ["style"]
+      - title: "♻️ Refactoring"
+        types: ["refactor"]
+      - title: "⚡ Performance"
+        types: ["perf"]
+      - title: "✅ Tests"
+        types: ["test"]
+      - title: "🔧 Build System"
+        types: ["build", "ci", "chore"]
+  
+  auto_tag: true
+  tag_pattern: "v{version}"
+  
+  draft_releases: true
+  prerelease_pattern: ".*-(alpha|beta|rc).*"
+
+# Integrations
+integrations:
+  coderabbit:
+    enabled: true
+    config_path: ".coderabbit.yaml"
+  
+  codecov:
+    enabled: false
+  
+  sonarcloud:
+    enabled: false
+
+# Security
+security:
+  vulnerability_scanning: true
+  secret_scanning: true
+  dependency_review: true
+  
+  block_force_push: true
+  block_deletions: true
+  
+  signed_commits:
+    required: false
+    enforce_admins: false
+
+# Git hooks (local development)
+hooks:
+  pre_commit:
+    - "task lint"
+    - "task typecheck"
+  
+  pre_push:
+    - "task test"
+  
+  commit_msg:
+    - "npx commitlint --edit"
+
+# Metrics and analytics
+metrics:
+  track_cycle_time: true
+  track_pr_size: true
+  track_review_time: true
+  track_deployment_frequency: true
+  
+  alerts:
+    - metric: "pr_size"
+      threshold: 500  # lines changed
+      action: "comment"
+    - metric: "review_time"
+      threshold: 48  # hours
+      action: "notify"
+
+# Custom scripts
+scripts:
+  on_pr_open:
+    - "scripts/pr-checks.sh"
+  
+  on_pr_merge:
+    - "scripts/update-changelog.sh"
+  
+  on_release:
+    - "scripts/build-release.sh"

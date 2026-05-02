@@ -6,6 +6,7 @@ All environment-specific settings classes inherit from :class:`BaseAppConfig`.
 from __future__ import annotations
 
 import logging
+import sys
 from functools import cached_property
 from pathlib import Path
 
@@ -52,20 +53,12 @@ class BaseAppConfig(BaseSettings):
     azure_openai_version: str = "2025-02-01-preview"
     azure_openai_key: SecretStr | None = None
 
-    # ── Auth / JWT ────────────────────────────────────────────
-    jwt_secret_key: SecretStr = SecretStr("change-me-ekko-jwt-secret")
-    jwt_expire_minutes: int = 30
-
     # ── RAG ───────────────────────────────────────────────────
     rag_embedding_model: str = "text-embedding-3-small"
     rag_llm_model: str = ChatModel.GPT_4O
 
-    # ── Database ──────────────────────────────────────────────
-    postgresql_user: str = "postgres"
-    postgresql_host: str = "127.0.0.1"
-    postgresql_port: int = 5432
-    postgresql_name: str = "ekko"
-    postgresql_password: SecretStr | None = None
+    # ── Database (SQLite) ─────────────────────────────────────
+    database_path: str = "./ekko.db"
 
     # ── Paths ─────────────────────────────────────────────────
     root_dir_path: Path = Path(__file__).resolve().parents[4]
@@ -92,15 +85,24 @@ class BaseAppConfig(BaseSettings):
 
     # ── Computed ──────────────────────────────────────────────
     @cached_property
-    def postgresql_url(self) -> str:
-        """Synchronous PostgreSQL DSN."""
-        pw = self.postgresql_password.get_secret_value() if self.postgresql_password else ""
-        auth = f"{self.postgresql_user}:{pw}" if pw else self.postgresql_user
-        return f"postgresql://{auth}@{self.postgresql_host}:{self.postgresql_port}/{self.postgresql_name}"
+    def _resolved_db_path(self) -> Path:
+        """Resolve the database file path, creating parent dirs as needed."""
+        if getattr(sys, "frozen", False):
+            import os
+
+            base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            db_path = base / "ekko" / "ekko.db"
+        else:
+            db_path = Path(self.database_path).resolve()
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        return db_path
 
     @cached_property
-    def postgresql_async_url(self) -> str:
-        """Asyncpg-compatible DSN for SQLAlchemy async engines."""
-        pw = self.postgresql_password.get_secret_value() if self.postgresql_password else ""
-        auth = f"{self.postgresql_user}:{pw}" if pw else self.postgresql_user
-        return f"postgresql+asyncpg://{auth}@{self.postgresql_host}:{self.postgresql_port}/{self.postgresql_name}"
+    def database_url(self) -> str:
+        """Async SQLite DSN for SQLAlchemy async engines (aiosqlite)."""
+        return f"sqlite+aiosqlite:///{self._resolved_db_path}"
+
+    @cached_property
+    def database_sync_url(self) -> str:
+        """Synchronous SQLite DSN for Alembic migrations."""
+        return f"sqlite:///{self._resolved_db_path}"

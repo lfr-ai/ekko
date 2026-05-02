@@ -2,52 +2,97 @@
   "name": "Ekko Dev Container",
   "dockerComposeFile": "compose.yml",
   "service": "app",
+  "runServices": ["app"],
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "zsh scripts/bootstrap-uv.sh 2>/dev/null || bash -c 'pip install --upgrade pip && pip install uv pre-commit && cd backend && uv sync --all-extras && cd ../frontend && bun install && cd .. && uvx pre-commit install'",
-  "remoteUser": "vscode",
-  "forwardPorts": [8000, 3000, 5432, 6006],
+  "overrideCommand": false,
+  "waitFor": "postCreateCommand",
   "mounts": [
     "source=ekko-uv-cache,target=/home/vscode/.cache/uv,type=volume",
     "source=ekko-precommit-cache,target=/home/vscode/.cache/pre-commit,type=volume",
-    "source=ekko-zsh-history,target=/home/vscode/.zsh_history,type=volume"
+    "source=ekko-bun-cache,target=/home/vscode/.bun/install/cache,type=volume"
   ],
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace/backend/src",
+    "UV_LINK_MODE": "copy",
+    "UV_CACHE_DIR": "/home/vscode/.cache/uv",
+    "EKKO_ENVIRONMENT": "local"
+  },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "biomejs.biome",
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "tamasfe.even-better-toml",
-        "editorconfig.editorconfig",
-        "DavidAnson.vscode-markdownlint",
-        "streetsidesoftware.code-spell-checker",
-        "github.copilot-chat",
-        "bradlc.vscode-tailwindcss",
-        "exiasr.hadolint",
-        "timonwong.shellcheck",
-        "samuelcolvin.jinjahtml"
-      ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
+        "python.defaultInterpreterPath": "/workspace/backend/.venv",
         "python.terminal.activateEnvironment": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["backend/tests", "--no-cov"],
+        "editor.autoIndentOnPaste": true,
         "editor.formatOnSave": true,
+        "editor.folding": false,
+        "editor.rulers": [120],
+        "editor.tabCompletion": "on",
+        "editor.trimAutoWhitespace": true,
+        "diffEditor.ignoreTrimWhitespace": true,
         "files.trimTrailingWhitespace": true,
         "files.eol": "\n",
+        "workbench.iconTheme": "vscode-icons",
+        "workbench.panel.defaultLocation": "right",
+        "workbench.editor.closeOnFileDelete": true,
+        "workbench.colorTheme": "Dark Modern",
+        "cSpell.language": "en, da",
+        "evenBetterToml.formatter.arrayAutoCollapse": true,
+        "evenBetterToml.formatter.arrayAutoExpand": true,
+        "extensions.ignoreRecommendations": true,
+        "chat.agent.maxRequests": 250,
+        "chat.detectParticipant.enabled": false,
+        "chat.useAgentSkills": true,
+        "chat.instructionsFilesLocations": {
+          ".github/instructions": true
+        },
+        "github.copilot.chat.codesearch.enabled": true,
+        "github.copilot.chat.alternateGptPrompt.enabled": true,
+        "github.copilot.nextEditSuggestions.enabled": true,
+        "github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": false,
         "[python]": {
+          "editor.formatOnSave": true,
           "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.codeActionsOnSave": {
             "source.fixAll": "explicit",
             "source.organizeImports": "explicit"
           }
         },
-        "[typescript][typescriptreact][javascript][json]": {
+        "[typescript]": {
           "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "vscode.json-language-features"
+        },
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+        },
+        "[toml]": {
+          "editor.defaultFormatter": "tamasfe.even-better-toml"
+        },
+        "[shellscript]": {
+          "editor.defaultFormatter": "timonwong.shellcheck"
         }
       }
     }
-  }
+  },
+  "postCreateCommand": "task install",
+  "postStartCommand": "zsh .devcontainer/post-start.zsh",
+  "updateRemoteUserUID": true,
+  "remoteUser": "vscode",
+  "shutdownAction": "stopCompose"
 }

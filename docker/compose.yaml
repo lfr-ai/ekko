@@ -1,0 +1,49 @@
+# Base compose -- shared service definitions.
+
+name: ekko
+
+x-ekko-env-files: &ekko_env_files
+  - path: ../.env
+  - path: ../.env.local
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Containerfile
+    init: true
+    env_file: *ekko_env_files
+    networks:
+      - backend
+
+  caddy:
+    image: caddy:2.11-alpine
+    profiles: [caddy]
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    env_file: *ekko_env_files
+    environment:
+      UPSTREAM: "app:8000"
+    volumes:
+      - ../caddy/snippets:/etc/caddy/snippets:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  caddy_data:
+    name: ekko_caddy_data
+  caddy_config:
+    name: ekko_caddy_config
+
+networks:
+  backend:

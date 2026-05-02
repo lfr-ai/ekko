@@ -17,10 +17,7 @@ from ekko.core.enums import (
 class TestEnvironmentEnum:
     def test_members_exist(self):
         assert Environment.LOCAL
-        assert Environment.DEV
         assert Environment.TEST
-        assert Environment.STAGING
-        assert Environment.PROD
 
     def test_values_are_lowercase(self):
         for member in Environment:
@@ -28,7 +25,7 @@ class TestEnvironmentEnum:
 
     def test_string_coercion(self):
         assert str(Environment.LOCAL) == "local"
-        assert str(Environment.PROD) == "prod"
+        assert str(Environment.TEST) == "test"
 
 
 class TestLLMProviderEnum:
@@ -48,7 +45,7 @@ class TestEnumValues:
         result = enum_values(Environment)
         assert isinstance(result, list)
         assert "local" in result
-        assert "prod" in result
+        assert "test" in result
 
     def test_all_str_enums_have_values(self):
         for enum_cls in [

@@ -10,10 +10,7 @@ from ekko.core.enums.base import ParseableEnum
 @unique
 class Environment(ParseableEnum):
     LOCAL = auto()
-    DEV = auto()
     TEST = auto()
-    STAGING = auto()
-    PROD = auto()
 
 
 __all__ = ["Environment"]

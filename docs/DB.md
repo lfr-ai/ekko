@@ -1,18 +1,28 @@
-# Database and migrations
+# Database and Migrations
 
-This project uses SQLAlchemy for ORM models and Alembic for schema migrations.
+Ekko uses **SQLite** via SQLAlchemy async ORM (`aiosqlite`) with Alembic for schema migrations.
 
-## Key files
+## Database Location
 
-- `src/voice/infrastructure/db/session.py` - engine and session factory
-- `src/voice/infrastructure/db/base.py` - declarative Base for models
-- `alembic/` - Alembic configuration and migration scripts
+| Mode | Path |
+|---|---|
+| Development | `./ekko.db` (project root) |
+| EXE (frozen) | `%LOCALAPPDATA%/ekko/ekko.db` |
 
-## Run migrations locally
+## Key Files
+
+- `backend/src/ekko/infrastructure/db/engine.py` — async engine factory
+- `backend/src/ekko/infrastructure/db/models/` — SQLAlchemy ORM models
+- `backend/alembic/` — Alembic configuration and migration scripts
+
+## Run Migrations
 
 ```bash
-uv run alembic upgrade head
+task db:migrate
 ```
 
-When deploying to production, set `DATABASE_URL` to your production
-Postgres DSN and run migrations as part of your release process.
+Or directly:
+
+```bash
+cd backend && uv run alembic upgrade head
+```

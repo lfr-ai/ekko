@@ -6,14 +6,30 @@ factory and a declarative base for models.
 
 from __future__ import annotations
 
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from .base import Base
 
 
+def _set_sqlite_pragmas(dbapi_conn, _connection_record) -> None:
+    """Enable WAL mode and foreign keys for every SQLite connection."""
+    cursor = dbapi_conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON")
+    cursor.execute("PRAGMA journal_mode = WAL")
+    cursor.close()
+
+
 def create_engine(database_url: str, echo: bool = False) -> AsyncEngine:
-    return create_async_engine(database_url, echo=echo, future=True)
+    engine = create_async_engine(
+        database_url,
+        echo=echo,
+        future=True,
+        connect_args={"check_same_thread": False},
+    )
+    event.listen(engine.sync_engine, "connect", _set_sqlite_pragmas)
+    return engine
 
 
 def create_session_factory(engine: AsyncEngine, expire_on_commit: bool = False) -> sessionmaker:

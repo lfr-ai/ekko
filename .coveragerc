@@ -1,0 +1,31 @@
+[run]
+source = backend/src/ekko
+branch = true
+omit =
+    backend/tests/*
+    backend/src/ekko/__main__.py
+    backend/src/ekko/cli/*
+
+[report]
+show_missing = true
+skip_empty = true
+fail_under = 70
+precision = 2
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    if __name__ == .__main__.:
+    @abstractmethod
+    @abc.abstractmethod
+    raise NotImplementedError
+    \.\.\.
+    class .*\bProtocol\):
+    @overload
+
+[html]
+directory = htmlcov
+
+[paths]
+source =
+    backend/src/ekko
+    */ekko/src/ekko
