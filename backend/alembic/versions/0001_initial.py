@@ -5,8 +5,6 @@ Revises:
 Create Date: 2026-04-28 00:00:00.000000
 """
 
-# ruff: noqa: I001
-
 import sqlalchemy as sa
 
 # isort: off

@@ -1,3 +1,5 @@
+"""Structured logger factory for the Ekko application."""
+
 import logging
 from pathlib import Path
 

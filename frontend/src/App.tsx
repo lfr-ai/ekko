@@ -1,42 +1,45 @@
-import { useState } from 'react'
+import { Activity, ChevronRight, Circle, Mic, MicOff, Settings, Volume2 } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/presentation/components/ui/badge";
+import { Button } from "@/presentation/components/ui/button";
 import {
-  Mic,
-  MicOff,
-  Settings,
-  Activity,
-  Volume2,
-  Circle,
-  ChevronRight,
-} from 'lucide-react'
-import { Button } from '@/presentation/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/presentation/components/ui/card'
-import { Badge } from '@/presentation/components/ui/badge'
-import { Separator } from '@/presentation/components/ui/separator'
-import { cn } from '@/lib/utils'
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/presentation/components/ui/card";
+import { Separator } from "@/presentation/components/ui/separator";
+
+const VISUALIZATION_BARS = Array.from({ length: 20 }, (_, i) => ({
+  id: `viz-bar-${i}`,
+  delay: i * 50,
+}));
 
 interface TranscriptEntry {
-  id: string
-  text: string
-  source: 'user' | 'assistant' | 'system'
-  timestamp: Date
+  id: string;
+  text: string;
+  source: "user" | "assistant" | "system";
+  timestamp: Date;
 }
 
 export default function App() {
-  const [isListening, setIsListening] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'listening' | 'processing'>('idle')
-  const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([
+  const [isListening, setIsListening] = useState(false);
+  const [status, setStatus] = useState<"idle" | "listening" | "processing">("idle");
+  const [transcripts, _setTranscripts] = useState<TranscriptEntry[]>([
     {
-      id: '1',
-      text: 'Welcome to Ekko — your AI-powered voice assistant.',
-      source: 'system',
+      id: "1",
+      text: "Welcome to Ekko — your AI-powered voice assistant.",
+      source: "system",
       timestamp: new Date(),
     },
-  ])
+  ]);
 
   const toggleListening = () => {
-    setIsListening(!isListening)
-    setStatus(isListening ? 'idle' : 'listening')
-  }
+    setIsListening(!isListening);
+    setStatus(isListening ? "idle" : "listening");
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -45,35 +48,28 @@ export default function App() {
         <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
           <Activity className="h-6 w-6 text-primary" />
         </div>
-        
+
         <nav className="flex flex-1 flex-col gap-4">
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              'relative',
-              status === 'listening' && 'bg-primary/10 text-primary'
-            )}
+            className={cn("relative", status === "listening" && "bg-primary/10 text-primary")}
             onClick={toggleListening}
           >
-            {isListening ? (
-              <MicOff className="h-5 w-5" />
-            ) : (
-              <Mic className="h-5 w-5" />
-            )}
-            {status === 'listening' && (
-              <span className="absolute -right-1 -top-1 flex h-3 w-3">
+            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {status === "listening" && (
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
               </span>
             )}
           </Button>
-          
+
           <Button variant="ghost" size="icon">
             <Volume2 className="h-5 w-5" />
           </Button>
         </nav>
-        
+
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
         </Button>
@@ -87,18 +83,14 @@ export default function App() {
             <h1 className="font-semibold text-2xl tracking-tight">Ekko</h1>
             <Badge
               variant={
-                status === 'idle'
-                  ? 'secondary'
-                  : status === 'listening'
-                    ? 'success'
-                    : 'warning'
+                status === "idle" ? "secondary" : status === "listening" ? "success" : "warning"
               }
             >
               <Circle className="mr-1.5 h-2 w-2 fill-current" />
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
           </div>
-          
+
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <span>Azure Speech Services</span>
             <span className="text-muted-foreground/50">•</span>
@@ -123,29 +115,26 @@ export default function App() {
                 {transcripts.map((entry) => (
                   <div
                     key={entry.id}
-                    className={cn(
-                      'flex gap-3',
-                      entry.source === 'user' && 'flex-row-reverse'
-                    )}
+                    className={cn("flex gap-3", entry.source === "user" && "flex-row-reverse")}
                   >
                     <div
                       className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                        entry.source === 'user' && 'bg-primary text-primary-foreground',
-                        entry.source === 'assistant' && 'bg-secondary text-secondary-foreground',
-                        entry.source === 'system' && 'bg-muted text-muted-foreground'
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        entry.source === "user" && "bg-primary text-primary-foreground",
+                        entry.source === "assistant" && "bg-secondary text-secondary-foreground",
+                        entry.source === "system" && "bg-muted text-muted-foreground",
                       )}
                     >
-                      {entry.source === 'user' && 'U'}
-                      {entry.source === 'assistant' && 'AI'}
-                      {entry.source === 'system' && 'S'}
+                      {entry.source === "user" && "U"}
+                      {entry.source === "assistant" && "AI"}
+                      {entry.source === "system" && "S"}
                     </div>
                     <div
                       className={cn(
-                        'flex-1 rounded-lg px-4 py-3',
-                        entry.source === 'user' && 'bg-primary text-primary-foreground',
-                        entry.source === 'assistant' && 'bg-secondary text-secondary-foreground',
-                        entry.source === 'system' && 'bg-muted text-muted-foreground'
+                        "flex-1 rounded-lg px-4 py-3",
+                        entry.source === "user" && "bg-primary text-primary-foreground",
+                        entry.source === "assistant" && "bg-secondary text-secondary-foreground",
+                        entry.source === "system" && "bg-muted text-muted-foreground",
                       )}
                     >
                       <p className="text-sm">{entry.text}</p>
@@ -168,16 +157,16 @@ export default function App() {
               </CardHeader>
               <CardContent>
                 <div className="flex h-24 items-end justify-center gap-1">
-                  {[...Array(20)].map((_, i) => (
+                  {VISUALIZATION_BARS.map((bar) => (
                     <div
-                      key={i}
+                      key={bar.id}
                       className={cn(
-                        'w-2 rounded-t-sm bg-primary/20 transition-all',
-                        isListening && 'animate-pulse bg-primary/40'
+                        "w-2 rounded-t-sm bg-primary/20 transition-all",
+                        isListening && "animate-pulse bg-primary/40",
                       )}
                       style={{
                         height: `${Math.random() * 100}%`,
-                        animationDelay: `${i * 50}ms`,
+                        animationDelay: `${bar.delay}ms`,
                       }}
                     />
                   ))}
@@ -216,8 +205,8 @@ export default function App() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Audio Input</span>
-                  <Badge variant={isListening ? 'success' : 'secondary'}>
-                    {isListening ? 'Active' : 'Standby'}
+                  <Badge variant={isListening ? "success" : "secondary"}>
+                    {isListening ? "Active" : "Standby"}
                   </Badge>
                 </div>
                 <Separator />
@@ -273,5 +262,5 @@ export default function App() {
         </footer>
       </main>
     </div>
-  )
+  );
 }

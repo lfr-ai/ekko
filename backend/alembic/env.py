@@ -7,11 +7,12 @@ via :func:`ekko.config.settings.get_settings`.
 from __future__ import annotations
 
 from logging.config import fileConfig
+from typing import TYPE_CHECKING
 
 from sqlalchemy import create_engine, pool
-from sqlalchemy.engine import Connection
 
-# ruff: noqa: I001
+if TYPE_CHECKING:
+    from sqlalchemy.engine import Connection
 
 # isort: off
 from alembic import context

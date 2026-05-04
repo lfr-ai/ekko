@@ -1,12 +1,9 @@
 ---
+name: Backend Python
 description: Specialized agent for Python backend development with Clean Architecture
-category: backend
-expertise:
-  - Python 3.12+
-  - FastAPI
-  - SQLAlchemy
-  - Clean Architecture
-  - Async/Await patterns
+model: claude-sonnet-4-6
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']
+agents: ['*']
 ---
 
 # Python Backend Development Agent
@@ -46,6 +43,7 @@ You are an expert Python backend developer specializing in Clean Architecture, F
 ## Code Quality Standards
 
 ### Type Safety
+
 ```python
 from typing import Final, Protocol
 from dataclasses import dataclass
@@ -65,6 +63,7 @@ class AudioConfig:
 ```
 
 ### Error Handling
+
 ```python
 from ekko.core.exceptions import AudioProcessingError
 
@@ -75,6 +74,7 @@ except AudioError as e:
 ```
 
 ### Logging
+
 ```python
 import structlog
 
@@ -85,6 +85,7 @@ logger.error("processing_failed", error=str(e), exc_info=True)
 ```
 
 ### Async Patterns
+
 ```python
 async def process_batch(items: list[Item]) -> list[Result]:
     """Process multiple items concurrently."""
@@ -94,7 +95,7 @@ async def process_batch(items: list[Item]) -> list[Result]:
 
 ## Project Structure
 
-```
+```text
 backend/src/ekko/
 ├── core/                # Domain layer (no external deps)
 │   ├── entities/        # Business entities
@@ -125,6 +126,7 @@ backend/src/ekko/
 ## Common Tasks
 
 ### Adding a New Endpoint
+
 1. Define domain entity in `core/entities/`
 2. Create DTO in `application/dtos/`
 3. Create mapper in `application/mappers/`
@@ -133,6 +135,7 @@ backend/src/ekko/
 6. Add tests in `tests/integration/api/`
 
 ### Adding a New Repository
+
 1. Define protocol in `core/interfaces/`
 2. Implement repository in `infrastructure/db/repositories/`
 3. Add SQLAlchemy model in `infrastructure/db/models/`
@@ -140,6 +143,7 @@ backend/src/ekko/
 5. Add tests in `tests/unit/infrastructure/`
 
 ### Creating a Database Migration
+
 ```bash
 cd backend
 uv run alembic revision --autogenerate -m "description"

@@ -31,7 +31,7 @@ OUTER_LAYERS = {"application", "infrastructure", "presentation", "managers"}
 @dataclass(frozen=True, slots=True)
 class Violation:
     """A dependency boundary violation.
-    
+
     Attributes:
         file_path: Path to the file containing the violation.
         line_number: Line number where the violation occurs.
@@ -55,10 +55,10 @@ def _collect_python_files(root: Path) -> list[Path]:
 
 def _check_utils(files: list[Path]) -> list[Violation]:
     """Check that utils/ only imports from stdlib (no ekko.* imports).
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
@@ -66,7 +66,9 @@ def _check_utils(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/utils/" not in fp.as_posix() and "\\utils\\" not in str(fp):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m:
                 imported_layer = m.group("layer")
@@ -85,10 +87,10 @@ def _check_utils(files: list[Path]) -> list[Violation]:
 
 def _check_config(files: list[Path]) -> list[Violation]:
     """Check that config/ does not import from core/, application/, or presentation/.
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
@@ -97,7 +99,9 @@ def _check_config(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/config/" not in fp.as_posix() and "\\config\\" not in str(fp):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -116,10 +120,10 @@ def _check_config(files: list[Path]) -> list[Violation]:
 
 def _check_core(files: list[Path]) -> list[Violation]:
     """Check that core/ does not import from outer layers.
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
@@ -127,7 +131,9 @@ def _check_core(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/core/" not in fp.as_posix() and "\\core\\" not in str(fp):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in OUTER_LAYERS:
                 imported_layer = m.group("layer")
@@ -146,19 +152,23 @@ def _check_core(files: list[Path]) -> list[Violation]:
 
 def _check_infrastructure(files: list[Path]) -> list[Violation]:
     """Check that infrastructure/ does not import from application/ or presentation/.
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
     violations: list[Violation] = []
     forbidden = {"application", "presentation"}
     for fp in files:
-        if "/infrastructure/" not in fp.as_posix() and "\\infrastructure\\" not in str(fp):
+        if "/infrastructure/" not in fp.as_posix() and "\\infrastructure\\" not in str(
+            fp
+        ):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -177,10 +187,10 @@ def _check_infrastructure(files: list[Path]) -> list[Violation]:
 
 def _check_application(files: list[Path]) -> list[Violation]:
     """Check that application/ does not import from presentation/.
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
@@ -188,7 +198,9 @@ def _check_application(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/application/" not in fp.as_posix() and "\\application\\" not in str(fp):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") == "presentation":
                 violations.append(
@@ -206,10 +218,10 @@ def _check_application(files: list[Path]) -> list[Violation]:
 
 def _check_ai(files: list[Path]) -> list[Violation]:
     """Check that ai/ does not import from infrastructure/, application/, or presentation/.
-    
+
     Args:
         files: List of Python source files to check.
-    
+
     Returns:
         List of violations found.
     """
@@ -219,7 +231,9 @@ def _check_ai(files: list[Path]) -> list[Violation]:
         posix = fp.as_posix()
         if "/ai/" not in posix and "\\ai\\" not in str(fp):
             continue
-        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
+        for idx, line in enumerate(
+            fp.read_text(encoding="utf-8").splitlines(), start=1
+        ):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -287,10 +301,10 @@ def main() -> int:
             rel = v.file_path.relative_to(ROOT)
             print(f"  {rel}:{v.line_number}: {v.reason}")
             print(f"    -> {v.line_text}")
-    
+
     if not args.verbose:
         print("\nRun with --verbose for detailed output")
-    
+
     return 1
 
 

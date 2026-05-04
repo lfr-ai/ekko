@@ -1,3 +1,5 @@
+"""Chat orchestration service."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

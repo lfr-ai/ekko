@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -19,15 +19,13 @@ def llm_settings(integration_settings):
     from ekko.config.settings import AppSettings
     from ekko.core.enums import LLMProvider
 
-    # Override base config with LLM-specific settings
-    settings = AppSettings(
+    return AppSettings(
         environment=integration_settings.environment,
         debug=False,
         llm_provider=LLMProvider.OPENAI,
         openai_api_key="test-key",
         llm_deployment_name="gpt-4",
     )
-    return settings
 
 
 @pytest.fixture
@@ -36,7 +34,7 @@ def azure_llm_settings(integration_settings):
     from ekko.config.settings import AppSettings
     from ekko.core.enums import LLMProvider
 
-    settings = AppSettings(
+    return AppSettings(
         environment=integration_settings.environment,
         debug=False,
         llm_provider=LLMProvider.AZURE_OPENAI,
@@ -45,7 +43,6 @@ def azure_llm_settings(integration_settings):
         azure_openai_version="2024-02-01",
         llm_deployment_name="gpt-4",
     )
-    return settings
 
 
 @pytest.fixture
@@ -123,7 +120,7 @@ def test_chat_adapter_sync_chat(llm_settings: AppSettings, mock_langchain_model:
     from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
     adapter = ChatModelAdapter(settings=llm_settings)
-    
+
     # Pre-cache the mock model to avoid init_chat_model call
     adapter._models["gpt-4"] = mock_langchain_model
 
@@ -145,7 +142,7 @@ async def test_chat_adapter_async_chat(llm_settings: AppSettings, mock_langchain
     from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
     adapter = ChatModelAdapter(settings=llm_settings)
-    
+
     # Pre-cache the mock model to avoid init_chat_model call
     adapter._models["gpt-4"] = mock_langchain_model
 
@@ -265,7 +262,7 @@ async def test_chat_adapter_kwargs_passthrough(llm_settings: AppSettings, mock_l
     from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
     adapter = ChatModelAdapter(settings=llm_settings)
-    
+
     # Pre-cache the mock model to avoid init_chat_model call
     adapter._models["gpt-4"] = mock_langchain_model
 

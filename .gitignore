@@ -29,6 +29,7 @@ backend/.venv/
 .pytest_cache/
 .hypothesis/
 .ty/
+.ty_cache/
 .tox/
 .nox/
 htmlcov/
@@ -38,13 +39,44 @@ coverage.xml
 .lycheecache
 .benchmarks/
 
-# Frontend
+# TypeScript / JavaScript
+*.tsbuildinfo
+*.d.ts.map
+.vite/
+.turbo/
+dist-ssr/
+.eslintcache
+.biome/
+.parcel-cache/
+.rollup.cache/
+.swc/
+
+# Frontend build outputs
 node_modules/
 frontend/dist/
 frontend/build/
+frontend/storybook-static/
 frontend/.storybook-static/
+storybook-static/
+.storybook-static/
+**/.storybook-static/
+
+# Testing
 frontend/playwright-report/
 frontend/test-results/
+playwright-report/
+test-results/
+.auth/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+lerna-debug.log*
+
+# Bun cache
+.bun-cache/
 
 # Logs
 *.log
@@ -73,10 +105,17 @@ storage/
 data/*
 !data/.gitkeep
 
-# AI tools
-.claude/agents/
-.claude/skills/
-.claude/rules/
+# Claude Code — commit shared config, ignore local/personal
+.claude/settings.local.json
+CLAUDE.local.md
+.claude/agent-memory/
+.claude/agent-memory-local/
+.claude/worktrees/
+.claude/projects/
+.claude/scheduled_tasks.json
+.claude/memory/
+
+# AI tools (other agents)
 .agents/
 
 # GitNexus (commit config/hooks only)
@@ -114,14 +153,11 @@ cython_debug/
 README_OLD.md
 .bg-shell/
 
-# ── GSD baseline (auto-generated) ──
+# ── GSD baseline ──
 .gsd
 .gsd-id
 *.swo
-.vscode/
 *.code-workspace
-.env
-.env.*
 .next/
 venv/
 target/

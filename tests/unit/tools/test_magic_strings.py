@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from textwrap import dedent
 
@@ -16,7 +15,7 @@ from pathlib import Path as P
 tools_path = P(__file__).resolve().parents[3] / "tools" / "conventions"
 sys.path.insert(0, str(tools_path))
 
-from check_magic_strings import (
+from check_magic_strings import (  # noqa: E402
     FIELD_PATTERNS,
     ROLE_PATTERNS,
     STATUS_PATTERNS,
@@ -104,6 +103,7 @@ class TestIsExcludedFile:
 
         # Patch TESTS constant
         import check_magic_strings
+
         original_tests = check_magic_strings.TESTS
         try:
             check_magic_strings.TESTS = tmp_path / "tests"
@@ -123,9 +123,8 @@ class TestIsExcludedFile:
 
     def test_include_regular_file(self) -> None:
         """Regular source files are included."""
-        regular = Path("backend/src/ekko/core/entities/user.py")
-        # Note: This may return True if TESTS path matches, but in real use it should be False
-        # The test is checking the logic, not the actual filesystem
+        # The exclusion logic only targets __init__.py and generated files.
+        assert not _is_excluded_file(Path("backend/src/ekko/core/entities/user.py"))
 
 
 class TestIsExcludedContext:
@@ -149,12 +148,8 @@ class TestIsExcludedContext:
 
     def test_exclude_external_api(self) -> None:
         """External API payloads are excluded."""
-        assert _is_excluded_context(
-            'payload = {"key": "value"}  # external-api', ""
-        )
-        assert _is_excluded_context(
-            "", '# external-api payload follows'
-        )
+        assert _is_excluded_context('payload = {"key": "value"}  # external-api', "")
+        assert _is_excluded_context("", "# external-api payload follows")
 
     def test_exclude_type_hints(self) -> None:
         """Type hints with Literal are excluded."""
@@ -175,15 +170,15 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 def get_user():
                     return {"id": 123, "name": "John"}
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         # Should detect "id" and "name" as field name violations
         field_violations = [
             v for v in violations if v.category == ViolationCategory.FIELD_NAME
@@ -198,16 +193,16 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 @app.get("/api/users")
                 def get_users():
                     return []
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         route_violations = [
             v for v in violations if v.category == ViolationCategory.ROUTE_PATH
         ]
@@ -219,18 +214,18 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 def process():
                     status = "completed"
                     if status == "failed":
                         return False
                     return True
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         status_violations = [
             v for v in violations if v.category == ViolationCategory.STATUS_VALUE
         ]
@@ -244,18 +239,18 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 import logger
-                
+
                 def process():
                     logger.info("Processing completed")
                     return "completed"
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         # "completed" in logger call should be excluded
         # "completed" in return should be detected
         # The exact behavior depends on context detection
@@ -267,16 +262,16 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 def validate(status):
                     if status not in ["active", "inactive"]:
                         raise ValueError("Invalid status")
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         # "Invalid status" should be excluded
         # "active" and "inactive" might be detected depending on context
         assert isinstance(violations, list)
@@ -286,16 +281,16 @@ class TestParseFileAst:
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
-                '''
+                """
                 x = ""
                 y = "a"
                 z = "ab"
-                '''
+                """
             )
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         # Only strings < 2 chars are skipped
         # "ab" is 2 chars but not a known pattern, so UNKNOWN category
         assert all(len(v.literal) >= 2 for v in violations)
@@ -306,7 +301,7 @@ class TestParseFileAst:
         test_file.write_text("def invalid syntax here")
 
         violations = _parse_file_ast(test_file)
-        
+
         # Should return empty list, not crash
         assert violations == []
 
@@ -380,7 +375,7 @@ class TestIntegration:
             dedent(
                 '''
                 """Sample module with magic strings."""
-                
+
                 def api_endpoint():
                     """API endpoint handler."""
                     route = "/api/users"
@@ -392,14 +387,14 @@ class TestIntegration:
         )
 
         violations = _parse_file_ast(test_file)
-        
+
         # Should detect various violations
         assert len(violations) > 0
-        
+
         categories = {v.category for v in violations}
         # Should have multiple categories
         assert len(categories) > 1
-        
+
         # Each violation should have all required fields
         for v in violations:
             assert v.file == test_file

@@ -11,7 +11,6 @@ Tests the Strawberry GraphQL schema including:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -26,9 +25,6 @@ from ekko.presentation.graphql.mutations import Mutation
 from ekko.presentation.graphql.queries import Query
 from ekko.presentation.graphql.schema import schema
 from ekko.presentation.graphql.subscriptions import Subscription
-
-if TYPE_CHECKING:
-    from strawberry.schema import Schema
 
 # Import query strings from fixtures
 from tests.fixtures.graphql_fixtures import (
@@ -87,10 +83,7 @@ class TestGraphQLSchemaStructure:
     def test_schema_has_required_extensions(self) -> None:
         """Schema includes security and performance extensions."""
         # Handle both extension instances and classes
-        extension_names = {
-            ext.__name__ if isinstance(ext, type) else type(ext).__name__
-            for ext in schema.extensions
-        }
+        extension_names = {ext.__name__ if isinstance(ext, type) else type(ext).__name__ for ext in schema.extensions}
 
         # Security and caching extensions
         assert "ParserCache" in extension_names
@@ -462,7 +455,7 @@ class TestGraphQLErrorHandling:
         """Missing required input field returns error."""
         mutation = """
             mutation {
-                sendMessage(input: { conversationId: "test-123" }) 
+                sendMessage(input: { conversationId: "test-123" })
             }
         """
         result = await test_schema.execute(mutation)

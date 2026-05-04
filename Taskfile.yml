@@ -455,4 +455,3 @@ tasks:
         platforms: [darwin, linux]
       - cmd: pwsh -NoProfile -File scripts/verify-pipeline.ps1 -Full
         platforms: [windows]
-

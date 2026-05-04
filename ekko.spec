@@ -15,7 +15,7 @@ a = Analysis(
     [str(BACKEND / "src" / "ekko" / "cli" / "run_app.py")],
     pathex=[str(SRC)],
     binaries=[],
-    datas=[
+    data=[
         # AI prompts and CrewAI config
         (str(PKG / "ai" / "prompts"), os.path.join("ekko", "ai", "prompts")),
         (str(PKG / "ai" / "crewai" / "config"), os.path.join("ekko", "ai", "crewai", "config")),
@@ -71,8 +71,8 @@ a = Analysis(
 for pkg_name in ["faster_whisper", "ctranslate2", "numpy", "tiktoken"]:
     try:
         from PyInstaller.utils.hooks import collect_all
-        pkg_datas, pkg_binaries, pkg_hiddenimports = collect_all(pkg_name)
-        a.datas += pkg_datas
+        pkg_data, pkg_binaries, pkg_hiddenimports = collect_all(pkg_name)
+        a.data += pkg_data
         a.binaries += pkg_binaries
         a.hiddenimports += pkg_hiddenimports
     except Exception:
@@ -97,7 +97,7 @@ coll = COLLECT(
     exe,
     a.binaries,
     a.zipfiles,
-    a.datas,
+    a.data,
     strip=False,
     upx=True,
     upx_exclude=[],

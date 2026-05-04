@@ -6,176 +6,76 @@ early_access: true
 enable_free_tier: true
 
 reviews:
-  # Request changes workflow
   request_changes_workflow: true
-  
-  # High-level summary
   high_level_summary: true
-  
-  # Poem style for summaries
   poem: false
-  
-  # Review status comment
-  review_status_comment: true
-  
-  # Collapse walkthrough
   collapse_walkthrough: false
-  
-  # Path-based review instructions
+
   path_instructions:
     - path: "backend/src/ekko/core/**"
       instructions: |
-        This is the Core domain layer in Clean Architecture. Review for:
-        - No outward dependencies (must not import from application, presentation, or infrastructure)
-        - Pure domain logic without framework coupling
-        - Immutable value objects and entities
-        - Protocol-based interfaces (ports)
-        - Business rule validation
-    
+        Core domain: zero framework imports. No FastAPI, SQLAlchemy, or Pydantic models.
+        Only stdlib + ekko.utils/ekko.config. Flag imports from application/, infrastructure/,
+        or presentation/ as CRITICAL violations. Dataclasses need frozen=True, slots=True.
+
     - path: "backend/src/ekko/application/**"
       instructions: |
-        This is the Application layer (use cases). Review for:
-        - Depends only on core layer
-        - Orchestrates domain logic
-        - No direct framework dependencies
-        - DTOs for data transfer
-        - Transaction boundaries
-    
+        Application layer: orchestrates use cases. May import core, infrastructure (via
+        protocols), ai, config, utils. Must NOT import presentation. Business logic belongs
+        here, not in route handlers. Services depend on protocols, not concrete adapters.
+
     - path: "backend/src/ekko/infrastructure/**"
       instructions: |
-        This is the Infrastructure layer (adapters). Review for:
-        - Implements core interfaces
-        - External integrations (database, APIs, file system)
-        - Framework-specific code allowed here
-        - Must not depend on presentation or application layers
-    
+        Infrastructure: concrete adapters implementing core/interfaces protocols. No imports
+        from application/ or presentation/. SQLAlchemy models live here. Async session
+        management with proper commit/rollback.
+
+    - path: "backend/src/ekko/ai/**"
+      instructions: |
+        AI vertical: CrewAI, LangChain, PII scrubber, embeddings. Import from core/config/utils
+        ONLY — not infrastructure, application, or presentation. PII scrubbing must happen
+        before any LLM call.
+
     - path: "backend/src/ekko/presentation/**"
       instructions: |
-        This is the Presentation layer (API, GraphQL). Review for:
-        - FastAPI routes and GraphQL schemas
-        - Request/response validation
-        - Depends on application and core
-        - No business logic (delegate to application layer)
-    
-    - path: "backend/tests/**"
+        Presentation: FastAPI routes + Strawberry GraphQL. Route handlers must delegate to
+        application services — no business logic inline. Use fastapi.status constants, never
+        raw integers. DI via Depends() in dependencies.py.
+
+    - path: "tests/**"
       instructions: |
-        Review test code for:
-        - Proper test isolation
-        - Factory-based test data (factory-boy)
-        - Appropriate test markers (unit, integration, e2e, property, performance)
-        - Mock external dependencies
-        - Clear test naming and documentation
-    
+        All test functions must have a @pytest.mark.* marker (unit, integration, asyncio, slow,
+        property, performance). Use factory-boy for test data from tests/factories/. Shared
+        fixtures belong in conftest.py. No mocking of internal business logic.
+
     - path: "frontend/src/**"
       instructions: |
-        Review frontend code for:
-        - React 19 best practices
-        - TypeScript strict mode compliance
-        - shadcn/ui component patterns
-        - Proper state management
-        - Accessibility (a11y) standards
-        - Performance optimizations
+        React 19 + TypeScript strict mode. Named exports only. Use cn() from lib/utils. Semantic
+        color tokens only (bg-primary, not bg-blue-500). Zod schemas at all API boundaries.
+        Zustand stores in application/stores/. Install shadcn components via CLI only.
 
-# Chat configuration
+    - path: "registry/**"
+      instructions: |
+        Naming registry is the single source of truth for cross-layer constants. Changes here
+        require regenerating core/registry_constants.py via `task registry:generate`. Never
+        duplicate registry values as magic strings elsewhere.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        Pin action versions to full SHA or semver tags — never @main or @latest. Secrets via
+        ${{ secrets.NAME }} only. Jobs must have explicit timeout-minutes.
+
 chat:
-  # Auto-reply to comments
   auto_reply: true
 
-# Knowledge base for project-specific context
 knowledge_base:
-  # Opt in to knowledge base learning
   learnings: true
-  
-  # Custom learnings
-  custom:
-    - "This project follows Clean Architecture with strict layer boundaries"
-    - "Core layer MUST NOT import from outer layers (application, presentation, infrastructure)"
-    - "Use Pydantic v2 with Annotated + Field for validation"
-    - "Use structlog for logging, never print()"
-    - "All functions must have full type hints"
-    - "Use keyword-only args with * separator for 3+ parameters"
-    - "Exception chaining: raise NewError(...) from original_error"
-    - "Registry constants from registry/naming_registry.json are single source of truth"
-    - "Frontend uses React 19 + Vite + shadcn/ui + TypeScript strict mode"
-    - "Backend uses Python 3.12 + FastAPI + SQLAlchemy 2.0 async + Pydantic v2"
-    - "Testing: pytest for backend, Vitest for frontend, Playwright for E2E"
-    - "Audio pipeline: System/mic → TCP server → Azure Speech Services STT"
 
-# Tone configuration
 tone_instructions: |
-  Provide constructive, friendly, and educational code reviews. 
-  Focus on:
-  - Architecture and design patterns
-  - Security vulnerabilities
-  - Performance optimizations
-  - Readability and maintainability
-  - Test coverage gaps
-  - Documentation improvements
-  
-  Be specific with examples and suggest improvements rather than just pointing out issues.
-
-# Tools configuration
-tools:
-  # GitHub Checks integration
-  github_checks:
-    enable: true
-    auto_review: true
-    timeout: 600
-  
-  # Codebase verification
-  ruff: 
-    enabled: true
-  
-  shellcheck:
-    enabled: true
-  
-  actionlint:
-    enabled: true
-  
-  markdownlint:
-    enabled: true
-
-# PR configuration
-pull_requests:
-  # Auto-review all PRs
-  auto_review: true
-  
-  # Review only touched files
-  review_only_changed_files: true
-  
-  # Ignore patterns
-  ignore_patterns:
-    - "**/*.lock"
-    - "**/*.min.js"
-    - "**/*.min.css"
-    - "**/node_modules/**"
-    - "**/.venv/**"
-    - "**/dist/**"
-    - "**/build/**"
-    - "**/__pycache__/**"
-    - "**/.pytest_cache/**"
-    - "**/.ruff_cache/**"
-
-# Commit configuration  
-commits:
-  # Auto-review commits
-  auto_review: false
-
-# Code of conduct check
-code_of_conduct:
-  enabled: true
-
-# Automatically apply suggested fixes
-auto_apply_suggestions:
-  enabled: false
-  
-# Label configuration
-labels:
-  coderabbit:
-    - "ai-review"
-  
-  changes_requested:
-    - "needs-revision"
-  
-  approved:
-    - "lgtm"
+  Concise, constructive reviews. Prioritize:
+  - Architecture violations (Clean Architecture) — CRITICAL
+  - Security issues (OWASP Top 10) — CRITICAL
+  - Performance regressions (N+1 queries, unnecessary re-renders)
+  - Type safety (missing annotations, use of Any)
+  - Missing tests for new behaviour
+  Include file path, line, and a concrete fix. Skip style issues handled by ruff or Biome.

@@ -18,7 +18,7 @@ def _has_module_docstring(path: Path) -> bool:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except SyntaxError:
-        return True  # skip unparseable files
+        return True  # skip unparsable files
     return ast.get_docstring(tree) is not None
 
 

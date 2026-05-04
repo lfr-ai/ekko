@@ -90,23 +90,23 @@ fi
 if [[ "$FULL_MODE" == true ]]; then
   echo ""
   echo -e "${BLUE}=== Running full CI mirror mode ===${NC}"
-  
+
   step "Security: Bandit"
   ( cd backend && uv run python -m bandit -c bandit.toml -r src )
   ok "Bandit scan completed"
-  
+
   step "Security: pip-audit"
   ( cd backend && uv run python -m pip_audit --fix-dry-run || true )
   ok "pip-audit scan completed"
-  
+
   step "Security: detect-secrets"
   ( cd backend && uv run detect-secrets scan --baseline ../.secrets.baseline )
   ok "detect-secrets scan completed"
-  
+
   step "Integration tests"
   ( cd backend && uv run python -m pytest tests/integration -q -m integration )
   ok "Integration tests completed"
-  
+
   step "Architecture: Clean Architecture boundaries"
   if command -v rg >/dev/null 2>&1; then
     if rg "from\s+ekko\.(application|infrastructure|presentation)" backend/src/ekko/core -n; then

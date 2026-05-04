@@ -1,3 +1,5 @@
+"""Retry helpers for transient infrastructure failures."""
+
 from __future__ import annotations
 
 import asyncio

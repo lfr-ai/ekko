@@ -43,10 +43,10 @@ def constants_by_category(
 ) -> dict[str, dict[str, str]]:
     """Group constants by category prefix using registry categories."""
     by_category: dict[str, dict[str, str]] = {}
-    
+
     # Use the registry to know what categories exist
-    registry_categories = {cat.upper() for cat in registry_json.keys()}
-    
+    registry_categories = {cat.upper() for cat in registry_json}
+
     for name, value in all_constants.items():
         # Try to match against known categories
         matched = False
@@ -57,7 +57,7 @@ def constants_by_category(
                 by_category[reg_cat][name] = value
                 matched = True
                 break
-        
+
         if not matched:
             # Fallback: extract category as everything before the last two underscores
             parts = name.split("_")
@@ -66,7 +66,7 @@ def constants_by_category(
                 if category not in by_category:
                     by_category[category] = {}
                 by_category[category][name] = value
-    
+
     return by_category
 
 
@@ -91,8 +91,7 @@ class TestRegistryConstantsUniqueness:
             values = list(constants.values())
             unique_values = set(values)
             assert len(values) == len(unique_values), (
-                f"Duplicate values in category {category}: "
-                f"{[v for v in values if values.count(v) > 1]}"
+                f"Duplicate values in category {category}: {[v for v in values if values.count(v) > 1]}"
             )
 
     def test_no_empty_values(
@@ -172,9 +171,7 @@ class TestRegistryConstantsConsistency:
             for key, properties in entries.items():
                 key_upper = key.upper()
                 expected_constant = f"{category_upper}_{key_upper}_LABEL"
-                assert expected_constant in all_constants, (
-                    f"Missing constant {expected_constant} for {category}.{key}"
-                )
+                assert expected_constant in all_constants, f"Missing constant {expected_constant} for {category}.{key}"
                 # Verify the value matches
                 assert all_constants[expected_constant] == properties["label"], (
                     f"Constant {expected_constant} value mismatch: "
@@ -197,9 +194,7 @@ class TestRegistryConstantsConsistency:
         actual_constants = set(all_constants.keys())
         extra_constants = actual_constants - expected_constants
 
-        assert not extra_constants, (
-            f"Found constants not in registry.json: {extra_constants}"
-        )
+        assert not extra_constants, f"Found constants not in registry.json: {extra_constants}"
 
     def test_category_names_match_registry_keys(
         self,
@@ -207,12 +202,11 @@ class TestRegistryConstantsConsistency:
         constants_by_category: dict[str, dict[str, str]],
     ) -> None:
         """Category prefixes should match the top-level keys in registry.json."""
-        registry_categories = {cat.upper() for cat in registry_json.keys()}
+        registry_categories = {cat.upper() for cat in registry_json}
         constant_categories = set(constants_by_category.keys())
 
         assert constant_categories == registry_categories, (
-            f"Category mismatch. Registry: {registry_categories}, "
-            f"Constants: {constant_categories}"
+            f"Category mismatch. Registry: {registry_categories}, Constants: {constant_categories}"
         )
 
 
@@ -226,32 +220,24 @@ class TestRegistryConstantsCollisions:
     ) -> None:
         """Same label value shouldn't appear in different categories unless intentional."""
         all_values: dict[str, list[str]] = {}
-        for category, constants in constants_by_category.items():
+        for constants in constants_by_category.values():
             for name, value in constants.items():
                 if value not in all_values:
                     all_values[value] = []
                 all_values[value].append(name)
 
         # Check for collisions (same value in multiple constants)
-        collisions = {
-            value: names
-            for value, names in all_values.items()
-            if len(names) > 1
-        }
+        collisions = {value: names for value, names in all_values.items() if len(names) > 1}
 
         # Some collisions might be intentional (e.g., "Other" appearing in multiple categories)
         # Flag them but allow specific known cases
         known_acceptable_collisions = {"Other"}
 
         problematic_collisions = {
-            value: names
-            for value, names in collisions.items()
-            if value not in known_acceptable_collisions
+            value: names for value, names in collisions.items() if value not in known_acceptable_collisions
         }
 
-        assert not problematic_collisions, (
-            f"Value collisions across categories: {problematic_collisions}"
-        )
+        assert not problematic_collisions, f"Value collisions across categories: {problematic_collisions}"
 
     def test_category_prefixes_dont_overlap(
         self,
@@ -262,12 +248,8 @@ class TestRegistryConstantsCollisions:
         for i, cat1 in enumerate(categories):
             for cat2 in categories[i + 1 :]:
                 # Check cat1 is not a prefix of cat2 or vice versa
-                assert not cat2.startswith(cat1), (
-                    f"Category {cat1} is a prefix of {cat2}"
-                )
-                assert not cat1.startswith(cat2), (
-                    f"Category {cat2} is a prefix of {cat1}"
-                )
+                assert not cat2.startswith(cat1), f"Category {cat1} is a prefix of {cat2}"
+                assert not cat1.startswith(cat2), f"Category {cat2} is a prefix of {cat1}"
 
 
 @pytest.mark.property

@@ -1,11 +1,9 @@
 ---
+name: Database Specialist
 description: Database operations with SQLAlchemy, Alembic, and repository patterns
-category: backend
-expertise:
-  - SQLAlchemy 2.0+ async
-  - Alembic migrations
-  - Repository pattern
-  - Database design
+model: claude-sonnet-4-6
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']
+agents: ['*']
 ---
 
 # Database Operations Specialist
@@ -34,6 +32,7 @@ You are an expert in database operations using SQLAlchemy 2.0+ with async suppor
 ## SQLAlchemy Patterns
 
 ### Session Management
+
 ```python
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncIterator
@@ -51,6 +50,7 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 ```
 
 ### Repository Pattern
+
 ```python
 # core/interfaces/repositories.py
 from typing import Protocol
@@ -83,6 +83,7 @@ class SQLAlchemyUserRepository:
 ```
 
 ### Querying Best Practices
+
 ```python
 # ✅ Good: Explicit loading
 stmt = (
@@ -109,6 +110,7 @@ for user in users:
 ## Alembic Migrations
 
 ### Creating Migrations
+
 ```bash
 # Generate migration
 cd backend
@@ -123,18 +125,19 @@ uv run alembic upgrade head
 ```
 
 ### Migration Best Practices
+
 ```python
 # Good migration with data migration
 def upgrade() -> None:
     # Schema change
     op.add_column('users', sa.Column('email', sa.String(255)))
-    
+
     # Data migration
     conn = op.get_bind()
     conn.execute(
         text("UPDATE users SET email = username || '@example.com' WHERE email IS NULL")
     )
-    
+
     # Make non-nullable after data migration
     op.alter_column('users', 'email', nullable=False)
 
@@ -145,6 +148,7 @@ def downgrade() -> None:
 ## Database Design
 
 ### Table Design
+
 ```python
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
@@ -167,6 +171,7 @@ class UserModel(Base):
 ## Testing
 
 ### Repository Tests
+
 ```python
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -188,6 +193,7 @@ async def test_user_repository_save(db_session: AsyncSession):
 ## Common Tasks
 
 ### Add New Entity
+
 1. Create entity in `core/entities/`
 2. Define repository protocol in `core/interfaces/`
 3. Create SQLAlchemy model in `infrastructure/db/models/`
@@ -197,6 +203,7 @@ async def test_user_repository_save(db_session: AsyncSession):
 7. Write tests
 
 ### Query Optimization
+
 ```python
 # Use indexes for frequent queries
 __table_args__ = (

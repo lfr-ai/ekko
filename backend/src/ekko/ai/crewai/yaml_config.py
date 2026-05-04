@@ -1,6 +1,6 @@
 """YAML configuration loader for CrewAI agents and tasks.
 
-Centralises YAML loading, validation, and variable substitution
+Centralizes YAML loading, validation, and variable substitution
 for agent/task definitions. All other modules should use this
 loader instead of reading YAML directly.
 """

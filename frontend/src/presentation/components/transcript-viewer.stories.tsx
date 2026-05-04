@@ -17,7 +17,7 @@ const sampleEntries = [
   },
   {
     id: "3",
-    text: "Jeg har tre aktive ordninger hos AP Pension.",
+    text: "Jeg har tre active ordninger hos AP Pension.",
     source: "system" as const,
     timestamp: "2026-04-29T10:00:05Z",
   },

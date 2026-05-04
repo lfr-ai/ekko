@@ -33,7 +33,7 @@ description: React 19, TypeScript, Vite, shadcn/ui, Tailwind CSS v4, Biome, Vite
 
 ## Architecture
 
-```
+```text
 frontend/src/
   application/     # hooks, stores (zustand)
   domain/          # models, types, schemas (zod)

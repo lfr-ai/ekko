@@ -2,7 +2,7 @@
   // ═══════════════════════════════════════════════════════════
   // Ekko Workspace Settings — Optimized for AI-Assisted Development
   // ═══════════════════════════════════════════════════════════
-  
+
   // ──────────────────────────────────────────────────────────
   // Editor Configuration
   // ──────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@
   "editor.inlineSuggest.enabled": true,
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
-  
+
   // ──────────────────────────────────────────────────────────
   // GitHub Copilot Configuration
   // ──────────────────────────────────────────────────────────
@@ -38,19 +38,8 @@
     "javascriptreact": true
   },
   "github.copilot.editor.enableAutoCompletions": true,
-  "github.copilot.advanced": {
-    "debug.overrideEngine": "gpt-4",
-    "debug.testOverrideProxyUrl": "",
-    "debug.overrideProxyUrl": "",
-    "length": 500,
-    "temperature": 0.2,
-    "top_p": 1,
-    "stops": {
-      "*": ["\n\n\n"],
-      "python": ["\ndef ", "\nclass ", "\nif ", "\n\n#"]
-    }
-  },
-  
+  "chat.agent.enabled": true,
+
   // ──────────────────────────────────────────────────────────
   // Python Configuration
   // ──────────────────────────────────────────────────────────
@@ -71,7 +60,7 @@
   ],
   "python.testing.cwd": "${workspaceFolder}/backend",
   "python.languageServer": "Pylance",
-  
+
   // Ruff (Python linter/formatter)
   "[python]": {
     "editor.formatOnSave": true,
@@ -83,7 +72,7 @@
   },
   "ruff.nativeServer": true,
   "ruff.importStrategy": "fromEnvironment",
-  
+
   // ──────────────────────────────────────────────────────────
   // TypeScript/JavaScript Configuration
   // ──────────────────────────────────────────────────────────
@@ -94,7 +83,7 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "javascript.suggest.autoImports": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
-  
+
   // Biome (JavaScript/TypeScript linter/formatter)
   "[typescript]": {
     "editor.formatOnSave": true,
@@ -112,7 +101,7 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "biomejs.biome"
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // JSON/YAML Configuration
   // ──────────────────────────────────────────────────────────
@@ -129,7 +118,7 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // Markdown Configuration
   // ──────────────────────────────────────────────────────────
@@ -143,7 +132,7 @@
     }
   },
   "markdown.preview.breaks": true,
-  
+
   // ──────────────────────────────────────────────────────────
   // File Associations
   // ──────────────────────────────────────────────────────────
@@ -154,7 +143,7 @@
     "Caddyfile": "caddyfile",
     "*.caddy": "caddyfile"
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // File Exclusions
   // ──────────────────────────────────────────────────────────
@@ -181,7 +170,7 @@
     "**/*.lock": true,
     "**/.next": true
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // Git Configuration
   // ──────────────────────────────────────────────────────────
@@ -189,7 +178,7 @@
   "git.confirmSync": false,
   "git.autofetch": true,
   "git.suggestSmartCommit": true,
-  
+
   // ──────────────────────────────────────────────────────────
   // Terminal Configuration
   // ──────────────────────────────────────────────────────────
@@ -198,19 +187,19 @@
   "terminal.integrated.env.windows": {
     "UV_LINK_MODE": "copy"
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // Task Runner Configuration
   // ──────────────────────────────────────────────────────────
   "task.autoDetect": "on",
   "task.problemMatchers.neverPrompt": false,
-  
+
   // ──────────────────────────────────────────────────────────
   // Testing Configuration
   // ──────────────────────────────────────────────────────────
   "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
   "testing.openTesting": "neverOpen",
-  
+
   // ──────────────────────────────────────────────────────────
   // Tailwind CSS Configuration
   // ──────────────────────────────────────────────────────────
@@ -219,7 +208,7 @@
     ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
   "tailwindCSS.emmetCompletions": true,
-  
+
   // ──────────────────────────────────────────────────────────
   // Emmet Configuration
   // ──────────────────────────────────────────────────────────
@@ -227,7 +216,7 @@
     "typescript": "html",
     "typescriptreact": "html"
   },
-  
+
   // ──────────────────────────────────────────────────────────
   // Miscellaneous
   // ──────────────────────────────────────────────────────────
@@ -237,5 +226,6 @@
   "workbench.editor.enablePreview": false,
   "security.workspace.trust.untrustedFiles": "open",
   "diffEditor.ignoreTrimWhitespace": false,
-  "diffEditor.renderSideBySide": true
+  "diffEditor.renderSideBySide": true,
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }

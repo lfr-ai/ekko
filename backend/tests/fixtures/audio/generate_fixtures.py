@@ -8,7 +8,7 @@ from pathlib import Path
 
 def create_test_audio_file(output_path: Path, duration_seconds: float = 1.0, sample_rate: int = 16000) -> None:
     """Create a simple test audio file (silence) for STT testing.
-    
+
     Args:
         output_path: Path to write the audio file
         duration_seconds: Duration of the audio in seconds

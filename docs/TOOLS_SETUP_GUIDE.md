@@ -55,6 +55,7 @@ task install
 ```
 
 This will:
+
 - Install Python dependencies via `uv`
 - Install frontend dependencies via `bun`
 - Setup virtual environments
@@ -71,6 +72,7 @@ nano .env.local
 ```
 
 Required environment variables:
+
 - `OPENAI_API_KEY` - OpenAI API key for LLM features
 - `EKKO_ENVIRONMENT` - Set to `local` for development
 
@@ -89,6 +91,7 @@ task check
 ```
 
 This runs:
+
 - ✓ Linting (ruff, biome, mypy)
 - ✓ Type checking
 - ✓ Unit tests
@@ -114,6 +117,7 @@ task dev:frontend  # Frontend only (port 5173)
 #### Setup
 
 1. **Install VS Code Extensions**
+
    ```bash
    code --install-extension github.copilot
    code --install-extension github.copilot-chat
@@ -147,7 +151,7 @@ See [docs/CLAUDE_COPILOT_GUIDE.md](../docs/CLAUDE_COPILOT_GUIDE.md) for comprehe
 
 **Quick Examples**:
 
-```
+```text
 # Generate endpoint
 "Create a new FastAPI endpoint for audio transcription following Clean Architecture"
 
@@ -178,14 +182,15 @@ CodeRabbit provides automated AI-powered code reviews on pull requests.
    - Authorize the app
 
 2. **Verify Configuration**
-   
+
    The project includes `.coderabbit.yaml`:
+
    ```bash
    task tools:coderabbit:validate
    ```
 
 3. **Configure Review Settings**
-   
+
    Edit `.coderabbit.yaml` to customize:
    - Review focus areas
    - Language-specific rules
@@ -210,6 +215,7 @@ CodeRabbit provides automated AI-powered code reviews on pull requests.
 5. CodeRabbit re-reviews on updates
 
 **Pro Tips**:
+
 - Tag `@coderabbitai` to ask specific questions
 - Use `@coderabbitai review` to trigger manual review
 - Use `@coderabbitai resolve` to mark issues as resolved
@@ -234,6 +240,7 @@ brew install --cask warp
 #### Configuration
 
 1. **Install Project Workflows**
+
    ```bash
    task tools:warp:install
    ```
@@ -244,6 +251,7 @@ brew install --cask warp
    - AI context settings
 
 2. **Open Warp**
+
    ```bash
    warp
    ```
@@ -313,6 +321,7 @@ GitNexus provides advanced Git workflow automation.
 #### Configuration
 
 The project includes `.gitnexus/config.json` with:
+
 - Branch protection rules
 - Auto-labeling
 - PR templates
@@ -328,23 +337,27 @@ task tools:gitnexus:validate
 #### Features
 
 **Branch Management**:
+
 - `feature/*` - Feature branches (auto-delete on merge)
 - `bugfix/*` - Bug fix branches
 - `release/*` - Release branches
 - Automatic branch protection
 
 **Commit Conventions**:
+
 - Enforces Conventional Commits format
 - Validates commit messages
 - Auto-generates changelogs
 
 **PR Automation**:
+
 - Auto-assigns reviewers based on file paths
 - Auto-labels based on changes
 - Requires status checks before merge
 - Blocks merge on test failures
 
 **Release Management**:
+
 - Semantic versioning (semver)
 - Automatic changelog generation
 - Draft releases for review
@@ -353,6 +366,7 @@ task tools:gitnexus:validate
 #### Usage
 
 **Creating Feature Branch**:
+
 ```bash
 git checkout main
 git pull
@@ -360,6 +374,7 @@ git checkout -b feature/audio-streaming
 ```
 
 **Committing Changes**:
+
 ```bash
 # Format: type(scope): description
 git commit -m "feat(audio): add real-time streaming support"
@@ -368,6 +383,7 @@ git commit -m "docs(readme): update installation instructions"
 ```
 
 **Valid Commit Types**:
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation
@@ -394,6 +410,7 @@ task tools:openapi:view
 ```
 
 This creates:
+
 - `docs/api/openapi.json` - JSON specification
 - `docs/api/openapi.yaml` - YAML specification
 - `docs/api/index.html` - Interactive Swagger UI
@@ -401,6 +418,7 @@ This creates:
 ### Configuration
 
 See `backend/src/ekko/config/openapi_config.py` for:
+
 - API metadata
 - Server configurations
 - Tag definitions
@@ -410,6 +428,7 @@ See `backend/src/ekko/config/openapi_config.py` for:
 ### Integration
 
 The OpenAPI spec is automatically served by FastAPI:
+
 - JSON: `http://localhost:8000/openapi.json`
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
@@ -426,7 +445,8 @@ task tools:status
 ```
 
 Expected output:
-```
+
+```text
 === Tool Configuration Status ===
 
 CodeRabbit:
@@ -454,6 +474,7 @@ task check
 ```
 
 This verifies:
+
 - ✓ Code linting (Python + TypeScript)
 - ✓ Type checking (mypy + tsc)
 - ✓ Unit tests
@@ -486,6 +507,7 @@ task tools:openapi:generate
 **Issue**: Copilot not suggesting Claude completions
 
 **Solution**:
+
 1. Verify subscription includes model selection
 2. Restart VS Code
 3. Open Copilot Chat and confirm a Claude model is selected in the model picker
@@ -494,6 +516,7 @@ task tools:openapi:generate
 **Issue**: Agent instructions not working
 
 **Solution**:
+
 1. Verify `.github/copilot-instructions.md` exists
 2. Check `chat.instructionsFilesLocations` in settings
 3. Restart VS Code to reload instructions
@@ -503,6 +526,7 @@ task tools:openapi:generate
 **Issue**: CodeRabbit not reviewing PRs
 
 **Solution**:
+
 1. Verify GitHub App is installed
 2. Check repository permissions
 3. Ensure `.coderabbit.yaml` is valid YAML
@@ -513,6 +537,7 @@ task tools:openapi:generate
 **Issue**: Warp workflows not appearing
 
 **Solution**:
+
 1. Run `task tools:warp:install` to copy configs
 2. Restart Warp terminal
 3. Check `~/.warp/workflows/` for ekko-workflows.yaml
@@ -521,6 +546,7 @@ task tools:openapi:generate
 **Issue**: Warp AI not understanding project context
 
 **Solution**:
+
 1. Ensure `.warp/launch_configurations/ekko.yaml` is loaded
 2. Use "Launch Configurations" → "Ekko Development"
 3. Check AI context section in config file
@@ -530,6 +556,7 @@ task tools:openapi:generate
 **Issue**: Branch protection not working
 
 **Solution**:
+
 1. Verify `.gitnexus/config.json` is valid
 2. Check GitHub repository settings
 3. Ensure branch protection rules are enabled
@@ -540,6 +567,7 @@ task tools:openapi:generate
 **Issue**: Dependencies not installing
 
 **Solution**:
+
 ```bash
 # Backend
 cd backend
@@ -554,6 +582,7 @@ bun install
 **Issue**: Database migrations failing
 
 **Solution**:
+
 ```bash
 # Reset database
 rm backend/ekko.db
@@ -563,6 +592,7 @@ task db:migrate
 **Issue**: Tests failing
 
 **Solution**:
+
 ```bash
 # Clear caches
 rm -rf backend/.pytest_cache

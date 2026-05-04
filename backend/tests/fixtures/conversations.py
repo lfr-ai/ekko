@@ -6,7 +6,7 @@ Provides pre-built conversation scenarios for consistent testing.
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 from ekko.core.entities import Conversation, Message
 from ekko.core.enums import MessageRole

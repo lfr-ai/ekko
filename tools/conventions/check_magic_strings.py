@@ -10,7 +10,7 @@ import argparse
 import ast
 import json
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
 from enum import StrEnum, auto, unique
@@ -21,7 +21,9 @@ ROOT: Final = Path(__file__).resolve().parents[2]
 SRC: Final = ROOT / "backend" / "src" / "ekko"
 REGISTRY: Final = ROOT / "registry" / "naming_registry.json"
 TESTS: Final = ROOT / "tests"
-EXCEPTIONS_FILE: Final = ROOT / "tools" / "conventions" / "magic_strings_exceptions.json"
+EXCEPTIONS_FILE: Final = (
+    ROOT / "tools" / "conventions" / "magic_strings_exceptions.json"
+)
 
 
 @unique
@@ -103,12 +105,12 @@ ROLE_PATTERNS: Final = {"system", "user", "assistant", "tool"}
 
 # Exclusion patterns (regex)
 EXCLUSION_PATTERNS: Final = [
-    re.compile(r'^\s*logger\.(debug|info|warning|error|critical)'),  # Log calls
-    re.compile(r'^\s*raise\s+\w+Error'),  # Exception messages
+    re.compile(r"^\s*logger\.(debug|info|warning|error|critical)"),  # Log calls
+    re.compile(r"^\s*raise\s+\w+Error"),  # Exception messages
     re.compile(r'^\s*"""'),  # Docstrings
     re.compile(r"^\s*'''"),  # Docstrings
-    re.compile(r'#.*external-api'),  # External API payloads (anywhere in line)
-    re.compile(r'Literal\['),  # Type hints with Literal
+    re.compile(r"#.*external-api"),  # External API payloads (anywhere in line)
+    re.compile(r"Literal\["),  # Type hints with Literal
 ]
 
 
@@ -332,7 +334,7 @@ def _scan_with_ripgrep(pattern: str, category: ViolationCategory) -> list[Violat
     violations: list[Violation] = []
 
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             [
                 "rg",
                 "--json",
@@ -433,9 +435,7 @@ def _filter_violations(
     if exclude_files:
         patterns = [re.compile(pattern) for pattern in exclude_files]
         filtered = [
-            v
-            for v in filtered
-            if not any(p.search(str(v.file)) for p in patterns)
+            v for v in filtered if not any(p.search(str(v.file)) for p in patterns)
         ]
 
     return filtered
@@ -509,9 +509,7 @@ def main() -> int:
     violations = [v for v in violations if not _is_exception(v, exceptions)]
 
     # Apply filters
-    category_filter = (
-        ViolationCategory(args.category) if args.category else None
-    )
+    category_filter = ViolationCategory(args.category) if args.category else None
     violations = _filter_violations(
         violations,
         category=category_filter,

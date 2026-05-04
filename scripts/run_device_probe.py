@@ -12,6 +12,6 @@ code = (
 )
 
 r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)  # nosec B603
-print('RC=', r.returncode)
-print('STDOUT=', repr(r.stdout))
-print('STDERR=', repr(r.stderr))
+print("RC=", r.returncode)
+print("STDOUT=", repr(r.stdout))
+print("STDERR=", repr(r.stderr))

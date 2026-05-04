@@ -1,0 +1,177 @@
+{
+  // ═══════════════════════════════════════════════════════════
+  // Tasks Configuration for Ekko
+  // ═══════════════════════════════════════════════════════════
+
+  "version": "2.0.0",
+  "tasks": [
+    // ──────────────────────────────────────────────────────────
+    // Backend Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Backend: Install Dependencies",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv sync",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Run Dev Server",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv run uvicorn ekko.composition.app_factory:app --reload --host 127.0.0.1 --port 8000",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Started reloader process.*$",
+          "endsPattern": "^.*Application startup complete.*$"
+        }
+      }
+    },
+    {
+      "label": "Backend: Run Tests",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv run python -m pytest tests/ -v",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Lint",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv run python -m ruff check src",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Format",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv run python -m ruff format src",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Type Check",
+      "type": "shell",
+      "command": "UV_LINK_MODE=copy uv run python -m ty check src",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    // ──────────────────────────────────────────────────────────
+    // Frontend Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Frontend: Install Dependencies",
+      "type": "shell",
+      "command": "bun install",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Run Dev Server",
+      "type": "shell",
+      "command": "bun run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*VITE.*$",
+          "endsPattern": "^.*Local:.*$"
+        }
+      }
+    },
+    {
+      "label": "Frontend: Build",
+      "type": "shell",
+      "command": "bun run build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Test",
+      "type": "shell",
+      "command": "bun run test",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Lint",
+      "type": "shell",
+      "command": "bun run lint",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    // ──────────────────────────────────────────────────────────
+    // Compound Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Dev: Start Full Stack",
+      "dependsOn": [
+        "Backend: Run Dev Server",
+        "Frontend: Run Dev Server"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Quality: Run All Checks",
+      "dependsOn": [
+        "Backend: Lint",
+        "Backend: Type Check",
+        "Backend: Run Tests",
+        "Frontend: Lint",
+        "Frontend: Test"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

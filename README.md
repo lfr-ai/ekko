@@ -79,6 +79,7 @@ task verify
 ```
 
 Runs essential checks that catch 95% of CI failures:
+
 - Linting (ruff, biome, yaml)
 - Type checking (ty, tsc)
 - Unit tests
@@ -94,6 +95,7 @@ task ci:local
 ```
 
 Mirrors the complete GitHub Actions pipeline:
+
 1. **Lint & Format** - Fast fail on code quality issues
 2. **Security Scans** - bandit, pip-audit, detect-secrets (parallel)
 3. **Tests** - Unit tests → Integration tests (sequential)
@@ -114,10 +116,12 @@ cd backend && uv run pip-audit                                      # Dependency
 ```
 
 **Baselines**:
+
 - Secret scanning: `.secrets.baseline`
 - Bandit security: `backend/bandit.toml`
 
 **Update baselines** after reviewing and confirming false positives:
+
 ```bash
 cd backend && uv run detect-secrets scan --update ../.secrets.baseline
 ```
@@ -126,7 +130,7 @@ cd backend && uv run detect-secrets scan --update ../.secrets.baseline
 
 The GitHub Actions pipeline runs in stages for optimal speed:
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Stage 1: Lint & Type Check (fast fail)            │  → 3-5 min
 │  - ruff lint + format                               │
@@ -170,7 +174,7 @@ task frontend:build
 Clean Architecture with strict dependency direction:
 `presentation/infrastructure → application → core`
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Presentation (API routes, GraphQL, middleware)     │  ← FastAPI, Strawberry
 ├─────────────────────────────────────────────────────┤
@@ -187,6 +191,7 @@ Clean Architecture with strict dependency direction:
 ### Tech Stack
 
 **Backend**:
+
 - FastAPI, Uvicorn
 - Strawberry GraphQL
 - SQLAlchemy, Alembic, SQLite
@@ -194,6 +199,7 @@ Clean Architecture with strict dependency direction:
 - Pydantic v2, structlog
 
 **Frontend**:
+
 - React 19, TypeScript
 - Vite 6 + SWC
 - Tailwind CSS v4
@@ -202,18 +208,21 @@ Clean Architecture with strict dependency direction:
 - Storybook
 
 **Testing**:
+
 - pytest, Hypothesis
 - Vitest, React Testing Library, fast-check
 - Playwright (E2E)
 - factory-boy
 
 **Quality**:
+
 - ruff (Python linting/formatting)
 - mypy (type checking)
 - Biome (frontend linting/formatting)
 - pre-commit hooks
 
 **AI Development Tools**:
+
 - GitHub Copilot with Claude 3.5 Sonnet
 - CodeRabbit (AI code review)
 - Custom VS Code agents
@@ -222,17 +231,20 @@ Clean Architecture with strict dependency direction:
 ## 📚 Documentation
 
 ### Core Documentation
+
 - [Complete Setup Guide](docs/TOOLS_SETUP_GUIDE.md) - Full environment setup
 - [Architecture Overview](docs/ARCHITECTURE.md) - System design
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute
 - [Security Policy](SECURITY.md) - Security guidelines
 
 ### AI Development
+
 - [Claude + GitHub Copilot Guide](docs/CLAUDE_COPILOT_GUIDE.md) - Use Claude for coding
 - [Agent Customization](.github/agents/README.md) - Custom AI agents
 - [Agent Instructions](.github/copilot-instructions.md) - Project-specific AI guidance
 
 ### Development Guides
+
 - [Clean Architecture](.github/skills/clean-architecture/SKILL.md) - Layer boundaries
 - [Python Conventions](.github/skills/python-conventions/SKILL.md) - Code standards
 - [Frontend Stack](.github/skills/frontend-react-stack/SKILL.md) - React patterns
@@ -242,6 +254,7 @@ Clean Architecture with strict dependency direction:
 ## 🛠️ Tools
 
 ### CodeRabbit (AI Code Review)
+
 Automated AI-powered code reviews on pull requests.
 
 ```bash
@@ -252,6 +265,7 @@ task tools:coderabbit:validate
 Configuration: `.coderabbit.yaml`
 
 ### OpenAPI Documentation
+
 Generate OpenAPI specs and interactive documentation.
 
 ```bash
@@ -265,6 +279,7 @@ task tools:openapi:view
 Output: `docs/api/`
 
 ### Warp Terminal
+
 Modern terminal with AI features and workflows.
 
 ```bash
@@ -275,6 +290,7 @@ task tools:warp:install
 Configuration: `.warp/`
 
 ### GitNexus
+
 Advanced Git workflow automation.
 
 ```bash
@@ -311,7 +327,7 @@ task test:coverage      # With coverage report
 
 ### Test Organization
 
-```
+```text
 tests/
 ├── unit/           # Fast, isolated, no I/O
 ├── integration/    # Database, API, external services
@@ -426,6 +442,7 @@ task security:audit
 ### Pre-commit Hooks
 
 Automatic security checks:
+
 - detect-secrets
 - gitleaks
 - bandit (Python security)
@@ -435,6 +452,7 @@ Automatic security checks:
 Open in VS Code and choose "Reopen in Container".
 
 Features:
+
 - Pre-configured Python + Node environment
 - All tools installed
 - VS Code extensions pre-installed
@@ -453,6 +471,7 @@ docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile 
 ```
 
 Key files:
+
 - `docker/Containerfile`
 - `docker/compose.yaml`
 - `docker/compose.override.yaml`
@@ -463,6 +482,7 @@ Key files:
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 Quick overview:
+
 1. Fork the repository
 2. Create feature branch (`feature/your-feature`)
 3. Follow coding conventions
@@ -486,7 +506,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: Questions and general discussion
-- **Email**: lfr@tik-ai.dk
+- **Email**: <lfr@tik-ai.dk>
 
 ---
 

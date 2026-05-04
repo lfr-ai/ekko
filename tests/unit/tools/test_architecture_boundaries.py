@@ -16,13 +16,11 @@ Tests the Clean Architecture boundary enforcement tool including:
 from __future__ import annotations
 
 import subprocess
-import tempfile
 from pathlib import Path
 
 import pytest
 
 from tools.security.check_architecture_boundaries import (
-    Violation,
     _check_ai,
     _check_application,
     _check_config,
@@ -65,9 +63,7 @@ class TestUtilsLayerChecks:
         """utils/ importing from stdlib is allowed."""
         utils_file = tmp_path / "utils" / "types.py"
         utils_file.parent.mkdir(parents=True)
-        utils_file.write_text(
-            "from typing import Protocol\nimport json\nimport sys\n"
-        )
+        utils_file.write_text("from typing import Protocol\nimport json\nimport sys\n")
 
         violations = _check_utils([utils_file])
 
@@ -169,7 +165,9 @@ class TestCoreLayerChecks:
         """core/ importing from ekko.presentation is detected as violation."""
         core_file = tmp_path / "core" / "protocols.py"
         core_file.parent.mkdir(parents=True)
-        core_file.write_text("from ekko.presentation.api.schemas import MessageSchema\n")
+        core_file.write_text(
+            "from ekko.presentation.api.schemas import MessageSchema\n"
+        )
 
         violations = _check_core([core_file])
 
@@ -202,7 +200,9 @@ class TestCoreLayerChecks:
 class TestInfrastructureLayerChecks:
     """Test infrastructure/ layer boundary enforcement."""
 
-    def test_infrastructure_importing_application_detected(self, tmp_path: Path) -> None:
+    def test_infrastructure_importing_application_detected(
+        self, tmp_path: Path
+    ) -> None:
         """infrastructure/ importing from ekko.application is detected as violation."""
         infra_file = tmp_path / "infrastructure" / "db" / "session.py"
         infra_file.parent.mkdir(parents=True)
@@ -214,7 +214,9 @@ class TestInfrastructureLayerChecks:
         assert violations[0].layer == "infrastructure"
         assert violations[0].imported_layer == "application"
 
-    def test_infrastructure_importing_presentation_detected(self, tmp_path: Path) -> None:
+    def test_infrastructure_importing_presentation_detected(
+        self, tmp_path: Path
+    ) -> None:
         """infrastructure/ importing from ekko.presentation is detected as violation."""
         infra_file = tmp_path / "infrastructure" / "adapters" / "audio.py"
         infra_file.parent.mkdir(parents=True)
@@ -277,7 +279,9 @@ class TestApplicationLayerChecks:
         """application/ importing from ekko.infrastructure is allowed."""
         app_file = tmp_path / "application" / "services" / "data.py"
         app_file.parent.mkdir(parents=True)
-        app_file.write_text("from ekko.infrastructure.db.repositories import UserRepository\n")
+        app_file.write_text(
+            "from ekko.infrastructure.db.repositories import UserRepository\n"
+        )
 
         violations = _check_application([app_file])
 
@@ -420,10 +424,7 @@ class TestEdgeCases:
         utils_file = tmp_path / "utils" / "types.py"
         utils_file.parent.mkdir(parents=True)
         utils_file.write_text(
-            "from ekko.core.entities import (\n"
-            "    User,\n"
-            "    Message,\n"
-            ")\n"
+            "from ekko.core.entities import (\n    User,\n    Message,\n)\n"
         )
 
         violations = _check_utils([utils_file])

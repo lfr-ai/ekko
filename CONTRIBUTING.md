@@ -55,6 +55,7 @@ pre-commit install
 The project enforces several quality gates at commit time:
 
 **Pre-Commit Stage** (runs on `git commit`):
+
 - Code formatting (ruff, biome)
 - Linting (ruff, yamllint, markdownlint)
 - Type checking (ty)
@@ -63,6 +64,7 @@ The project enforces several quality gates at commit time:
 - Conventional commit message format
 
 **Pre-Push Stage** (runs on `git push`):
+
 - **Magic string detection** - Flags hardcoded strings that should be constants
 - Unit test suite
 - Integration checks
@@ -83,19 +85,23 @@ pre-commit run
 
 ### Hook Descriptions
 
-- **check-architecture-boundaries**: Validates Clean Architecture import boundaries. Blocks commits with violations like `core/` importing from `presentation/` or `application/` importing from `infrastructure/`. Fast (< 3 seconds).
+- **check-architecture-boundaries**: Validates Clean Architecture import boundaries. Blocks commits with violations
+  like `core/` importing from `presentation/` or `application/` importing from `infrastructure/`. Fast (< 3 seconds).
 
-- **check-magic-strings**: Detects hardcoded strings that should be extracted to constants or registry. Runs at pre-push stage to allow work-in-progress commits. Provides verbose output with suggested fixes.
+- **check-magic-strings**: Detects hardcoded strings that should be extracted to constants or registry.
+  Runs at pre-push stage to allow work-in-progress commits. Provides verbose output with suggested fixes.
 
 ### Handling Violations
 
 When a hook fails:
+
 1. Read the error message - it shows the file, line, and reason
 2. Fix the violation before committing
 3. Run the hook again to verify the fix
 4. Commit your changes
 
 If you need to temporarily skip hooks (emergencies only):
+
 ```bash
 git commit --no-verify
 ```
@@ -113,6 +119,7 @@ task verify
 ```
 
 Runs essential checks:
+
 - Linting (ruff, biome, yaml)
 - Type checking (ty, tsc)
 - Unit tests
@@ -128,6 +135,7 @@ task ci:local
 ```
 
 Mirrors the complete GitHub Actions pipeline including:
+
 - All linting and formatting checks
 - Security scans (bandit, pip-audit, detect-secrets)
 - Unit + integration tests
@@ -181,6 +189,7 @@ See `.github/skills/python-conventions/SKILL.md` for complete guidelines.
 ### Architecture
 
 Clean Architecture with strict dependency rules:
+
 - `core/` - Pure domain logic (no framework dependencies)
 - `application/` - Use case orchestration
 - `infrastructure/` - External integrations (DB, APIs)
@@ -226,7 +235,8 @@ Format: `type(scope): subject`
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`
 
 **Examples**:
-```
+
+```text
 feat(chat): add voice streaming support
 fix(db): correct migration rollback logic
 docs(readme): update pre-push workflow
@@ -274,6 +284,7 @@ Update baselines only after confirming false positives.
 ## Code Review
 
 All submissions require code review. Reviews check:
+
 - Adherence to Clean Architecture boundaries
 - Code quality and conventions
 - Test coverage
@@ -284,7 +295,7 @@ All submissions require code review. Reviews check:
 
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: Questions and general discussion
-- **Email**: lfr@tik-ai.dk
+- **Email**: <lfr@tik-ai.dk>
 
 ## License
 

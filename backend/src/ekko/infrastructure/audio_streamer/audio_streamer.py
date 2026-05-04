@@ -1,3 +1,5 @@
+"""Audio streamer interface for capturing system and microphone audio."""
+
 import asyncio
 import logging
 from typing import Any

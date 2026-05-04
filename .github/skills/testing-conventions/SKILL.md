@@ -32,7 +32,7 @@ description: Test quality and structure conventions.
 
 ## Test Structure
 
-```
+```text
 tests/
 ├── unit/                # Fast, isolated, no I/O, no network
 ├── integration/         # Database, API boundary, external services

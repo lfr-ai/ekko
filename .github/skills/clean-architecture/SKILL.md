@@ -10,7 +10,7 @@ description: Enforce Clean Architecture boundaries and dependency direction.
 Dependencies always flow **inward**. Outer layers depend on inner layers,
 never the reverse. The `core/` layer has zero framework imports.
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │  presentation/   (FastAPI routes, GraphQL, DI)  │
 │  ┌─────────────────────────────────────────┐    │
@@ -35,7 +35,7 @@ never the reverse. The `core/` layer has zero framework imports.
 
 The full dependency direction (inner to outer):
 
-```
+```text
 utils -> config -> core -> infrastructure/ai -> application -> composition -> presentation
 ```
 

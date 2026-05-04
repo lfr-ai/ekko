@@ -1,12 +1,9 @@
 ---
+name: Frontend React
 description: Specialized agent for React frontend development with modern patterns
-category: frontend
-expertise:
-  - React 19
-  - TypeScript
-  - Vite
-  - Tailwind CSS v4
-  - shadcn/ui
+model: claude-sonnet-4-6
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'shadcn/*']
+agents: ['*']
 ---
 
 # React Frontend Development Agent
@@ -45,6 +42,7 @@ You are an expert React frontend developer specializing in React 19, TypeScript,
 ## Code Quality Standards
 
 ### Component Structure
+
 ```typescript
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -77,6 +75,7 @@ export function AudioPlayer({ src, onEnded, className }: AudioPlayerProps) {
 ```
 
 ### Custom Hooks
+
 ```typescript
 import { useEffect, useState } from 'react';
 
@@ -109,6 +108,7 @@ export function useAudioStream(url: string) {
 ```
 
 ### State Management with Zustand
+
 ```typescript
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
@@ -138,6 +138,7 @@ export const useAudioStore = create<AudioStore>()(
 ```
 
 ### TanStack Query
+
 ```typescript
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTranscript, sendMessage } from '@/infrastructure/api/chat';
@@ -162,6 +163,7 @@ export function useChatMessages() {
 ```
 
 ### Zod Validation
+
 ```typescript
 import { z } from 'zod';
 
@@ -180,7 +182,7 @@ function validateConfig(config: unknown): AudioConfig {
 
 ## Project Structure
 
-```
+```text
 frontend/src/
 ├── application/         # Application logic
 │   ├── hooks/           # Custom React hooks
@@ -207,6 +209,7 @@ frontend/src/
 ## Common Tasks
 
 ### Adding a New Component
+
 1. Create component in appropriate directory
 2. Add TypeScript interfaces
 3. Implement with proper hooks
@@ -215,6 +218,7 @@ frontend/src/
 6. Export from index.ts
 
 ### Adding a shadcn/ui Component
+
 ```bash
 cd frontend
 bun run shadcn add button
@@ -222,6 +226,7 @@ bun run shadcn add dialog
 ```
 
 ### Creating a Custom Hook
+
 1. Create in `src/application/hooks/`
 2. Follow naming convention: `use*.ts`
 3. Return stable references (memoize if needed)
@@ -229,6 +234,7 @@ bun run shadcn add dialog
 5. Add tests
 
 ### Adding a Store
+
 1. Create in `src/application/stores/`
 2. Use Zustand with devtools and persist
 3. Type the store interface

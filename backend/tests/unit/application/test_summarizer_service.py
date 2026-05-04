@@ -1,6 +1,7 @@
-import pytest
 from pathlib import Path
 from unittest.mock import Mock
+
+import pytest
 
 from ekko.application.services.summarizer_service import SummarizerService
 

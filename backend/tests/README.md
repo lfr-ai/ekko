@@ -4,7 +4,7 @@ This directory contains the test suite for the Ekko backend.
 
 ## Directory Structure
 
-```
+```text
 tests/
 ├── conftest.py           # Root test configuration and shared fixtures
 ├── factories/            # Factory-boy factories for test data generation
@@ -202,10 +202,10 @@ def test_conversation_is_active_when_not_ended(conversation_factory):
     """Conversation is active when ended_at is None."""
     # Arrange
     conversation = conversation_factory.create(ended_at=None)
-    
+
     # Act
     result = conversation.is_active()
-    
+
     # Assert
     assert result is True
 
@@ -215,7 +215,7 @@ def test_message_factory_creates_user_message(message_factory):
     """MessageFactory.user_message creates message with USER role."""
     # Arrange & Act
     message = message_factory.user_message(content="Hello")
-    
+
     # Assert
     assert message.role == MessageRole.USER
     assert message.content == "Hello"

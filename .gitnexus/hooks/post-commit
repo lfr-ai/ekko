@@ -1,6 +1,6 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 # GitNexus post-commit hook — triggers incremental index update
-emulate -L zsh
+set -euo pipefail
 
 if command -v gitnexus &>/dev/null; then
   gitnexus analyze --incremental &>/dev/null &

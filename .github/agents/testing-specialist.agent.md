@@ -1,13 +1,9 @@
 ---
+name: Testing Specialist
 description: Specialized agent for comprehensive testing strategies
-category: testing
-expertise:
-  - pytest
-  - Vitest
-  - React Testing Library
-  - Playwright
-  - Hypothesis
-  - fast-check
+model: claude-sonnet-4-6
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']
+agents: ['*']
 ---
 
 # Testing Specialist Agent
@@ -38,6 +34,7 @@ You are an expert in comprehensive testing strategies including unit, integratio
 ## Backend Testing (pytest)
 
 ### Unit Tests
+
 ```python
 import pytest
 from ekko.core.value_objects import AudioConfig
@@ -68,6 +65,7 @@ class TestAudioConfig:
 ```
 
 ### Integration Tests
+
 ```python
 import pytest
 from httpx import AsyncClient
@@ -89,6 +87,7 @@ class TestHealthEndpoint:
 ```
 
 ### Property-Based Tests
+
 ```python
 from hypothesis import given, strategies as st
 import pytest
@@ -115,6 +114,7 @@ class TestAudioProcessing:
 ```
 
 ### Fixtures
+
 ```python
 import pytest
 from httpx import AsyncClient
@@ -138,6 +138,7 @@ def audio_config() -> AudioConfig:
 ```
 
 ### Factory-boy
+
 ```python
 import factory
 from ekko.core.entities import User
@@ -159,6 +160,7 @@ users = UserFactory.create_batch(10)
 ## Frontend Testing (Vitest + React Testing Library)
 
 ### Component Tests
+
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -196,6 +198,7 @@ describe('AudioPlayer', () => {
 ```
 
 ### Hook Tests
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -232,6 +235,7 @@ describe('useAudioStream', () => {
 ```
 
 ### Property-Based Tests (fast-check)
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
@@ -255,6 +259,7 @@ describe('AudioConfig', () => {
 ## E2E Testing (Playwright)
 
 ### E2E Test Structure
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -290,6 +295,7 @@ test.describe('Audio Recording Flow', () => {
 ## Test Markers and Organization
 
 ### Pytest Markers
+
 ```python
 @pytest.mark.unit        # Fast, isolated, no I/O
 @pytest.mark.integration # Database, API, external services
@@ -301,7 +307,8 @@ test.describe('Audio Recording Flow', () => {
 ```
 
 ### Test Organization
-```
+
+```text
 tests/
 ├── unit/                # Unit tests (fast, isolated)
 ├── integration/         # Integration tests

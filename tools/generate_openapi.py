@@ -90,7 +90,9 @@ def write_yaml_spec(spec: dict) -> None:
         spec: OpenAPI specification dictionary.
     """
     with OPENAPI_YAML.open("w", encoding="utf-8") as f:
-        yaml.dump(spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        yaml.dump(
+            spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False
+        )
     print(f"✓ Generated OpenAPI YAML: {OPENAPI_YAML}")
 
 
@@ -106,7 +108,7 @@ def write_html_docs(spec: dict) -> None:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{spec['info']['title']} - API Documentation</title>
+    <title>{spec["info"]["title"]} - API Documentation</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
     <style>
         body {{
@@ -145,7 +147,7 @@ def write_html_docs(spec: dict) -> None:
     </script>
 </body>
 </html>"""
-    
+
     with OPENAPI_HTML.open("w", encoding="utf-8") as f:
         f.write(html_content)
     print(f"✓ Generated HTML docs: {OPENAPI_HTML}")

@@ -24,7 +24,9 @@ if TYPE_CHECKING:
 
 # ── Constants ───────────────────────────────────────────────────
 
-REGISTRY_PATH = Path(__file__).parent.parent.parent / "registry" / "naming_registry.json"
+REGISTRY_PATH = (
+    Path(__file__).parent.parent.parent / "registry" / "naming_registry.json"
+)
 VALID_KEY_PATTERN = re.compile(r"^[a-z0-9_]+$")
 
 # ── Fixtures ────────────────────────────────────────────────────
@@ -133,7 +135,9 @@ def test_section_names_valid(registry: dict) -> None:
 # ── Hypothesis Property Tests ───────────────────────────────────
 
 
-@given(st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789_", min_size=1, max_size=20))
+@given(
+    st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789_", min_size=1, max_size=20)
+)
 def test_hypothetical_key_format(key: str) -> None:
     """Any key matching [a-z0-9_]+ is valid.
 
@@ -192,7 +196,9 @@ def test_field_names_section_structure(registry: dict) -> None:
 
     for key, meta in registry["field_names"].items():
         assert "value" in meta, f"Field name '{key}' missing 'value' field"
-        assert isinstance(meta["value"], str), f"Field name '{key}' value must be string"
+        assert isinstance(meta["value"], str), (
+            f"Field name '{key}' value must be string"
+        )
 
 
 def test_api_routes_section_structure(registry: dict) -> None:
@@ -203,7 +209,9 @@ def test_api_routes_section_structure(registry: dict) -> None:
     for key, meta in registry["api_routes"].items():
         assert "value" in meta, f"Route '{key}' missing 'value' field"
         value = meta["value"]
-        assert value.startswith("/"), f"Route '{key}' value must start with '/': {value}"
+        assert value.startswith("/"), (
+            f"Route '{key}' value must start with '/': {value}"
+        )
 
 
 def test_error_codes_section_structure(registry: dict) -> None:
@@ -213,4 +221,6 @@ def test_error_codes_section_structure(registry: dict) -> None:
 
     for key, meta in registry["error_codes"].items():
         assert "value" in meta, f"Error code '{key}' missing 'value' field"
-        assert isinstance(meta["value"], str), f"Error code '{key}' value must be string"
+        assert isinstance(meta["value"], str), (
+            f"Error code '{key}' value must be string"
+        )

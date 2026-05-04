@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+@AGENTS.md
+
 This file is the **primary instruction set** for Claude Code CLI (`claude`) when
 operating inside the `ekko` repository. It is read automatically on every
 invocation and takes precedence over general model knowledge.
@@ -7,10 +9,11 @@ invocation and takes precedence over general model knowledge.
 > **Instruction precedence** (highest to lowest):
 >
 > 1. This file (`CLAUDE.md`)
-> 2. Skill packs (`.github/skills/*/SKILL.md`)
-> 3. Copilot instructions (`.github/copilot-instructions.md`)
-> 4. `AGENTS.md` (generic agent guidance)
-> 5. General model knowledge
+> 2. Path-scoped rules (`.claude/rules/*.md`)
+> 3. Skill packs (`.github/skills/*/SKILL.md`)
+> 4. Copilot instructions (`.github/copilot-instructions.md`)
+> 5. `AGENTS.md` (generic agent guidance, imported above)
+> 6. General model knowledge
 
 ---
 
@@ -320,20 +323,112 @@ When you need official library or framework documentation:
 
 ## 11. Customization Structure
 
-The `.github/` directory is the **single source of truth** for all agent
-customization across tools:
+### Claude Code CLI (`.claude/`)
+
+```text
+.claude/
+├── settings.json              # Project settings: permissions (all Bash allowed), hooks, env
+├── settings.local.json        # Personal overrides (gitignored)
+├── agents/
+│   ├── code-reviewer.md       # Code review (model: sonnet, read-only, effort: high)
+│   ├── researcher.md          # Codebase exploration (model: haiku, read-only)
+│   ├── test-writer.md         # Test writing (model: sonnet, effort: high)
+│   ├── refactorer.md          # Refactoring (model: inherit, isolation: worktree)
+│   ├── debugger.md            # Bug investigation (model: sonnet, effort: high)
+│   ├── architect.md           # Architecture design (model: opus, effort: xhigh, read-only)
+│   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
+│   └── devops.md              # Build/deploy/CI (model: sonnet)
+├── hooks/
+│   ├── guard-destructive.sh   # PreToolUse: block dangerous commands (Unix)
+│   ├── guard-destructive.ps1  # PreToolUse: block dangerous commands (Windows)
+│   ├── stop-uncommitted-reminder.sh   # Stop: warn about uncommitted files (Unix)
+│   └── stop-uncommitted-reminder.ps1  # Stop: warn about uncommitted files (Windows)
+├── rules/
+│   ├── architecture.md        # Scoped to backend/src/ekko/**/*.py
+│   ├── python-conventions.md  # Scoped to **/*.py
+│   ├── testing.md             # Scoped to tests/**/*.py
+│   ├── frontend.md            # Scoped to frontend/src/**/*.{ts,tsx}
+│   ├── shell.md               # Scoped to **/*.{sh,ps1}
+│   └── registry.md            # Scoped to registry/**
+└── skills/
+    ├── clean-architecture/    # Auto-loads on backend Python files
+    ├── python-conventions/    # Auto-loads on all Python files
+    ├── testing-conventions/   # Auto-loads on test files
+    ├── frontend-react-stack/  # Auto-loads on frontend TS/TSX files
+    ├── naming-registry/       # Manual invoke only
+    ├── quality-gate/          # Manual invoke only
+    └── deploy-check/          # Manual invoke only
+```
+
+### Claude Code Agents Reference
+
+| Agent | Model | Tools | Isolation | Effort | Permission Mode |
+| --- | --- | --- | --- | --- | --- |
+| `code-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
+| `researcher` | haiku | Read, Grep, Glob | — | medium | plan |
+| `test-writer` | sonnet | Read, Grep, Glob, Write, Edit, Bash | — | high | acceptEdits |
+| `refactorer` | inherit | Read, Grep, Glob, Write, Edit, Bash | worktree | high | acceptEdits |
+| `debugger` | sonnet | Read, Edit, Bash, Grep, Glob, Write | — | high | acceptEdits |
+| `architect` | opus | Read, Grep, Glob, Bash | — | xhigh | plan |
+| `frontend-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
+| `devops` | sonnet | Read, Grep, Glob, Bash, Write, Edit | — | high | acceptEdits |
+
+**Usage**: Claude auto-delegates based on the `description` field. You can also
+invoke explicitly: `@code-reviewer review auth changes` or run a full session
+as an agent: `claude --agent code-reviewer`.
+
+### MCP Servers
+
+| Config file | Tool | Servers |
+| --- | --- | --- |
+| `.mcp.json` | Claude Code CLI | context7, shadcn, gitnexus |
+| `.vscode/mcp.json` | VS Code Copilot | context7, shadcn, gitnexus |
+
+### VS Code Copilot (`.github/`)
 
 ```text
 .github/
-├── copilot-instructions.md      # VS Code Copilot / GitHub Copilot instructions
-├── skills/                      # Skill packs (shared by Claude + Copilot)
+├── copilot-instructions.md         # Global VS Code Copilot instructions
+├── agents/                         # Agent definitions (9 agents)
+│   ├── backend-python.agent.md     # Python backend specialist
+│   ├── frontend-react.agent.md     # React frontend specialist
+│   ├── expert-react-frontend-engineer.agent.md
+│   ├── testing-specialist.agent.md
+│   ├── database-specialist.agent.md
+│   ├── security-specialist.agent.md
+│   ├── debug.agent.md              # Bug investigation mode
+│   ├── deep-thinking.agent.md      # Cross-cutting architecture analysis
+│   └── modernization.agent.md      # Repo-wide modernization planning
+├── skills/                         # Skill packs (shared by Claude + Copilot)
 │   ├── clean-architecture/SKILL.md
 │   ├── python-conventions/SKILL.md
 │   ├── testing-conventions/SKILL.md
 │   ├── frontend-react-stack/SKILL.md
-│   └── naming-registry/SKILL.md
+│   ├── naming-registry/SKILL.md
+│   ├── gitnexus/SKILL.md
+│   └── openspec/SKILL.md
+├── instructions/                   # File-scoped instructions (auto-load via applyTo)
+│   ├── architecture.instructions.md        # backend/src/ekko/**/*.py
+│   ├── coding-conventions.instructions.md  # **/*.py
+│   ├── testing.instructions.md             # tests/**/*.py
+│   ├── shell.instructions.md               # **/*.{sh,ps1}
+│   ├── registry.instructions.md            # registry/**
+│   └── update-docs-on-code-change.instructions.md  # **/*.{md,py,yml,yaml,toml,json}
+├── hooks/                          # VS Code Copilot hooks
+│   ├── hooks.json                  # Combined hook config
+│   ├── tool-guardian.json          # PreToolUse: block destructive ops
+│   └── dependency-license-checker.json  # Stop: license compliance check
+├── prompts/                        # Reusable prompt templates
+│   ├── review.prompt.md
+│   ├── test.prompt.md
+│   ├── refactor.prompt.md
+│   └── debug.prompt.md
+├── knowledge/
+│   └── EKKO_KNOWLEDGE_GRAPH.md     # Codebase knowledge graph
 └── CODEOWNERS
 ```
+
+### Shared Skills (Claude Code + VS Code Copilot)
 
 | Skill | Scope |
 | --- | --- |
@@ -342,6 +437,8 @@ customization across tools:
 | **Testing Conventions** | Pytest fixtures, factories, coverage |
 | **Frontend React Stack** | React + TypeScript + Vite + shadcn/ui |
 | **Naming Registry** | Registry-first constant generation |
+| **GitNexus** | Graph-powered code intelligence |
+| **OpenSpec** | Spec-driven planning |
 
 ---
 
@@ -349,17 +446,18 @@ customization across tools:
 
 | Capability | Claude Code CLI (`claude`) | VS Code GitHub Copilot |
 | --- | --- | --- |
-| **Instruction file** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
-| **Skill packs** | `.github/skills/*/SKILL.md` | `.github/skills/*/SKILL.md` |
-| **Agent guidance** | `AGENTS.md` | `AGENTS.md` |
+| **Primary config** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
+| **Path-scoped rules** | `.claude/rules/*.md` (`paths:`) | `.github/instructions/*.md` (`applyTo:`) |
+| **Skills** | `.claude/skills/` + `.github/skills/` | `.github/skills/` |
+| **Agents** | `.claude/agents/` (8 agents) | `.github/agents/` (9 agents) |
+| **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/*.json` |
 | **Shell access** | Full terminal (task, git, uv, bun) | Limited via `@terminal` |
 | **File editing** | Direct read/write/edit tools | Inline editor suggestions |
 | **Multi-file refactors** | Native (reads full tree) | Manual or via Copilot Edits |
 | **Test execution** | Runs `task test` directly | Requires terminal passthrough |
 | **Git operations** | Full git CLI access | Via Source Control UI |
-| **Context window** | Full conversation + file reads | File-scoped + workspace index |
-| **Architecture validation** | Can run `task architecture` | Relies on skill instructions |
+| **MCP servers** | `.mcp.json` | `.vscode/mcp.json` |
 
-Both tools share the same skill packs in `.github/skills/` and respect
-`AGENTS.md` for general conventions. `CLAUDE.md` provides CLI-specific
-overrides and the authoritative instruction set for Claude Code sessions.
+Both tools share skill packs in `.github/skills/` and respect `AGENTS.md`
+for general conventions. `CLAUDE.md` provides CLI-specific overrides and
+the authoritative instruction set for Claude Code sessions.

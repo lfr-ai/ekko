@@ -1,3 +1,5 @@
+"""TCP server that streams audio data from the subprocess to connected clients."""
+
 import asyncio
 import logging
 from asyncio import Event, StreamReader, StreamWriter

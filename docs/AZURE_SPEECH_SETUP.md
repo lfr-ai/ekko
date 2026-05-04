@@ -26,10 +26,11 @@ EKKO_PORT=8000
 ## Getting Azure Speech Services Credentials
 
 1. **Create Azure Account** (if you don't have one):
-   - Go to https://azure.microsoft.com/
+   - Go to <https://azure.microsoft.com/>
    - Sign up for free tier (includes 5 hours of free speech recognition per month)
 
 2. **Create a Speech Service Resource**:
+
    ```bash
    # Using Azure CLI
    az cognitiveservices account create \
@@ -41,7 +42,7 @@ EKKO_PORT=8000
    ```
 
    Or use the Azure Portal:
-   - Navigate to https://portal.azure.com
+   - Navigate to <https://portal.azure.com>
    - Search for "Speech Services"
    - Click "Create" → "Speech"
    - Fill in resource details
@@ -49,6 +50,7 @@ EKKO_PORT=8000
    - Click "Review + Create"
 
 3. **Get Your Credentials**:
+
    ```bash
    # Using Azure CLI
    az cognitiveservices account keys list \
@@ -63,6 +65,7 @@ EKKO_PORT=8000
    - Note the REGION (e.g., "northeurope")
 
 4. **Set Environment Variables**:
+
    ```bash
    export EKKO_AZURE_SPEECH_KEY="paste-your-key-here"
    export EKKO_AZURE_SPEECH_REGION="northeurope"
@@ -71,13 +74,14 @@ EKKO_PORT=8000
 ## Supported Regions
 
 Common Azure Speech Services regions:
+
 - `northeurope` (Ireland)
 - `westeurope` (Netherlands)
 - `eastus` (Virginia, USA)
 - `westus` (California, USA)
 - `southeastasia` (Singapore)
 
-For full list: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/regions
+For full list: <https://learn.microsoft.com/en-us/azure/ai-services/speech-service/regions>
 
 ## Supported Languages
 
@@ -91,11 +95,12 @@ export EKKO_AZURE_SPEECH_LANGUAGE=sv-SE  # Swedish
 export EKKO_AZURE_SPEECH_LANGUAGE=no-NO  # Norwegian
 ```
 
-Full language support: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support
+Full language support: <https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support>
 
 ## Audio Requirements
 
 Azure Speech SDK expects:
+
 - **Sample Rate**: 16 kHz (recommended for speech)
 - **Channels**: Mono (1 channel)
 - **Sample Width**: 16-bit PCM
@@ -105,34 +110,40 @@ The application captures at 48 kHz stereo and converts internally before sending
 ## Free Tier Limits
 
 Azure Speech Services free tier (F0):
+
 - **Speech-to-Text**: 5 audio hours per month
 - **Real-time transcription**: 20 concurrent requests
 - **Rate**: 60 concurrent requests/minute
 
 After free tier exhausted, costs are:
+
 - Standard: $1 per audio hour
 - Custom speech: $1.40 per audio hour
 
 ## Troubleshooting
 
 ### "EKKO_AZURE_SPEECH_KEY environment variable is required"
+
 - Ensure the environment variable is set before starting the app
 - Check for typos in the variable name
 - Verify the key is not empty
 
 ### "Failed to create recognizer"
+
 - Check that your region is correct
 - Verify your subscription key is valid
 - Ensure you have network connectivity
 - Check that you haven't exceeded free tier limits
 
 ### "No speech recognized"
+
 - Verify your microphone is working
 - Check audio input device settings
 - Ensure audio sample rate is 16 kHz
 - Try increasing microphone volume
 
 ### High latency / slow transcription
+
 - Check network connection quality
 - Verify you're using the closest Azure region
 - Consider upgrading from free tier if rate-limited
@@ -155,7 +166,7 @@ Or use Azure Portal → Cost Management + Billing → Cost Analysis
 
 If you were using the old Faster Whisper implementation:
 
-1. **Dependencies**: 
+1. **Dependencies**:
    - Old: `faster-whisper`, `ctranslate2` (large, CPU/GPU-bound)
    - New: `azure-cognitiveservices-speech` (lightweight, cloud-based)
 
@@ -176,6 +187,7 @@ If you were using the old Faster Whisper implementation:
    - New: Requires internet connection
 
 If you need offline operation, the old Faster Whisper implementation can be restored by:
+
 - Adding `faster-whisper>=1.2.0` to dependencies
 - Reverting the STT adapter factory
 - This is not recommended for production use

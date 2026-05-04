@@ -1,6 +1,7 @@
 ---
 name: naming-registry
 description: Canonical naming definitions shared between backend and frontend.
+disable-model-invocation: true
 ---
 
 # Skill: Naming Registry

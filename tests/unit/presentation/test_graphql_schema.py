@@ -83,7 +83,13 @@ class TestGraphQLSchemaStructure:
         query_fields = schema.query.__strawberry_definition__.fields
 
         field_names = {field.python_name for field in query_fields}
-        expected_fields = {"health", "health_ready", "conversation", "conversations", "check_pii"}
+        expected_fields = {
+            "health",
+            "health_ready",
+            "conversation",
+            "conversations",
+            "check_pii",
+        }
 
         assert expected_fields.issubset(field_names)
 
@@ -190,7 +196,9 @@ class TestGraphQLQueryExecution:
     def test_conversations_list_query(self) -> None:
         """Conversations list query handles pagination."""
         variables = {"limit": 10, "offset": 0}
-        result = schema.execute_sync(CONVERSATIONS_LIST_QUERY, variable_values=variables)
+        result = schema.execute_sync(
+            CONVERSATIONS_LIST_QUERY, variable_values=variables
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -289,7 +297,9 @@ class TestGraphQLMutationExecution:
     def test_start_conversation_mutation_with_metadata(self) -> None:
         """Start conversation mutation accepts optional metadata."""
         variables = {"input": {"metadata": "test metadata"}}
-        result = schema.execute_sync(START_CONVERSATION_MUTATION, variable_values=variables)
+        result = schema.execute_sync(
+            START_CONVERSATION_MUTATION, variable_values=variables
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -298,7 +308,9 @@ class TestGraphQLMutationExecution:
     def test_end_conversation_mutation(self) -> None:
         """End conversation mutation marks conversation as ended."""
         variables = {"conversationId": "test-conv-123"}
-        result = schema.execute_sync(END_CONVERSATION_MUTATION, variable_values=variables)
+        result = schema.execute_sync(
+            END_CONVERSATION_MUTATION, variable_values=variables
+        )
 
         assert result.errors is None
         assert result.data is not None

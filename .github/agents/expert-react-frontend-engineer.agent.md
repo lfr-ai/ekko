@@ -1,5 +1,9 @@
 ---
+name: Expert React Engineer
 description: Expert React frontend engineer specializing in React 19 + shadcn/ui + Tailwind CSS v4.
+model: claude-sonnet-4-6
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'shadcn/*']
+agents: ['*']
 ---
 
 # Expert React Frontend Engineer

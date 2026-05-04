@@ -10,4 +10,3 @@ arguments:
   - name: args
     description: Additional arguments
     default_value: ""
----

@@ -10,23 +10,23 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Final
 
+import structlog
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from ekko.config.settings import BaseAppConfig
 
-from ekko.utils.logger import Logger
-
 # Azure Speech SDK is a required runtime dependency for STT
+speechsdk: Any = None
 try:
     import azure.cognitiveservices.speech as speechsdk  # type: ignore[import-untyped]
 
     AZURE_SPEECH_AVAILABLE: Final[bool] = True
 except ImportError:  # pragma: no cover - optional runtime dependency
-    speechsdk = None  # type: ignore[assignment]
     AZURE_SPEECH_AVAILABLE: Final[bool] = False
 
-logger = Logger.create(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @dataclass(slots=True, frozen=True)
@@ -198,6 +198,8 @@ class AzureSpeechSTT:
             logger.info("creating_recognizer", queue_name=queue_name)
 
             # Create Azure Speech config
+            # start() guarantees azure_speech_key is not None before we reach here
+            assert self._settings.azure_speech_key is not None
             speech_config = await asyncio.to_thread(
                 speechsdk.SpeechConfig,
                 subscription=self._settings.azure_speech_key.get_secret_value(),

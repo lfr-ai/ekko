@@ -81,6 +81,7 @@ Use the chat panel for:
 - **Testing**: Ask to generate tests
 
 **Keyboard Shortcuts**:
+
 - `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Shift+I` (Mac): Open chat
 - `Ctrl+I` or `Cmd+I`: Inline chat
 
@@ -107,6 +108,7 @@ Use slash commands in chat for specific actions:
 ### 5. Context Awareness
 
 Claude has access to:
+
 - Your current file
 - Open files in editor
 - Selected code
@@ -143,7 +145,7 @@ Our project has specialized agents for different tasks:
 
 Claude is aware of:
 
-```
+```text
 .github/
 ├── copilot-instructions.md       # Global project instructions
 ├── agents/                        # Specialized agents
@@ -165,12 +167,14 @@ Claude is aware of:
 ### Example 1: Generate a New Endpoint
 
 **Prompt**:
-```
+
+```text
 Create a new FastAPI endpoint for submitting audio transcription requests.
 Follow Clean Architecture and use the existing patterns.
 ```
 
 **Claude will**:
+
 1. Check Clean Architecture guidelines
 2. Create DTO, service, and route
 3. Follow project conventions (type hints, error handling, etc.)
@@ -179,12 +183,14 @@ Follow Clean Architecture and use the existing patterns.
 ### Example 2: Refactor Component
 
 **Prompt**:
-```
+
+```text
 Refactor this React component to use Zustand for state management
 and follow our frontend conventions.
 ```
 
 **Claude will**:
+
 1. Check React conventions
 2. Create Zustand store
 3. Update component to use store
@@ -194,12 +200,14 @@ and follow our frontend conventions.
 ### Example 3: Generate Tests
 
 **Prompt**:
-```
+
+```text
 Generate comprehensive tests for this service including unit tests,
 property-based tests, and integration tests.
 ```
 
 **Claude will**:
+
 1. Check testing conventions
 2. Generate pytest tests with appropriate markers
 3. Use factory-boy for test data
@@ -220,7 +228,7 @@ property-based tests, and integration tests.
 
 ### 3. Ask for Multiple Options
 
-```
+```text
 Show me 3 different approaches to implement this feature:
 1. Using CrewAI agents
 2. Using LangChain chains
@@ -233,7 +241,7 @@ Explain tradeoffs for each.
 
 Start with basic implementation, then refine:
 
-```
+```text
 1st prompt: "Create a basic audio processing service"
 2nd prompt: "Add error handling and logging"
 3rd prompt: "Add rate limiting and caching"
@@ -255,7 +263,7 @@ Select relevant code before asking questions:
 
 Claude can suggest changes across multiple files:
 
-```
+```text
 Refactor the audio processing pipeline:
 1. Split large service into smaller services
 2. Update all imports
@@ -265,7 +273,7 @@ Refactor the audio processing pipeline:
 
 ### 2. Architecture Discussions
 
-```
+```text
 I want to add real-time collaboration features. Discuss:
 1. Architecture changes needed
 2. Database schema updates
@@ -276,7 +284,7 @@ I want to add real-time collaboration features. Discuss:
 
 ### 3. Performance Optimization
 
-```
+```text
 Analyze this code for performance issues:
 [paste code]
 
@@ -288,7 +296,7 @@ Suggest optimizations following our conventions:
 
 ### 4. Security Review
 
-```
+```text
 Review this authentication flow for security issues:
 [paste code]
 
@@ -363,7 +371,8 @@ Check for:
 ## Examples of Great Prompts
 
 ### Backend Development
-```
+
+```text
 As a backend developer following Clean Architecture:
 
 Create a new feature for audio streaming with these requirements:
@@ -385,7 +394,8 @@ Follow all project conventions for error handling, logging, and types.
 ```
 
 ### Frontend Development
-```
+
+```text
 As a frontend developer using React 19 and TypeScript:
 
 Create an audio recording component with these features:
@@ -407,7 +417,8 @@ Follow our component structure and styling conventions.
 ```
 
 ### Testing
-```
+
+```text
 As a testing specialist:
 
 Generate comprehensive tests for the audio processing service:

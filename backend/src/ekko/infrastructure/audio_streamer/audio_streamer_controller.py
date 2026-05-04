@@ -1,8 +1,10 @@
+"""Controller for managing the audio streamer subprocess lifecycle."""
+
 import asyncio
 import builtins
 import json
 import logging
-import subprocess
+import subprocess  # nosec B404
 import sys
 from asyncio.subprocess import Process
 
@@ -38,7 +40,7 @@ class AudioStreamerController:
         )
         # Running a short subprocess to query device names; this is executed
         # with a list of args (no shell) to avoid shell injection risks.  # nosec B603
-        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)  # noqa: S603
+        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)  # nosec B603 # noqa: S603
 
         # Log raw probe output for debugging in CI/test environments
         logging.getLogger(__name__).debug(

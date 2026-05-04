@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -30,7 +29,9 @@ async def test_audio_controller_start_stop(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
     ):
         # Mock subprocess
@@ -62,7 +63,9 @@ async def test_audio_controller_send_command(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
         patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.open_connection") as mock_conn,
     ):
@@ -100,7 +103,9 @@ async def test_audio_controller_device_check_no_change(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
     ):
         # Mock subprocess
@@ -131,9 +136,11 @@ async def test_audio_controller_device_check_with_change(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
-        patch.object(AudioStreamerController, "send_command", new_callable=AsyncMock) as mock_send_cmd,
+        patch.object(AudioStreamerController, "send_command", new_callable=AsyncMock) as _mock_send_cmd,
     ):
         # Mock subprocess - create different instances for each call
         mock_process1 = MagicMock()
@@ -221,7 +228,9 @@ async def test_audio_controller_stop_timeout_graceful(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
         patch.object(AudioStreamerController, "send_command", new_callable=AsyncMock) as mock_send_cmd,
     ):
@@ -252,9 +261,11 @@ async def test_audio_controller_stop_timeout_terminate(
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
 
     with (
-        patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec") as mock_exec,
+        patch(
+            "ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.create_subprocess_exec"
+        ) as mock_exec,
         patch.object(AudioStreamerController, "_get_device_names", new_callable=AsyncMock) as mock_get_devices,
-        patch.object(AudioStreamerController, "send_command", new_callable=AsyncMock) as mock_send_cmd,
+        patch.object(AudioStreamerController, "send_command", new_callable=AsyncMock) as _mock_send_cmd,
         patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.asyncio.wait_for") as mock_wait_for,
     ):
         # Mock subprocess

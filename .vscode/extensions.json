@@ -1,0 +1,97 @@
+{
+  // ═══════════════════════════════════════════════════════════
+  // Recommended Extensions for Ekko Development
+  // ═══════════════════════════════════════════════════════════
+
+  "recommendations": [
+    // ──────────────────────────────────────────────────────────
+    // AI-Powered Development
+    // ──────────────────────────────────────────────────────────
+    "github.copilot",
+    "github.copilot-chat",
+
+    // ──────────────────────────────────────────────────────────
+    // Python Development
+    // ──────────────────────────────────────────────────────────
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    "charliermarsh.ruff",
+
+    // ──────────────────────────────────────────────────────────
+    // TypeScript/JavaScript/React
+    // ──────────────────────────────────────────────────────────
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "dsznajder.es7-react-js-snippets",
+    "graphql.vscode-graphql-syntax",
+
+    // ──────────────────────────────────────────────────────────
+    // Testing
+    // ──────────────────────────────────────────────────────────
+    "ms-playwright.playwright",
+    "vitest.explorer",
+
+    // ──────────────────────────────────────────────────────────
+    // Task Runner
+    // ──────────────────────────────────────────────────────────
+    "actboy168.task",
+
+    // ──────────────────────────────────────────────────────────
+    // API Development
+    // ──────────────────────────────────────────────────────────
+    "rangav.vscode-thunder-client",
+
+    // ──────────────────────────────────────────────────────────
+    // Database
+    // ──────────────────────────────────────────────────────────
+    "qwtel.sqlite-viewer",
+
+    // ──────────────────────────────────────────────────────────
+    // Git & GitHub
+    // ──────────────────────────────────────────────────────────
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+
+    // ──────────────────────────────────────────────────────────
+    // Docker & Containers
+    // ──────────────────────────────────────────────────────────
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+
+    // ──────────────────────────────────────────────────────────
+    // Markdown & Documentation
+    // ──────────────────────────────────────────────────────────
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+
+    // ──────────────────────────────────────────────────────────
+    // YAML, TOML & Config Files
+    // ──────────────────────────────────────────────────────────
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml",
+
+    // ──────────────────────────────────────────────────────────
+    // Utilities
+    // ──────────────────────────────────────────────────────────
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "gruntfuggly.todo-tree",
+    "christian-kohler.path-intellisense",
+    "visualstudioexptteam.vscodeintellicode",
+    "visualstudioexptteam.intellicode-api-usage-examples"
+  ],
+
+  "unwantedRecommendations": [
+    "ms-python.autopep8",
+    "ms-python.flake8",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+    "prettier.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "orta.vscode-jest",
+    "wayou.vscode-todo-highlight"
+  ]
+}

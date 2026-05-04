@@ -167,6 +167,7 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 ```
 
 **Legitimate exceptions** (documented in `tools/conventions/magic_strings_exceptions.json`):
+
 - External API contracts (OpenAPI spec fields, third-party response keys)
 - Framework limitations (Strawberry GraphQL literal defaults)
 - System dict access (audio device info, getattr fallbacks)
@@ -187,10 +188,12 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 | Skill | Path | Scope |
 | --- | --- | --- |
 | **Clean Architecture** | `.github/skills/clean-architecture/SKILL.md` | Layer boundaries, dependency rules |
-| **Frontend React Stack** | `.github/skills/frontend-react-stack/SKILL.md` | React + TypeScript + Vite + shadcn/ui |
 | **Python Conventions** | `.github/skills/python-conventions/SKILL.md` | Naming, typing, Pydantic, logging |
 | **Testing Conventions** | `.github/skills/testing-conventions/SKILL.md` | Pytest fixtures, factories, coverage |
+| **Frontend React Stack** | `.github/skills/frontend-react-stack/SKILL.md` | React + TypeScript + Vite + shadcn/ui |
 | **Naming Registry** | `.github/skills/naming-registry/SKILL.md` | Registry-first constant generation |
+| **GitNexus** | `.github/skills/gitnexus/SKILL.md` | Graph-powered code intelligence |
+| **OpenSpec** | `.github/skills/openspec/SKILL.md` | Spec-driven planning |
 
 ---
 

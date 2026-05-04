@@ -46,6 +46,7 @@ task db:migrate    # Ensure DB schema is current
 ## Output
 
 Provide:
+
 - **Root cause** -- what is actually wrong and why.
 - **Fix** -- concrete code change with file paths.
 - **Verification** -- which `task` commands to run to confirm the fix.

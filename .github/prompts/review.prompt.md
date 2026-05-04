@@ -37,6 +37,7 @@ Review the selected code (or the current diff) against the Ekko project standard
 ## Output format
 
 For each issue found, report:
+
 - **File and line** -- where the violation occurs.
 - **Rule violated** -- which standard is broken.
 - **Suggested fix** -- concrete code change to resolve it.
