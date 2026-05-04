@@ -1,7 +1,0 @@
-# Auto-generated and third-party directories
-.gsd/
-frontend/storybook-static/
-node_modules/
-.venv/
-dist/
-build/

@@ -1,3 +1,8 @@
+---
+# Single source of truth for markdownlint configuration (CLI2 + VS Code extension).
+# Used by: pre-commit markdownlint-cli2 hook, VS Code markdownlint extension.
+# Ignore patterns live here — .markdownlintignore is NOT used.
+
 globs:
   - "**/*.md"
 
@@ -9,19 +14,43 @@ ignores:
   - ".venv/**"
   - "**/.venv/**"
   - "dist/**"
+  - "build/**"
   - "htmlcov/**"
   - "logs/**"
 
 config:
   default: true
+
+  # Line length — generous limit; code blocks, tables, and headings are exempt.
   MD013:
     line_length: 120
     code_blocks: false
     tables: false
     headings: false
+
+  # Allow duplicate headings when they are siblings only.
   MD024:
     siblings_only: true
+
+  # Trailing punctuation in headings — allowed (e.g. "Why?").
+  MD026: false
+
+  # Inline HTML — allowed (used in GitHub-rendered docs).
+  MD033: false
+
+  # Emphasis used as heading — allowed.
+  MD036: false
+
+  # First line must be top-level heading — not enforced (many files start with frontmatter).
+  MD041: false
+
+  # Fenced code blocks must use backtick style.
   MD046:
     style: fenced
+
+  # Code fence style — backticks only.
   MD048:
     style: backtick
+
+  # Proper names capitalisation — not enforced (generates too many false positives).
+  MD060: false
