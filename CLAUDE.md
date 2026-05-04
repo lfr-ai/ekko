@@ -337,7 +337,8 @@ When you need official library or framework documentation:
 │   ├── debugger.md            # Bug investigation (model: sonnet, effort: high)
 │   ├── architect.md           # Architecture design (model: opus, effort: xhigh, read-only)
 │   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
-│   └── devops.md              # Build/deploy/CI (model: sonnet)
+│   ├── devops.md              # Build/deploy/CI (model: sonnet)
+│   └── ddd-specialist.md      # DDD domain modeling expert (model: opus, read-only)
 ├── hooks/
 │   ├── guard-destructive.sh   # PreToolUse: block dangerous commands (Unix)
 │   ├── guard-destructive.ps1  # PreToolUse: block dangerous commands (Windows)
@@ -349,12 +350,18 @@ When you need official library or framework documentation:
 │   ├── testing.md             # Scoped to tests/**/*.py
 │   ├── frontend.md            # Scoped to frontend/src/**/*.{ts,tsx}
 │   ├── shell.md               # Scoped to **/*.{sh,ps1}
-│   └── registry.md            # Scoped to registry/**
+│   ├── registry.md            # Scoped to registry/**
+│   ├── ddd.md                 # Scoped to core/**/*.py + application/**/*.py
+│   ├── tdd.md                 # Scoped to tests/**/*.py
+│   └── sdd.md                 # Scoped to docs/specs/**/*.md
 └── skills/
     ├── clean-architecture/    # Auto-loads on backend Python files
     ├── python-conventions/    # Auto-loads on all Python files
     ├── testing-conventions/   # Auto-loads on test files
     ├── frontend-react-stack/  # Auto-loads on frontend TS/TSX files
+    ├── ddd/                   # Auto-loads on core/**/*.py + application/**/*.py
+    ├── tdd/                   # Auto-loads on tests/**/*.py
+    ├── sdd/                   # Auto-loads on docs/specs/**/*.md
     ├── naming-registry/       # Manual invoke only
     ├── quality-gate/          # Manual invoke only
     └── deploy-check/          # Manual invoke only
@@ -372,6 +379,7 @@ When you need official library or framework documentation:
 | `architect` | opus | Read, Grep, Glob, Bash | — | xhigh | plan |
 | `frontend-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
 | `devops` | sonnet | Read, Grep, Glob, Bash, Write, Edit | — | high | acceptEdits |
+| `ddd-specialist` | opus | Read, Grep, Glob, Bash | — | high | plan |
 
 **Usage**: Claude auto-delegates based on the `description` field. You can also
 invoke explicitly: `@code-reviewer review auth changes` or run a full session
@@ -389,7 +397,7 @@ as an agent: `claude --agent code-reviewer`.
 ```text
 .github/
 ├── copilot-instructions.md         # Global VS Code Copilot instructions
-├── agents/                         # Agent definitions (9 agents)
+├── agents/                         # Agent definitions (10 agents)
 │   ├── backend-python.agent.md     # Python backend specialist
 │   ├── frontend-react.agent.md     # React frontend specialist
 │   ├── expert-react-frontend-engineer.agent.md
@@ -398,7 +406,8 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── security-specialist.agent.md
 │   ├── debug.agent.md              # Bug investigation mode
 │   ├── deep-thinking.agent.md      # Cross-cutting architecture analysis
-│   └── modernization.agent.md      # Repo-wide modernization planning
+│   ├── modernization.agent.md      # Repo-wide modernization planning
+│   └── ddd-specialist.agent.md     # DDD domain modeling expert
 ├── skills/                         # Skill packs (shared by Claude + Copilot)
 │   ├── clean-architecture/SKILL.md
 │   ├── python-conventions/SKILL.md
@@ -406,14 +415,20 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── frontend-react-stack/SKILL.md
 │   ├── naming-registry/SKILL.md
 │   ├── gitnexus/SKILL.md
-│   └── openspec/SKILL.md
+│   ├── openspec/SKILL.md
+│   ├── ddd/SKILL.md
+│   ├── tdd/SKILL.md
+│   └── sdd/SKILL.md
 ├── instructions/                   # File-scoped instructions (auto-load via applyTo)
 │   ├── architecture.instructions.md        # backend/src/ekko/**/*.py
 │   ├── coding-conventions.instructions.md  # **/*.py
 │   ├── testing.instructions.md             # tests/**/*.py
 │   ├── shell.instructions.md               # **/*.{sh,ps1}
 │   ├── registry.instructions.md            # registry/**
-│   └── update-docs-on-code-change.instructions.md  # **/*.{md,py,yml,yaml,toml,json}
+│   ├── update-docs-on-code-change.instructions.md  # **/*.{md,py,yml,yaml,toml,json}
+│   ├── ddd.instructions.md                 # backend/src/ekko/core/**/*.py
+│   ├── tdd.instructions.md                 # tests/**/*.py
+│   └── sdd.instructions.md                 # docs/specs/**/*.md
 ├── hooks/                          # VS Code Copilot hooks
 │   ├── hooks.json                  # Combined hook config
 │   ├── tool-guardian.json          # PreToolUse: block destructive ops
@@ -439,6 +454,9 @@ as an agent: `claude --agent code-reviewer`.
 | **Naming Registry** | Registry-first constant generation |
 | **GitNexus** | Graph-powered code intelligence |
 | **OpenSpec** | Spec-driven planning |
+| **DDD** | Aggregates, value objects, domain events, repositories, bounded contexts |
+| **TDD** | Red-Green-Refactor cycle, acceptance TDD, contract testing, test pyramid |
+| **SDD** | Specification by Example, Given-When-Then, living documentation |
 
 ---
 
@@ -449,7 +467,7 @@ as an agent: `claude --agent code-reviewer`.
 | **Primary config** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
 | **Path-scoped rules** | `.claude/rules/*.md` (`paths:`) | `.github/instructions/*.md` (`applyTo:`) |
 | **Skills** | `.claude/skills/` + `.github/skills/` | `.github/skills/` |
-| **Agents** | `.claude/agents/` (8 agents) | `.github/agents/` (9 agents) |
+| **Agents** | `.claude/agents/` (9 agents) | `.github/agents/` (10 agents) |
 | **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/*.json` |
 | **Shell access** | Full terminal (task, git, uv, bun) | Limited via `@terminal` |
 | **File editing** | Direct read/write/edit tools | Inline editor suggestions |

@@ -21,9 +21,10 @@ ignores:
 config:
   default: true
 
-  # Line length — generous limit; code blocks, tables, and headings are exempt.
+  # Line length — generous limit for technical docs; code blocks, tables, and headings are exempt.
+  # 160 accommodates long agent persona descriptions and technical path references.
   MD013:
-    line_length: 120
+    line_length: 160
     code_blocks: false
     tables: false
     headings: false

@@ -194,6 +194,9 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 | **Naming Registry** | `.github/skills/naming-registry/SKILL.md` | Registry-first constant generation |
 | **GitNexus** | `.github/skills/gitnexus/SKILL.md` | Graph-powered code intelligence |
 | **OpenSpec** | `.github/skills/openspec/SKILL.md` | Spec-driven planning |
+| **DDD** | `.github/skills/ddd/SKILL.md` | Aggregates, value objects, events, repositories, bounded contexts |
+| **TDD** | `.github/skills/tdd/SKILL.md` | Red-Green-Refactor, acceptance TDD, contract testing, test pyramid |
+| **SDD** | `.github/skills/sdd/SKILL.md` | Specification by Example, Given-When-Then, living documentation |
 
 ---
 

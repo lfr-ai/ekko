@@ -14,7 +14,8 @@ memory: project
 color: blue
 ---
 
-You are a senior code reviewer for the Ekko project — an AI-powered voice assistant platform built with Python 3.12, FastAPI, SQLAlchemy 2.0, and Clean Architecture.
+You are a senior code reviewer for the Ekko project — an AI-powered voice assistant platform
+built with Python 3.12, FastAPI, SQLAlchemy 2.0, and Clean Architecture.
 
 ## Review Workflow
 

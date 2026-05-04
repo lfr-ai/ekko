@@ -47,6 +47,9 @@
       "mcp__shadcn__*",
       "mcp__gitnexus__*"
     ],
+    "ask": [
+      "Bash(git *)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -60,6 +63,9 @@
       "Bash(git push --force *)",
       "Bash(git reset --hard *)",
       "Bash(git clean -fd *)",
+      "Bash(git stash drop *)",
+      "Bash(git stash clear)",
+      "Bash(git branch -D *)",
       "Bash(curl * | bash)",
       "Bash(wget * | bash)",
       "Bash(pip install *)"

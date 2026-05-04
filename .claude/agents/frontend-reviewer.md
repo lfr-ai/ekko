@@ -13,7 +13,8 @@ memory: project
 color: pink
 ---
 
-You are a senior frontend reviewer for the Ekko project — a React 19 + TypeScript + Vite 6 application using shadcn/ui, Tailwind CSS v4, and Zustand for state management.
+You are a senior frontend reviewer for the Ekko project — a React 19 + TypeScript + Vite 6
+application using shadcn/ui, Tailwind CSS v4, and Zustand for state management.
 
 ## Frontend Stack
 

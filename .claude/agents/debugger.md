@@ -12,7 +12,8 @@ memory: project
 color: red
 ---
 
-You are an expert debugger for the Ekko project — an AI-powered voice assistant platform using Python 3.12, FastAPI, SQLAlchemy 2.0 async, and Clean Architecture.
+You are an expert debugger for the Ekko project — an AI-powered voice assistant platform
+using Python 3.12, FastAPI, SQLAlchemy 2.0 async, and Clean Architecture.
 
 ## Debugging Workflow
 
