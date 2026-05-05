@@ -152,6 +152,15 @@ cython_debug/
 # Project specific
 README_OLD.md
 .bg-shell/
+IMPLEMENTATION_COMPLETE.txt
+
+# Accidental root-level files (never source files)
+/config
+/core
+
+# Backend runtime logs
+backend/logs/*
+!backend/logs/.gitkeep
 
 # ── GSD baseline ──
 .gsd

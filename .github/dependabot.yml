@@ -125,10 +125,10 @@ updates:
           - "*"
 
   # ═══════════════════════════════════════════════════════════
-  # Docker
+  # Docker — production image (docker/Containerfile)
   # ═══════════════════════════════════════════════════════════
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/docker"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -142,6 +142,29 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # ═══════════════════════════════════════════════════════════
+  # Docker — dev container (.devcontainer/Containerfile.dev)
+  # ═══════════════════════════════════════════════════════════
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Copenhagen"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "lauritsfromberg"
+    assignees:
+      - "lauritsfromberg"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "devcontainer"
     commit-message:
       prefix: "chore(deps)"
       include: "scope"

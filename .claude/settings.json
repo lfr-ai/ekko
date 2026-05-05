@@ -48,7 +48,8 @@
       "mcp__gitnexus__*"
     ],
     "ask": [
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(rm *)"
     ],
     "deny": [
       "Read(./.env)",
