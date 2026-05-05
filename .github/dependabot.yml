@@ -1,170 +1,182 @@
-# Dependabot configuration for Ekko
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# =================================================================
+# Dependabot Configuration for Ekko
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+# =================================================================
 
 version: 2
 
 updates:
-  # ═══════════════════════════════════════════════════════════
-  # Python (uv) - Backend Dependencies
-  # ═══════════════════════════════════════════════════════════
-  - package-ecosystem: "pip"
-    directory: "/backend"
+  # ---------------------------------------------------------------
+  # Python Backend Dependencies (uv)
+  # ---------------------------------------------------------------
+  - package-ecosystem: pip
+    directory: /backend
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
     open-pull-requests-limit: 10
     reviewers:
-      - "lauritsfromberg"
+      - lauritsfromberg
     assignees:
-      - "lauritsfromberg"
+      - lauritsfromberg
     labels:
-      - "dependencies"
-      - "backend"
-      - "python"
+      - dependencies
+      - backend
+      - python
     commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
-      include: "scope"
-    # Group minor and patch updates
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: scope
     groups:
       fastapi-ecosystem:
         patterns:
-          - "fastapi*"
-          - "uvicorn*"
-          - "starlette*"
-          - "pydantic*"
+          - fastapi*
+          - uvicorn*
+          - starlette*
+          - pydantic*
       sqlalchemy-ecosystem:
         patterns:
-          - "sqlalchemy*"
-          - "alembic*"
-          - "aiosqlite*"
-      langchain-ecosystem:
+          - sqlalchemy*
+          - alembic*
+          - aiosqlite*
+          - asyncpg*
+      ai-ml:
         patterns:
-          - "langchain*"
+          - langchain*
+          - crewai*
+          - openai*
+          - anthropic*
       testing:
         patterns:
-          - "pytest*"
-          - "hypothesis*"
-          - "factory-boy*"
+          - pytest*
+          - hypothesis*
+          - factory-boy*
+          - faker*
       linting:
         patterns:
-          - "ruff*"
-          - "ty*"
-          - "bandit*"
+          - ruff*
+          - ty*
+          - bandit*
+          - xenon*
 
-  # ═══════════════════════════════════════════════════════════
-  # JavaScript (bun) - Frontend Dependencies
-  # ═══════════════════════════════════════════════════════════
-  - package-ecosystem: "npm"
-    directory: "/frontend"
+  # ---------------------------------------------------------------
+  # Frontend Dependencies (Bun)
+  # ---------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /frontend
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
     open-pull-requests-limit: 10
     reviewers:
-      - "lauritsfromberg"
+      - lauritsfromberg
     assignees:
-      - "lauritsfromberg"
+      - lauritsfromberg
     labels:
-      - "dependencies"
-      - "frontend"
-      - "javascript"
+      - dependencies
+      - frontend
+      - javascript
     commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
-      include: "scope"
-    # Group minor and patch updates
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: scope
     groups:
       react-ecosystem:
         patterns:
-          - "react*"
-          - "@vitejs/*"
+          - react
+          - react-dom
+          - '@vitejs/*'
       ui-components:
         patterns:
-          - "@radix-ui/*"
-          - "lucide-react*"
-          - "tailwindcss*"
+          - '@radix-ui/*'
+          - lucide-react
+          - tailwindcss
+          - tailwindcss-animate
       testing:
         patterns:
-          - "@testing-library/*"
-          - "vitest*"
-          - "@playwright/*"
+          - '@testing-library/*'
+          - vitest
+          - '@vitest/*'
+          - '@playwright/*'
+          - '@storybook/*'
       linting:
         patterns:
-          - "@biomejs/*"
-          - "eslint*"
+          - '@biomejs/*'
+          - typescript
+          - '@types/*'
 
-  # ═══════════════════════════════════════════════════════════
+  # ---------------------------------------------------------------
   # GitHub Actions
-  # ═══════════════════════════════════════════════════════════
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  # ---------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
     open-pull-requests-limit: 5
     reviewers:
-      - "lauritsfromberg"
+      - lauritsfromberg
     assignees:
-      - "lauritsfromberg"
+      - lauritsfromberg
     labels:
-      - "dependencies"
-      - "github-actions"
+      - dependencies
+      - github-actions
+      - ci
     commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
+      prefix: 'chore(deps)'
+      include: scope
     groups:
       github-actions:
         patterns:
-          - "*"
+          - '*'
 
-  # ═══════════════════════════════════════════════════════════
-  # Docker — production image (docker/Containerfile)
-  # ═══════════════════════════════════════════════════════════
-  - package-ecosystem: "docker"
-    directory: "/docker"
+  # ---------------------------------------------------------------
+  # Docker - Production Image
+  # ---------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /docker
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
     open-pull-requests-limit: 5
     reviewers:
-      - "lauritsfromberg"
+      - lauritsfromberg
     assignees:
-      - "lauritsfromberg"
+      - lauritsfromberg
     labels:
-      - "dependencies"
-      - "docker"
+      - dependencies
+      - docker
     commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
+      prefix: 'chore(deps)'
+      include: scope
 
-  # ═══════════════════════════════════════════════════════════
-  # Docker — dev container (.devcontainer/Containerfile.dev)
-  # ═══════════════════════════════════════════════════════════
-  - package-ecosystem: "docker"
-    directory: "/.devcontainer"
+  # ---------------------------------------------------------------
+  # Docker - Dev Container
+  # ---------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /.devcontainer
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Copenhagen"
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
     open-pull-requests-limit: 5
     reviewers:
-      - "lauritsfromberg"
+      - lauritsfromberg
     assignees:
-      - "lauritsfromberg"
+      - lauritsfromberg
     labels:
-      - "dependencies"
-      - "docker"
-      - "devcontainer"
+      - dependencies
+      - docker
+      - devcontainer
     commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
+      prefix: 'chore(deps)'
+      include: scope

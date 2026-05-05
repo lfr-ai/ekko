@@ -6,36 +6,41 @@ on:
   pull_request:
     branches: [master]
   schedule:
+    # Run every Monday at 3:17 AM UTC
     - cron: '17 3 * * 1'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
 
 permissions:
   contents: read
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  trivy-filesystem:
-    name: Dependency scan
+  trivy-scan:
+    name: Trivy dependency scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Run Trivy (filesystem)
+      - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.31.0
         with:
           scan-type: fs
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          scanners: vuln,secret
+          severity: CRITICAL,HIGH,MEDIUM
+          scanners: vuln,secret,misconfig
+          exit-code: 0
 
-      - name: Upload to GitHub Security
+      - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: trivy-results.sarif
+          category: trivy

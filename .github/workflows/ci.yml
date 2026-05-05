@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
   pull_request:
-    branches: [main, master]
+    branches: [master]
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,17 +15,21 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-test:
-    name: Lint, type check, and test
+  # =================================================================
+  # Backend: Lint, Type Check, and Test
+  # =================================================================
+  backend-lint:
+    name: Backend lint & format
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8
@@ -34,32 +39,112 @@ jobs:
       - name: Install dependencies
         run: cd backend && uv sync --locked --all-extras --dev
 
-      - name: Lint (ruff)
+      - name: Lint with ruff
         run: cd backend && uv run ruff check src tests
 
-      - name: Format check (ruff)
+      - name: Format check with ruff
         run: cd backend && uv run ruff format --check src tests
-
-      - name: Type check (ty)
-        run: cd backend && uv run ty check src/ekko
-
-      - name: Run unit tests
-        run: cd backend && uv run pytest tests/unit -q
 
       - name: Prune uv cache
         run: uv cache prune --ci
 
+  backend-typecheck:
+    name: Backend type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: cd backend && uv sync --locked --all-extras --dev
+
+      - name: Type check with ty
+        run: cd backend && uv run ty check src/ekko
+
+      - name: Prune uv cache
+        run: uv cache prune --ci
+
+  backend-test:
+    name: Backend unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: cd backend && uv sync --locked --all-extras --dev
+
+      - name: Run unit tests
+        run: cd backend && uv run python -m pytest tests/unit -q
+
+      - name: Prune uv cache
+        run: uv cache prune --ci
+
+  backend-integration:
+    name: Backend integration tests
+    runs-on: ubuntu-latest
+    needs: [backend-lint, backend-typecheck, backend-test]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: cd backend && uv sync --locked --all-extras --dev
+
+      - name: Run integration tests
+        run: cd backend && uv run python -m pytest tests/integration -v --tb=short -m integration
+
+      - name: Prune uv cache
+        run: uv cache prune --ci
+
+  # =================================================================
+  # Security Scans
+  # =================================================================
   security:
     name: Security scans
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8
@@ -81,45 +166,22 @@ jobs:
       - name: Prune uv cache
         run: uv cache prune --ci
 
-  test-integration:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    needs: lint-and-test
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8
-        with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: cd backend && uv sync --locked --all-extras --dev
-
-      - name: Run integration tests
-        run: cd backend && uv run python -m pytest tests/integration -v --tb=short -m integration
-
-      - name: Prune uv cache
-        run: uv cache prune --ci
-
+  # =================================================================
+  # Architecture & Code Quality
+  # =================================================================
   architecture:
-    name: Clean Architecture boundaries
+    name: Architecture boundaries
     runs-on: ubuntu-latest
-    needs: [lint-and-test, security, test-integration]
+    needs: [backend-lint, backend-typecheck, backend-test]
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Check architecture boundaries
         run: python tools/security/check_architecture_boundaries.py
@@ -131,28 +193,29 @@ jobs:
           echo "Architecture boundary enforcement completed." >> $GITHUB_STEP_SUMMARY
 
   magic-strings:
-    name: Magic string constants check
+    name: Magic string check
     runs-on: ubuntu-latest
-    needs: lint-and-test
+    needs: backend-lint
     timeout-minutes: 10
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Install ripgrep
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
       - name: Check magic strings
-        id: magic-strings-check
+        id: check
         run: |
-          python tools/conventions/check_magic_strings.py > magic_strings_output.txt 2>&1
+          python tools/conventions/check_magic_strings.py > output.txt 2>&1
           exit_code=$?
-          cat magic_strings_output.txt
+          cat output.txt
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
           exit $exit_code
 
@@ -160,22 +223,61 @@ jobs:
         if: always()
         run: |
           echo "### Magic String Constants Check" >> $GITHUB_STEP_SUMMARY
-          if [ -f magic_strings_output.txt ]; then
-            violation_count=$(grep -c "violation" magic_strings_output.txt || echo "0")
+          if [ -f output.txt ]; then
+            violation_count=$(grep -c "violation" output.txt || echo "0")
             echo "Violations found: $violation_count" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "See job output for detailed violation report." >> $GITHUB_STEP_SUMMARY
           else
             echo "Check completed successfully." >> $GITHUB_STEP_SUMMARY
           fi
 
+  # =================================================================
+  # Workflow Validation
+  # =================================================================
+  actionlint:
+    name: Lint GitHub Actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: rhysd/actionlint@v1.7.12
+        with:
+          fail-on-error: true
+
+  # =================================================================
+  # Shell Script Validation
+  # =================================================================
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint shell scripts
+        run: |
+          if [ -d .github/hooks/scripts ]; then
+            shellcheck --severity=warning .github/hooks/scripts/*.sh
+          fi
+          if [ -d scripts ]; then
+            find scripts -name "*.sh" -exec shellcheck --severity=warning {} +
+          fi
+
+  # =================================================================
+  # Link Validation
+  # =================================================================
   links:
-    name: Check links
+    name: Check markdown links
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: Check markdown links
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check links
         uses: lycheeverse/lychee-action@v2
         with:
           args: >-
@@ -184,27 +286,84 @@ jobs:
             "**/*.md"
           fail: true
 
-  shellcheck:
-    name: ShellCheck
+  # =================================================================
+  # Frontend: Lint, Type Check, Test, and Build
+  # =================================================================
+  frontend-quality:
+    name: Frontend quality checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Lint shell scripts
-        run: |
-          if [ -d .github/hooks/scripts ]; then
-            shellcheck --severity=warning .github/hooks/scripts/*.sh
-          fi
-          if [ -d scripts ]; then
-            shellcheck --severity=warning scripts/*.sh || true
-          fi
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-  actionlint:
-    name: Lint GitHub Actions
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint and format check
+        run: bun run lint
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build
+        run: bun run build
+
+  frontend-storybook:
+    name: Frontend Storybook
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - name: Run actionlint
-        uses: rhysd/actionlint@v1.7.12
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Storybook
+        run: bun run build-storybook
+
+      - name: Run Storybook tests
+        run: bun run test:storybook
+
+  # =================================================================
+  # All Checks Complete
+  # =================================================================
+  all-green:
+    name: All checks passed
+    runs-on: ubuntu-latest
+    needs:
+      - backend-lint
+      - backend-typecheck
+      - backend-test
+      - backend-integration
+      - security
+      - architecture
+      - magic-strings
+      - actionlint
+      - shellcheck
+      - links
+      - frontend-quality
+      - frontend-storybook
+    steps:
+      - name: Report success
+        run: echo "All CI checks passed successfully!"

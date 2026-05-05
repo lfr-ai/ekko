@@ -1,176 +1,238 @@
-# OS / editors
+# ═══════════════════════════════════════════════════════════════
+# OS and Editors
+# ═══════════════════════════════════════════════════════════════
 .DS_Store
 Thumbs.db
 Desktop.ini
+ehthumbs.db
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 .idea/
 *.swp
+*.swo
 *~
 
-# VS Code (keep tracked files)
+# VS Code (keep tracked config files)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
+*.code-workspace
 
+# ═══════════════════════════════════════════════════════════════
 # Python
+# ═══════════════════════════════════════════════════════════════
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
 *.egg-info/
 dist/
 build/
-
-# Virtual env / caches
-.venv/
-backend/.venv/
-.ruff_cache/
-.mypy_cache/
-.pytest_cache/
-.hypothesis/
-.ty/
-.ty_cache/
-.tox/
-.nox/
-htmlcov/
-.coverage
-.coverage.*
-coverage.xml
-.lycheecache
-.benchmarks/
-
-# TypeScript / JavaScript
-*.tsbuildinfo
-*.d.ts.map
-.vite/
-.turbo/
-dist-ssr/
-.eslintcache
-.biome/
-.parcel-cache/
-.rollup.cache/
-.swc/
-
-# Frontend build outputs
-node_modules/
-frontend/dist/
-frontend/build/
-frontend/storybook-static/
-frontend/.storybook-static/
-storybook-static/
-.storybook-static/
-**/.storybook-static/
-
-# Testing
-frontend/playwright-report/
-frontend/test-results/
-playwright-report/
-test-results/
-.auth/
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-bun-debug.log*
-lerna-debug.log*
-
-# Bun cache
-.bun-cache/
-
-# Logs
-*.log
-logs/*
-!logs/.gitkeep
-
-# Env / secrets
-/.env
-.env.local
-.env.*.local
-/.env.dev
-/.env.prod
-!.env.example
-*.pem
-*.key
-*.crt
-secrets/
-
-# Local data
-backend/ekko.db
-backend/ekko.db-*
-*.sqlite
-*.sqlite3
-uploads/
-storage/
-data/*
-!data/.gitkeep
-
-# Claude Code — commit shared config, ignore local/personal
-.claude/settings.local.json
-CLAUDE.local.md
-.claude/agent-memory/
-.claude/agent-memory-local/
-.claude/worktrees/
-.claude/projects/
-.claude/scheduled_tasks.json
-.claude/memory/
-
-# AI tools (other agents)
-.agents/
-
-# GitNexus (commit config/hooks only)
-.gitnexus/*
-!.gitnexus/README.md
-!.gitnexus/config.json
-!.gitnexus/hooks/
-!.gitnexus/hooks/*
-
-# Documentation (generated)
-docs/api/openapi.json
-docs/api/openapi.yaml
-docs/api/index.html
-
-# Build artifacts
-*.pyc
-*.pyo
-*.pyd
-.Python
 *.egg
 *.manifest
 MANIFEST
 
-# Jupyter
-.ipynb_checkpoints
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+backend/.venv/
+
+# Testing and coverage
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.cache
+nosetests.xml
+.benchmarks/
 
 # Type checkers
+.mypy_cache/
+.ty/
+.ty_cache/
 .pyre/
 .pytype/
 .dmypy.json
 dmypy.json
 cython_debug/
 
-# Project specific
-README_OLD.md
-.bg-shell/
-IMPLEMENTATION_COMPLETE.txt
+# Linters and formatters
+.ruff_cache/
+.tox/
+.nox/
 
-# Accidental root-level files (never source files)
-/config
-/core
+# ═══════════════════════════════════════════════════════════════
+# Frontend (JavaScript/TypeScript)
+# ═══════════════════════════════════════════════════════════════
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+lerna-debug.log*
+pnpm-debug.log*
 
-# Backend runtime logs
+# Build outputs
+dist/
+dist-ssr/
+*.local
+.vite/
+.turbo/
+.parcel-cache/
+.rollup.cache/
+.swc/
+
+# TypeScript
+*.tsbuildinfo
+*.d.ts.map
+
+# Storybook
+storybook-static/
+.storybook-static/
+frontend/storybook-static/
+frontend/.storybook-static/
+
+# Frontend build and cache
+frontend/dist/
+frontend/build/
+.eslintcache
+.biome/
+.bun-cache/
+
+# Testing
+playwright-report/
+test-results/
+frontend/playwright-report/
+frontend/test-results/
+.auth/
+
+# ═══════════════════════════════════════════════════════════════
+# Logs
+# ═══════════════════════════════════════════════════════════════
+*.log
+logs/*
+!logs/.gitkeep
 backend/logs/*
 !backend/logs/.gitkeep
 
-# ── GSD baseline ──
-.gsd
+# ═══════════════════════════════════════════════════════════════
+# Environment and Secrets
+# ═══════════════════════════════════════════════════════════════
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.prod
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+
+# ═══════════════════════════════════════════════════════════════
+# Databases
+# ═══════════════════════════════════════════════════════════════
+*.sqlite
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+backend/ekko.db
+backend/ekko.db-*
+
+# ═══════════════════════════════════════════════════════════════
+# Storage and Uploads
+# ═══════════════════════════════════════════════════════════════
+uploads/
+storage/
+data/*
+!data/.gitkeep
+
+# ═══════════════════════════════════════════════════════════════
+# AI Tools and Agents
+# ═══════════════════════════════════════════════════════════════
+# Claude Code (commit config, ignore runtime)
+.claude/settings.local.json
+.claude/agent-memory/
+.claude/agent-memory-local/
+.claude/worktrees/
+.claude/projects/
+.claude/scheduled_tasks.json
+.claude/memory/
+CLAUDE.local.md
+
+# Other AI agents
+.agents/
+
+# GSD (Get Shit Done) - keep config, ignore runtime
+.gsd/
 .gsd-id
+.gsd/browser-state/
+.gsd/browser-baselines/
+.gsd/worktrees/
+.gsd/activity/
+.gsd/runtime/
+
+# Background shell processes
+.bg-shell/
+
+# ═══════════════════════════════════════════════════════════════
+# GitNexus (commit config/hooks only)
+# ═══════════════════════════════════════════════════════════════
+.gitnexus/*
+!.gitnexus/README.md
+!.gitnexus/config.json
+!.gitnexus/hooks/
+!.gitnexus/hooks/*
+
+# ═══════════════════════════════════════════════════════════════
+# Link Checker Cache
+# ═══════════════════════════════════════════════════════════════
+.lycheecache
+
+# ═══════════════════════════════════════════════════════════════
+# Jupyter Notebooks
+# ═══════════════════════════════════════════════════════════════
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# ═══════════════════════════════════════════════════════════════
+# Temporary and Backup Files
+# ═══════════════════════════════════════════════════════════════
+*.tmp
+*.temp
+*.bak
+*.old
+*~
+*.swp
 *.swo
-*.code-workspace
-.next/
-venv/
-target/
-vendor/
-coverage/
-.cache/
+.tmp/
 tmp/
+
+# ═══════════════════════════════════════════════════════════════
+# Project-Specific
+# ═══════════════════════════════════════════════════════════════
+README_OLD.md
+IMPLEMENTATION_COMPLETE.txt
+CLEANUP_TODO.md
+
+# Accidental root-level directories (never source files)
+/config
+/core
