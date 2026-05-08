@@ -327,59 +327,47 @@ When you need official library or framework documentation:
 
 ```text
 .claude/
-├── settings.json              # Project settings: permissions (all Bash allowed), hooks, env
+├── settings.json              # Project settings: permissions, hooks, env, plugins
 ├── settings.local.json        # Personal overrides (gitignored)
 ├── agents/
-│   ├── code-reviewer.md       # Code review (model: sonnet, read-only, effort: high)
-│   ├── researcher.md          # Codebase exploration (model: haiku, read-only)
-│   ├── test-writer.md         # Test writing (model: sonnet, effort: high)
-│   ├── refactorer.md          # Refactoring (model: inherit, isolation: worktree)
-│   ├── debugger.md            # Bug investigation (model: sonnet, effort: high)
 │   ├── architect.md           # Architecture design (model: opus, effort: xhigh, read-only)
-│   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
+│   ├── code-reviewer.md       # Code review (model: sonnet, read-only, effort: high)
 │   ├── devops.md              # Build/deploy/CI (model: sonnet)
-│   └── ddd-specialist.md      # DDD domain modeling expert (model: opus, read-only)
+│   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
+│   ├── refactorer.md          # Refactoring (model: inherit, isolation: worktree)
+│   ├── researcher.md          # Codebase exploration (model: haiku, read-only)
+│   └── test-writer.md         # Test writing (model: sonnet, effort: high)
+├── commands/
+│   └── commit.md              # Conventional commit from staged diff
 ├── hooks/
 │   ├── guard-destructive.sh   # PreToolUse: block dangerous commands (Unix)
 │   ├── guard-destructive.ps1  # PreToolUse: block dangerous commands (Windows)
 │   ├── stop-uncommitted-reminder.sh   # Stop: warn about uncommitted files (Unix)
 │   └── stop-uncommitted-reminder.ps1  # Stop: warn about uncommitted files (Windows)
-├── rules/
-│   ├── architecture.md        # Scoped to backend/src/ekko/**/*.py
-│   ├── python-conventions.md  # Scoped to **/*.py
-│   ├── testing.md             # Scoped to tests/**/*.py
-│   ├── frontend.md            # Scoped to frontend/src/**/*.{ts,tsx}
-│   ├── shell.md               # Scoped to **/*.{sh,ps1}
-│   ├── registry.md            # Scoped to registry/**
-│   ├── ddd.md                 # Scoped to core/**/*.py + application/**/*.py
-│   ├── tdd.md                 # Scoped to tests/**/*.py
-│   └── sdd.md                 # Scoped to docs/specs/**/*.md
-└── skills/
-    ├── clean-architecture/    # Auto-loads on backend Python files
-    ├── python-conventions/    # Auto-loads on all Python files
-    ├── testing-conventions/   # Auto-loads on test files
-    ├── frontend-react-stack/  # Auto-loads on frontend TS/TSX files
-    ├── ddd/                   # Auto-loads on core/**/*.py + application/**/*.py
-    ├── tdd/                   # Auto-loads on tests/**/*.py
-    ├── sdd/                   # Auto-loads on docs/specs/**/*.md
-    ├── naming-registry/       # Manual invoke only
-    ├── quality-gate/          # Manual invoke only
-    └── deploy-check/          # Manual invoke only
+└── rules/
+    ├── architecture.md        # Scoped to backend/src/ekko/**/*.py
+    ├── python-conventions.md  # Scoped to **/*.py
+    ├── testing.md             # Scoped to tests/**/*.py
+    ├── frontend.md            # Scoped to frontend/src/**/*.{ts,tsx}
+    ├── shell.md               # Scoped to **/*.{sh,ps1}
+    ├── registry.md            # Scoped to registry/**
+    ├── ddd.md                 # Scoped to core/**/*.py + application/**/*.py
+    ├── tdd.md                 # Scoped to tests/**/*.py
+    ├── sdd.md                 # Scoped to docs/specs/**/*.md
+    └── docs-sync.md           # Scoped to **/*.{md,py,yml,yaml,toml,json}
 ```
 
 ### Claude Code Agents Reference
 
 | Agent | Model | Tools | Isolation | Effort | Permission Mode |
 | --- | --- | --- | --- | --- | --- |
+| `architect` | opus | Read, Grep, Glob, Bash | — | xhigh | plan |
 | `code-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
+| `devops` | sonnet | Read, Grep, Glob, Bash, Write, Edit | — | high | acceptEdits |
+| `frontend-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
+| `refactorer` | inherit | Read, Grep, Glob, Write, Edit, Bash | worktree | high | acceptEdits |
 | `researcher` | haiku | Read, Grep, Glob | — | medium | plan |
 | `test-writer` | sonnet | Read, Grep, Glob, Write, Edit, Bash | — | high | acceptEdits |
-| `refactorer` | inherit | Read, Grep, Glob, Write, Edit, Bash | worktree | high | acceptEdits |
-| `debugger` | sonnet | Read, Edit, Bash, Grep, Glob, Write | — | high | acceptEdits |
-| `architect` | opus | Read, Grep, Glob, Bash | — | xhigh | plan |
-| `frontend-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
-| `devops` | sonnet | Read, Grep, Glob, Bash, Write, Edit | — | high | acceptEdits |
-| `ddd-specialist` | opus | Read, Grep, Glob, Bash | — | high | plan |
 
 **Usage**: Claude auto-delegates based on the `description` field. You can also
 invoke explicitly: `@code-reviewer review auth changes` or run a full session
@@ -397,17 +385,16 @@ as an agent: `claude --agent code-reviewer`.
 ```text
 .github/
 ├── copilot-instructions.md         # Global VS Code Copilot instructions
-├── agents/                         # Agent definitions (10 agents)
+├── agents/                         # Agent definitions (9 agents)
 │   ├── backend-python.agent.md     # Python backend specialist
 │   ├── frontend-react.agent.md     # React frontend specialist
-│   ├── expert-react-frontend-engineer.agent.md
-│   ├── testing-specialist.agent.md
-│   ├── database-specialist.agent.md
-│   ├── security-specialist.agent.md
+│   ├── testing.agent.md            # Testing strategies
+│   ├── database.agent.md           # SQLAlchemy, Alembic, repository pattern
+│   ├── security.agent.md           # OWASP, auth, vulnerability prevention
 │   ├── debug.agent.md              # Bug investigation mode
 │   ├── deep-thinking.agent.md      # Cross-cutting architecture analysis
 │   ├── modernization.agent.md      # Repo-wide modernization planning
-│   └── ddd-specialist.agent.md     # DDD domain modeling expert
+│   └── ddd.agent.md                # DDD domain modeling expert
 ├── skills/                         # Skill packs (shared by Claude + Copilot)
 │   ├── clean-architecture/SKILL.md
 │   ├── python-conventions/SKILL.md
@@ -416,6 +403,8 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── naming-registry/SKILL.md
 │   ├── gitnexus/SKILL.md
 │   ├── openspec/SKILL.md
+│   ├── quality-gate/SKILL.md
+│   ├── deploy-check/SKILL.md
 │   ├── ddd/SKILL.md
 │   ├── tdd/SKILL.md
 │   └── sdd/SKILL.md
@@ -430,9 +419,10 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── tdd.instructions.md                 # tests/**/*.py
 │   └── sdd.instructions.md                 # docs/specs/**/*.md
 ├── hooks/                          # VS Code Copilot hooks
-│   ├── hooks.json                  # Combined hook config
-│   ├── tool-guardian.json          # PreToolUse: block destructive ops
-│   └── dependency-license-checker.json  # Stop: license compliance check
+│   ├── hooks.json                  # Combined hook config (PreToolUse + Stop)
+│   └── scripts/                    # Hook implementation scripts
+│       ├── guard-tool.{sh,ps1}     # Block destructive commands
+│       └── check-licenses.{sh,ps1} # License compliance check
 ├── prompts/                        # Reusable prompt templates
 │   ├── review.prompt.md
 │   ├── test.prompt.md
@@ -454,6 +444,8 @@ as an agent: `claude --agent code-reviewer`.
 | **Naming Registry** | Registry-first constant generation |
 | **GitNexus** | Graph-powered code intelligence |
 | **OpenSpec** | Spec-driven planning |
+| **Quality Gate** | Full validation suite before finalizing changes |
+| **Deploy Check** | Pre-deployment checklist and build verification |
 | **DDD** | Aggregates, value objects, domain events, repositories, bounded contexts |
 | **TDD** | Red-Green-Refactor cycle, acceptance TDD, contract testing, test pyramid |
 | **SDD** | Specification by Example, Given-When-Then, living documentation |
@@ -466,9 +458,9 @@ as an agent: `claude --agent code-reviewer`.
 | --- | --- | --- |
 | **Primary config** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
 | **Path-scoped rules** | `.claude/rules/*.md` (`paths:`) | `.github/instructions/*.md` (`applyTo:`) |
-| **Skills** | `.claude/skills/` + `.github/skills/` | `.github/skills/` |
-| **Agents** | `.claude/agents/` (9 agents) | `.github/agents/` (10 agents) |
-| **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/*.json` |
+| **Skills** | `.github/skills/` (shared, with `paths:` for auto-loading) | `.github/skills/` |
+| **Agents** | `.claude/agents/` (7 agents) | `.github/agents/` (9 agents) |
+| **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/hooks.json` |
 | **Shell access** | Full terminal (task, git, uv, bun) | Limited via `@terminal` |
 | **File editing** | Direct read/write/edit tools | Inline editor suggestions |
 | **Multi-file refactors** | Native (reads full tree) | Manual or via Copilot Edits |

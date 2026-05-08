@@ -1,6 +1,8 @@
 ---
 name: frontend-react-stack
 description: React 19, TypeScript, Vite, shadcn/ui, Tailwind CSS v4, Biome, Vitest conventions.
+paths:
+  - "frontend/src/**/*.{ts,tsx}"
 ---
 
 # Skill: Frontend React Stack

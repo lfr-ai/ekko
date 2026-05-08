@@ -4,6 +4,8 @@ description: >
   Test-Driven Development workflow for Ekko. Covers the Red-Green-Refactor cycle,
   acceptance TDD outer loop, unit TDD inner loop, contract testing for ports,
   and the test pyramid.
+paths:
+  - "tests/**/*.py"
 ---
 
 # Skill: Test-Driven Development (TDD)

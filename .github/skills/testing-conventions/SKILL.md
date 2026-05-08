@@ -1,6 +1,8 @@
 ---
 name: testing-conventions
 description: Test quality and structure conventions.
+paths:
+  - "tests/**/*.py"
 ---
 
 # Skill: Testing Conventions

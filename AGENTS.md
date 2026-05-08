@@ -194,6 +194,8 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 | **Naming Registry** | `.github/skills/naming-registry/SKILL.md` | Registry-first constant generation |
 | **GitNexus** | `.github/skills/gitnexus/SKILL.md` | Graph-powered code intelligence |
 | **OpenSpec** | `.github/skills/openspec/SKILL.md` | Spec-driven planning |
+| **Quality Gate** | `.github/skills/quality-gate/SKILL.md` | Full validation suite before finalizing changes |
+| **Deploy Check** | `.github/skills/deploy-check/SKILL.md` | Pre-deployment checklist and build verification |
 | **DDD** | `.github/skills/ddd/SKILL.md` | Aggregates, value objects, events, repositories, bounded contexts |
 | **TDD** | `.github/skills/tdd/SKILL.md` | Red-Green-Refactor, acceptance TDD, contract testing, test pyramid |
 | **SDD** | `.github/skills/sdd/SKILL.md` | Specification by Example, Given-When-Then, living documentation |
@@ -202,10 +204,10 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 
 ## Agent Hooks
 
-| Hook | File | Events | Purpose |
+| Hook | Config | Events | Purpose |
 | --- | --- | --- | --- |
-| **Tool Guardian** | `tool-guardian.json` | `PreToolUse` | Block destructive ops (rm -rf, force push, DROP TABLE) |
-| **License Checker** | `dependency-license-checker.json` | `Stop` | Block copyleft / unapproved licenses |
+| **Tool Guardian** | `hooks.json` → `guard-tool.{sh,ps1}` | `PreToolUse` | Block destructive ops (rm -rf, force push, DROP TABLE) |
+| **License Checker** | `hooks.json` → `check-licenses.{sh,ps1}` | `Stop` | Block copyleft / unapproved licenses |
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: Database Specialist
+name: Database
 description: Database operations with SQLAlchemy, Alembic, and repository patterns
 model: claude-sonnet-4-6
 tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']

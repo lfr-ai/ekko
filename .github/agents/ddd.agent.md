@@ -1,5 +1,5 @@
 ---
-name: DDD Specialist
+name: DDD
 description: >
   Domain-Driven Design specialist for Ekko. Reviews aggregates, value objects,
   domain events, repository protocols, bounded contexts, and anti-corruption layers.

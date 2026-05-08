@@ -7,14 +7,14 @@ Custom agents for VS Code GitHub Copilot, stored as `.agent.md` files with YAML 
 | Agent | File | Purpose |
 |-------|------|---------|
 | Backend Python | `backend-python.agent.md` | Clean Architecture, FastAPI, SQLAlchemy |
-| Frontend React | `frontend-react.agent.md` | React 19, TypeScript, shadcn/ui |
-| Expert React | `expert-react-frontend-engineer.agent.md` | Advanced React patterns |
-| Testing | `testing-specialist.agent.md` | pytest, Vitest, Playwright, Hypothesis |
-| Database | `database-specialist.agent.md` | SQLAlchemy, Alembic, repository pattern |
-| Security | `security-specialist.agent.md` | OWASP, auth, vulnerability prevention |
+| Frontend React | `frontend-react.agent.md` | React 19, TypeScript, shadcn/ui, Tailwind v4 |
+| Testing | `testing.agent.md` | pytest, Vitest, Playwright, Hypothesis |
+| Database | `database.agent.md` | SQLAlchemy, Alembic, repository pattern |
+| Security | `security.agent.md` | OWASP, auth, vulnerability prevention |
 | Debug | `debug.agent.md` | Systematic bug investigation |
 | Deep Thinking | `deep-thinking.agent.md` | Cross-cutting architectural analysis |
 | Modernization | `modernization.agent.md` | Repo-wide modernization planning |
+| DDD | `ddd.agent.md` | Domain-Driven Design modeling and review |
 
 ## Copilot Agent Format
 
@@ -49,9 +49,24 @@ System prompt instructions...
 | `handoffs` | object[] | Suggested transitions to another agent |
 | `hooks` | object | Agent-scoped hooks (preview) |
 
+## Naming Convention
+
+- Filename: `{domain}.agent.md` (kebab-case, no `-specialist` suffix)
+- `name:` field: Title Case version of the filename (e.g., `backend-python` → "Backend Python")
+- No redundant suffixes — the directory is already called `agents/`
+
+## Design Principle: Claude vs Copilot Agents
+
+| Tool | Role | Pattern | Examples |
+|------|------|---------|----------|
+| Claude Code (`.claude/agents/`) | Workflow modes | Verb-based roles (things you *do*) | reviewer, writer, refactorer, researcher |
+| VS Code Copilot (`.github/agents/`) | Domain specialists | Noun-based areas (things you *know*) | backend-python, database, security, ddd |
+
+Both tools share skills from `.github/skills/` and path-scoped rules/instructions for guidance.
+
 ## Related
 
-- **Claude Code agents**: `.claude/agents/` (8 agents: code-reviewer, researcher, test-writer, refactorer, debugger, architect, frontend-reviewer, devops)
+- **Claude Code agents**: `.claude/agents/` (7 agents: architect, code-reviewer, devops, frontend-reviewer, refactorer, researcher, test-writer)
 - **Skills**: `.github/skills/` (shared between Claude Code and VS Code Copilot)
 - **Instructions**: `.github/instructions/` (auto-loaded by `applyTo:` patterns)
 - **Claude Code docs**: <https://code.claude.com/docs/en/sub-agents>

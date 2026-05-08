@@ -4,6 +4,8 @@ description: >
   Specification-Driven Development (Specification by Example) for Ekko. Covers
   Given-When-Then scenario authoring, executable specs, living documentation, and
   the spec-first workflow that bridges product requirements and automated tests.
+paths:
+  - "docs/specs/**/*.md"
 ---
 
 # Skill: Specification-Driven Development (SDD)

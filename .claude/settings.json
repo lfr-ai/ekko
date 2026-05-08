@@ -8,10 +8,6 @@
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTHONUNBUFFERED": "1"
   },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
   "includeGitInstructions": true,
   "permissions": {
     "allow": [

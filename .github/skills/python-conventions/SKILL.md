@@ -1,6 +1,8 @@
 ---
 name: python-conventions
 description: Python standards for typing, logging, and maintainability.
+paths:
+  - "**/*.py"
 ---
 
 # Skill: Python Conventions

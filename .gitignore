@@ -23,7 +23,7 @@ ehthumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
-*.code-workspace
+!.vscode/voice.code-workspace
 
 # ═══════════════════════════════════════════════════════════════
 # Python
@@ -54,6 +54,7 @@ backend/.venv/
 .coverage.*
 htmlcov/
 coverage.xml
+coverage/
 *.cover
 .cache
 nosetests.xml
@@ -108,6 +109,7 @@ frontend/.storybook-static/
 # Frontend build and cache
 frontend/dist/
 frontend/build/
+frontend/coverage/
 .eslintcache
 .biome/
 .bun-cache/
@@ -168,7 +170,7 @@ data/*
 # ═══════════════════════════════════════════════════════════════
 # AI Tools and Agents
 # ═══════════════════════════════════════════════════════════════
-# Claude Code (commit config, ignore runtime)
+# Claude Code CLI (commit config + agents + rules + hooks, ignore runtime)
 .claude/settings.local.json
 .claude/agent-memory/
 .claude/agent-memory-local/
@@ -176,19 +178,18 @@ data/*
 .claude/projects/
 .claude/scheduled_tasks.json
 .claude/memory/
+.claude/todos/
+.claude/statsig/
+.claude/skills/
 CLAUDE.local.md
 
 # Other AI agents
 .agents/
+.copilot/
 
-# GSD (Get Shit Done) - keep config, ignore runtime
+# GSD (Get Shit Done) — ignore all runtime state
 .gsd/
 .gsd-id
-.gsd/browser-state/
-.gsd/browser-baselines/
-.gsd/worktrees/
-.gsd/activity/
-.gsd/runtime/
 
 # Background shell processes
 .bg-shell/
@@ -220,19 +221,17 @@ CLAUDE.local.md
 *.temp
 *.bak
 *.old
-*~
-*.swp
-*.swo
 .tmp/
 tmp/
 
 # ═══════════════════════════════════════════════════════════════
-# Project-Specific
+# Build Artifacts (PyInstaller)
 # ═══════════════════════════════════════════════════════════════
-README_OLD.md
-IMPLEMENTATION_COMPLETE.txt
-CLEANUP_TODO.md
+backend/build/
+backend/dist/
 
-# Accidental root-level directories (never source files)
+# ═══════════════════════════════════════════════════════════════
+# Project-Specific (accidental root-level dirs)
+# ═══════════════════════════════════════════════════════════════
 /config
 /core

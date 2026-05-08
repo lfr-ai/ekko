@@ -1,6 +1,8 @@
 ---
 name: clean-architecture
 description: Enforce Clean Architecture boundaries and dependency direction.
+paths:
+  - "backend/src/ekko/**/*.py"
 ---
 
 # Skill: Clean Architecture

@@ -4,6 +4,9 @@ description: >
   Apply Domain-Driven Design patterns to Ekko's bounded contexts. Covers aggregates,
   value objects, domain events, repository protocols, domain services, and
   anti-corruption layers.
+paths:
+  - "backend/src/ekko/core/**/*.py"
+  - "backend/src/ekko/application/**/*.py"
 ---
 
 # Skill: Domain-Driven Design (DDD)

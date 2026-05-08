@@ -1,0 +1,47 @@
+# Codecov configuration
+# https://docs.codecov.io/docs/codecov-yaml
+
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 2%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+comment:
+  layout: "reach,diff,flags,components"
+  behavior: default
+  require_changes: true
+  require_base: false
+  require_head: true
+
+flags:
+  backend:
+    paths:
+      - backend/src/ekko/
+    carryforward: true
+  frontend:
+    paths:
+      - frontend/src/
+    carryforward: true
+
+ignore:
+  - "tests/**"
+  - "backend/src/ekko/cli/**"
+  - "**/__init__.py"
+  - "**/conftest.py"
+  - "tools/**"
+  - "registry/**"
