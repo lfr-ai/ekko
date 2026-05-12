@@ -36,8 +36,10 @@ repos:
       - id: fix-byte-order-marker
       - id: mixed-line-ending
         args: [--fix=lf]
+        exclude: ^\.secrets\.baseline$
       - id: no-commit-to-branch
         args: [--branch, master]
+        stages: [pre-push]
       - id: debug-statements
       - id: name-tests-test
         args: [--pytest-test-first]
@@ -173,7 +175,7 @@ repos:
 
       - id: ty-check
         name: type check with ty
-        entry: bash -c 'cd backend && uv run python -m ty check src/ekko'
+        entry: uv run --project backend python -m ty check backend/src/ekko
         language: system
         pass_filenames: false
         types: [python]
@@ -181,11 +183,7 @@ repos:
 
       - id: module-docstrings
         name: check module docstrings
-        entry: >
-          bash -c 'cd backend &&
-          find src/ekko -name "*.py" ! -name "__init__.py" ! -path "*/__pycache__/*" |
-          while read f; do head -5 "$f" | grep -q "\"\"\"" || echo "Missing docstring: $f"; done |
-          (! grep .)'
+        entry: python tools/conventions/check_module_docstrings.py
         language: system
         pass_filenames: false
         types: [python]
@@ -193,7 +191,7 @@ repos:
 
       - id: dependency-audit
         name: dependency vulnerability audit
-        entry: bash -c 'cd backend && uv run pip-audit --strict 2>/dev/null || true'
+        entry: uv run --project backend pip-audit --strict
         language: system
         pass_filenames: false
         stages: [manual]
@@ -215,7 +213,7 @@ repos:
 
       - id: backend-test-suite
         name: backend unit tests
-        entry: bash -c 'cd backend && uv run python -m pytest tests/unit/ -x --tb=short -q'
+        entry: uv run --project backend python -m pytest tests/unit/ -x --tb=short -q
         language: system
         pass_filenames: false
         types: [python]

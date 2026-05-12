@@ -97,9 +97,7 @@ def test_valid_key_format(registry: dict) -> None:
     invalid_keys: list[tuple[str, str]] = []
     for section_name, entries in registry.items():
         invalid_keys.extend(
-            (section_name, key)
-            for key in entries
-            if not VALID_KEY_PATTERN.match(key)
+            (section_name, key) for key in entries if not VALID_KEY_PATTERN.match(key)
         )
 
     assert not invalid_keys, (

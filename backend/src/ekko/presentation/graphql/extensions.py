@@ -55,9 +55,7 @@ class SessionLifecycleExtension(SchemaExtension):
                     except RuntimeError:
                         asyncio.run(close_result)
                     else:
-                        self._pending_close_task = running_loop.create_task(
-                            close_result
-                        )
+                        self._pending_close_task = running_loop.create_task(close_result)
 
 
 class QueryTimingExtension(SchemaExtension):

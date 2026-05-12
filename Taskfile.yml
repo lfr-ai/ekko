@@ -186,6 +186,8 @@ tasks:
   # ── Pre-commit ───────────────────────────────────────────────
   pre-commit:
     desc: "Run pre-commit on all files"
+    env:
+      SKIP: no-commit-to-branch
     cmds:
       - uvx pre-commit run --all-files
 

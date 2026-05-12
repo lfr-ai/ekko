@@ -3,6 +3,9 @@ extends: default
 
 ignore: |
   .venv/
+  .venv*/
+  **/.venv/
+  **/.venv*/
   node_modules/
   **/node_modules/
 
