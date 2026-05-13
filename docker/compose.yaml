@@ -11,7 +11,8 @@
 # - Profiles for optional services (caddy profile for reverse proxy)
 # - compose.override.yaml pattern for local developer customization (ports, mounts, hot reload)
 #
-# Reference: C:/Users/LFR/OneDrive - AP Pension/Documents/projects/koda_automation/
+# Reference:
+# C:/Users/LFR/OneDrive - AP Pension/Documents/projects/koda_automation/
 #
 # INTENTIONAL DEVIATIONS
 # ----------------------
@@ -40,7 +41,11 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request as u;u.urlopen('http://localhost:8000/health',timeout=3)"
       interval: 30s
       timeout: 5s
       retries: 3

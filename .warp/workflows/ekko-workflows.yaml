@@ -162,7 +162,9 @@ workflows:
     tags: ["db", "migration", "alembic"]
     commands:
       - name: "Create migration"
-        command: "cd backend && uv run alembic revision --autogenerate -m \"${MIGRATION_NAME}\""
+        command: >-
+          cd backend && uv run alembic revision --autogenerate
+          -m "${MIGRATION_NAME}"
 
       - name: "Review migration"
         command: "cat backend/alembic/versions/*.py | tail -50"
@@ -181,7 +183,9 @@ workflows:
         command: "cd backend && uv run alembic upgrade head"
 
       - name: "Verify database"
-        command: "cd backend && uv run python -c \"from ekko.infrastructure.db.engine import engine; print('Database OK')\""
+        command: >-
+          cd backend && uv run python -c "from ekko.infrastructure.db.engine
+          import engine; print('Database OK')"
 
   - name: "Database Rollback"
     description: "Rollback last database migration"

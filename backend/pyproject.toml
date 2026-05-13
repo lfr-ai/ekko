@@ -28,6 +28,7 @@ dependencies = [
     "strawberry-graphql[fastapi]>=0.262",
     "httpx>=0.27",
     "slowapi>=0.1.9",
+    "urllib3>=2.7.0",
     "crewai>=0.100",
     "mako>=1.3.12",
 ]

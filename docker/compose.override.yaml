@@ -7,7 +7,15 @@ services:
     volumes:
       - ../backend/src:/app/src
       - ../logs:/app/logs
-    command: ["uvicorn", "ekko.composition.app_factory:create_app", "--host", "0.0.0.0", "--port", "8000", "--factory", "--reload"]
+    command:
+      - "uvicorn"
+      - "ekko.composition.app_factory:create_app"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8000"
+      - "--factory"
+      - "--reload"
 
   caddy:
     volumes:

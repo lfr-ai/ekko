@@ -11,16 +11,7 @@ from functools import cached_property
 from pathlib import Path
 
 from pydantic import SecretStr
-
-try:
-    from pydantic_settings import BaseSettings, SettingsConfigDict
-except ImportError:  # pragma: no cover
-
-    class BaseSettings:  # type: ignore[no-redef]
-        def __init__(self, **kwargs) -> None: ...
-
-    class SettingsConfigDict(dict):  # type: ignore[no-redef]
-        pass
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 from ekko.config.enums import ChatModel, Environment, LLMProvider

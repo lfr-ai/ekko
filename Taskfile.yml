@@ -457,3 +457,9 @@ tasks:
         platforms: [darwin, linux]
       - cmd: pwsh -NoProfile -File scripts/verify-pipeline.ps1 -Full
         platforms: [windows]
+
+  verify:fullstack:
+    desc: "Verify backend/frontend independently and together via runtime smoke checks"
+    cmds:
+      - cmd: pwsh -NoProfile -File scripts/verify-fullstack.ps1
+        platforms: [windows]
