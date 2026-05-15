@@ -80,7 +80,7 @@ async def test_audio_controller_send_command(
         # Mock TCP connection
         mock_reader = AsyncMock()
         mock_reader.read = AsyncMock(return_value=b"OK")
-        mock_writer = AsyncMock()
+        mock_writer = MagicMock()
         mock_writer.drain = AsyncMock()
         mock_writer.wait_closed = AsyncMock()
         mock_conn.return_value = (mock_reader, mock_writer)

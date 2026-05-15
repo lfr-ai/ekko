@@ -2,43 +2,85 @@
 
 from __future__ import annotations
 
-import tempfile
-from pathlib import Path
+import os
+from collections.abc import Generator
 from typing import TYPE_CHECKING
 
 import pytest
+from testcontainers.postgres import PostgresContainer
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncEngine
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+
+
+@pytest.fixture(autouse=True)
+def _integration_environment() -> Generator[None, None, None]:
+    """Force deterministic settings for integration test execution."""
+    from ekko.config.settings import get_settings
+
+    previous_environment = os.environ.get("EKKO_ENVIRONMENT")
+    previous_disable_audio = os.environ.get("EKKO_DISABLE_AUDIO")
+    os.environ["EKKO_ENVIRONMENT"] = "test"
+    os.environ["EKKO_DISABLE_AUDIO"] = "true"
+    get_settings.cache_clear()
+
+    yield
+
+    get_settings.cache_clear()
+    if previous_environment is None:
+        os.environ.pop("EKKO_ENVIRONMENT", None)
+    else:
+        os.environ["EKKO_ENVIRONMENT"] = previous_environment
+    if previous_disable_audio is None:
+        os.environ.pop("EKKO_DISABLE_AUDIO", None)
+    else:
+        os.environ["EKKO_DISABLE_AUDIO"] = previous_disable_audio
 
 
 @pytest.fixture
-def integration_settings():
+def integration_settings() -> object:
     """Settings configured for integration testing."""
     from ekko.config.settings import BaseAppConfig
     from ekko.core.enums import Environment
 
-    return BaseAppConfig(environment=Environment.TEST, debug=False)
+    return BaseAppConfig(environment=Environment.TEST, debug=False, disable_audio=True)
+
+
+@pytest.fixture(scope="session")
+def postgres_container() -> Generator[PostgresContainer, None, None]:
+    """Run PostgreSQL in Docker for integration tests."""
+    container = PostgresContainer(image="postgres:16", driver=None)
+
+    try:
+        container.start()
+    except Exception as exc:  # pragma: no cover - depends on local Docker runtime
+        pytest.skip(f"Postgres Testcontainer unavailable: {exc}")
+
+    yield container
+
+    container.stop()
+
+
+@pytest.fixture(scope="session")
+def postgres_async_database_url(postgres_container: PostgresContainer) -> str:
+    """Build SQLAlchemy async database URL from container connection details."""
+    return postgres_container.get_connection_url(driver="asyncpg")
 
 
 @pytest.fixture
-async def test_db_engine():
-    """Create a temporary SQLite engine for integration testing."""
+async def test_db_engine(postgres_async_database_url: str) -> AsyncEngine:
+    """Create a PostgreSQL async engine backed by Testcontainers."""
     from sqlalchemy.ext.asyncio import create_async_engine
 
     # Import models to ensure they're registered with Base.metadata
     from ekko.infrastructure.db import models as _  # noqa: F401
     from ekko.infrastructure.db.base import Base
 
-    # Create temporary database file
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
-        db_path = Path(tmp.name)
-
     engine = create_async_engine(
-        f"sqlite+aiosqlite:///{db_path}",
+        postgres_async_database_url,
         future=True,
         echo=False,
-        connect_args={"check_same_thread": False},
     )
 
     # Create all tables
@@ -49,20 +91,43 @@ async def test_db_engine():
 
     # Cleanup
     await engine.dispose()
-    db_path.unlink(missing_ok=True)
 
 
 @pytest.fixture
-async def test_db_session(test_db_engine: AsyncEngine):
-    """Create a test database session."""
+def test_db_session_factory(test_db_engine: AsyncEngine) -> async_sessionmaker[object]:
+    """Provide async SQLAlchemy session factory for integration app/tests."""
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    session_factory = async_sessionmaker(
+    return async_sessionmaker(
         test_db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
 
-    async with session_factory() as session:
+
+@pytest.fixture
+async def test_db_session(test_db_session_factory: async_sessionmaker[object]):
+    """Create a test database session."""
+    async with test_db_session_factory() as session:
         yield session
         await session.rollback()
+
+
+@pytest.fixture
+def integration_app(test_db_engine: AsyncEngine, test_db_session_factory: async_sessionmaker[object]):
+    """Create an app instance configured for integration API tests."""
+    from ekko.composition import create_app
+
+    app = create_app()
+    app.state.db_engine = test_db_engine
+    app.state.session_factory = test_db_session_factory
+    return app
+
+
+@pytest.fixture
+def integration_client(integration_app):
+    """Create test client that runs app lifespan handlers."""
+    from fastapi.testclient import TestClient
+
+    with TestClient(integration_app, raise_server_exceptions=False) as client:
+        yield client

@@ -72,6 +72,8 @@ dev = [
     "tox>=4.25",
     "tox-uv>=1.25",
     "pyinstaller>=6.0",
+    "testcontainers[postgres]>=4.8.2",
+    "asyncpg>=0.30.0",
 ]
 db = [
     "sqlalchemy>=2.0",
