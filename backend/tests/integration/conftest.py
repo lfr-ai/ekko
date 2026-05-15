@@ -114,13 +114,11 @@ async def test_db_session(test_db_session_factory: async_sessionmaker[object]):
 
 
 @pytest.fixture
-def integration_app(test_db_engine: AsyncEngine, test_db_session_factory: async_sessionmaker[object]):
+def integration_app():
     """Create an app instance configured for integration API tests."""
     from ekko.composition import create_app
 
     app = create_app()
-    app.state.db_engine = test_db_engine
-    app.state.session_factory = test_db_session_factory
     return app
 
 
