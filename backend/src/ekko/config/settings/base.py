@@ -13,7 +13,6 @@ from pathlib import Path
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 from ekko.config.enums import ChatModel, Environment, LLMProvider
 
 
@@ -36,6 +35,7 @@ class BaseAppConfig(BaseSettings):
     port: int = 8000
     reload: bool = False
     log_level: str = str(logging.INFO)
+    sentry_dsn: str | None = None
 
     # ── LLM / OpenAI ─────────────────────────────────────────
     llm_provider: LLMProvider = LLMProvider.OPENAI

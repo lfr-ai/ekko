@@ -76,6 +76,11 @@ tasks:
     cmds:
       - task: frontend:test:unit
 
+  test:e2e:frontend:
+    desc: "Run frontend end-to-end tests (Playwright)"
+    cmds:
+      - task: frontend:test:e2e
+
   # ── Linting ──────────────────────────────────────────────────
   lint:
     desc: "Run all linters"

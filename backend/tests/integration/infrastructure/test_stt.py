@@ -1,12 +1,9 @@
 """Integration tests for STT adapter wiring and fallback behavior."""
 
-from __future__ import annotations
-
 from unittest.mock import patch
 
 import pytest
 from pydantic import SecretStr
-
 
 pytestmark = pytest.mark.integration
 
@@ -37,7 +34,9 @@ def test_create_azure_speech_stt_when_sdk_unavailable_then_returns_stub(integrat
     assert isinstance(stt, _StubSTT)
 
 
-def test_create_azure_speech_stt_when_sdk_and_credentials_present_then_returns_real_service(integration_settings) -> None:
+def test_create_azure_speech_stt_when_sdk_and_credentials_present_then_returns_real_service(
+    integration_settings,
+) -> None:
     """Factory should build AzureSpeechSTT when requirements are present."""
     from ekko.infrastructure.adapters.stt_adapter import create_azure_speech_stt
 

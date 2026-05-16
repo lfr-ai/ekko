@@ -133,10 +133,7 @@ class TestRegistryConstantsFormatPatterns:
         for name in all_constants:
             assert (
                 name.endswith("_LABEL")
-                or name.startswith("FIELD_")
-                or name.startswith("ROUTE_")
-                or name.startswith("ERROR_")
-                or name.startswith("STATUS_")
+                or name.startswith(("FIELD_", "ROUTE_", "ERROR_", "STATUS_"))
             ), f"Constant {name} does not match expected naming convention"
 
     def test_labels_are_non_empty_strings(

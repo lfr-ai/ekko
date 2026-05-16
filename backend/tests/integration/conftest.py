@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Generator
 from typing import TYPE_CHECKING
 
 import pytest
 from testcontainers.postgres import PostgresContainer
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncEngine
-    from sqlalchemy.ext.asyncio import async_sessionmaker
+    from collections.abc import Generator
+
+    from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
 
 @pytest.fixture(autouse=True)
@@ -118,8 +118,7 @@ def integration_app():
     """Create an app instance configured for integration API tests."""
     from ekko.composition import create_app
 
-    app = create_app()
-    return app
+    return create_app()
 
 
 @pytest.fixture
@@ -128,4 +127,36 @@ def integration_client(integration_app):
     from fastapi.testclient import TestClient
 
     with TestClient(integration_app, raise_server_exceptions=False) as client:
+        yield client
+
+
+@pytest.fixture
+def integration_app_with_db(postgres_async_database_url: str):
+    """Create an integration app with container-backed DB engine injected."""
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+    from ekko.composition import create_app
+
+    app = create_app()
+    db_engine = create_async_engine(postgres_async_database_url, future=True, echo=False)
+    app.state.db_engine = db_engine
+    app.state.session_factory = async_sessionmaker(
+        db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    yield app
+
+    import asyncio
+
+    asyncio.run(db_engine.dispose())
+
+
+@pytest.fixture
+def integration_client_with_db(integration_app_with_db):
+    """Create test client for integration app with DB context injected."""
+    from fastapi.testclient import TestClient
+
+    with TestClient(integration_app_with_db, raise_server_exceptions=False) as client:
         yield client

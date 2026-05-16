@@ -1,18 +1,15 @@
 """Property-based invariants for API response schemas."""
 
-from __future__ import annotations
-
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from ekko.presentation.api.schemas.responses import HealthResponse, StreamResponse
 
-
 pytestmark = pytest.mark.property
 
 
-@settings(max_examples=50)
+@settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow])
 @given(
     ok=st.booleans(),
     details=st.dictionaries(

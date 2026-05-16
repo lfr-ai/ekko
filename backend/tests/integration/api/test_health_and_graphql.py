@@ -1,9 +1,6 @@
 """Integration tests for REST + GraphQL API endpoints."""
 
-from __future__ import annotations
-
 import pytest
-
 
 pytestmark = pytest.mark.integration
 
@@ -19,9 +16,7 @@ def test_health_when_integration_app_running_then_returns_details(integration_cl
     assert "transcripts_queue_present" in payload["details"]
 
 
-def test_graphql_health_ready_when_queried_then_database_dependency_is_reported(
-    integration_client,
-) -> None:
+def test_graphql_health_ready_when_queried_then_database_dependency_is_reported(integration_client) -> None:
     """GraphQL deep health probe should always include database dependency state."""
     query = {
         "query": "query { healthReady { status dependencies { name healthy detail } } }",

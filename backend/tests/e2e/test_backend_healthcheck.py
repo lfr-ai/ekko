@@ -4,11 +4,8 @@ These tests execute against an in-process FastAPI app and run real lifespan
 startup/shutdown logic, ensuring deterministic and CI-friendly behavior.
 """
 
-from __future__ import annotations
-
 import pytest
 from fastapi.testclient import TestClient
-
 
 pytestmark = [pytest.mark.e2e, pytest.mark.integration]
 

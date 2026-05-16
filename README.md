@@ -318,11 +318,15 @@ task test:unit          # Unit tests
 task test:integration   # Integration tests
 task test:property      # Property-based tests (Hypothesis)
 task test:performance   # Performance benchmarks
-task test:e2e           # End-to-end tests
+task test:e2e           # Backend end-to-end tests
+task test:e2e:frontend  # Frontend Playwright end-to-end tests
 task test:frontend      # Frontend tests (Vitest)
 
 # Coverage
 task test:coverage      # With coverage report
+
+# Direct frontend Playwright
+cd frontend && bun run test:e2e
 ```
 
 ### Test Organization
@@ -337,6 +341,22 @@ tests/
 ├── fixtures/       # Shared test data
 ├── factories/      # factory-boy factories
 └── mocks/          # Reusable mocks
+```
+
+### Container-backed Integration/E2E Notes
+
+- Backend integration and selected E2E API tests run against PostgreSQL via `testcontainers`.
+- Docker must be available locally for these container-backed scenarios.
+- If Docker is unavailable, those containerized tests are skipped automatically.
+
+Backend API e2e quick commands:
+
+```bash
+# Repository-level containerized backend e2e
+uv run --project backend python -m pytest tests/e2e -q
+
+# Backend-local e2e
+cd backend && uv run python -m pytest tests/e2e -q
 ```
 
 ## 📝 Code Quality

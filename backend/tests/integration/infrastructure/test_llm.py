@@ -184,11 +184,10 @@ def test_chat_adapter_model_caching(llm_settings: AppSettings, mock_langchain_mo
 
 def test_chat_adapter_extract_string_response() -> None:
     """Test extracting text from string response content."""
-    from langchain_core.messages import AIMessage
-
     from ekko.infrastructure.llm.chat_adapter import _extract_response_text
 
-    response = AIMessage(content="Simple string response")
+    response = MagicMock()
+    response.content = "Simple string response"
     text = _extract_response_text(response)
 
     assert text == "Simple string response"
@@ -196,17 +195,14 @@ def test_chat_adapter_extract_string_response() -> None:
 
 def test_chat_adapter_extract_list_response() -> None:
     """Test extracting text from list response content."""
-    from langchain_core.messages import AIMessage
-
     from ekko.infrastructure.llm.chat_adapter import _extract_response_text
 
-    response = AIMessage(
-        content=[
-            {"type": "text", "text": "First part"},
-            {"type": "text", "text": "Second part"},
-            "String part",
-        ]
-    )
+    response = MagicMock()
+    response.content = [
+        {"type": "text", "text": "First part"},
+        {"type": "text", "text": "Second part"},
+        "String part",
+    ]
     text = _extract_response_text(response)
 
     assert "First part" in text

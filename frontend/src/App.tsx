@@ -42,7 +42,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background" data-testid="app-shell">
       {/* Sidebar */}
       <aside className="flex w-16 flex-col items-center border-r bg-card py-4">
         <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -53,6 +53,7 @@ export default function App() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label={isListening ? "Stop listening" : "Start listening"}
             className={cn("relative", status === "listening" && "bg-primary/10 text-primary")}
             onClick={toggleListening}
           >
@@ -65,12 +66,12 @@ export default function App() {
             )}
           </Button>
 
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Audio output">
             <Volume2 className="h-5 w-5" />
           </Button>
         </nav>
 
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label="Settings">
           <Settings className="h-5 w-5" />
         </Button>
       </aside>
@@ -82,6 +83,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <h1 className="font-semibold text-2xl tracking-tight">Ekko</h1>
             <Badge
+              data-testid="assistant-status-badge"
               variant={
                 status === "idle" ? "secondary" : status === "listening" ? "success" : "warning"
               }
@@ -122,7 +124,7 @@ export default function App() {
                         "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                         entry.source === "user" && "bg-primary text-primary-foreground",
                         entry.source === "assistant" && "bg-secondary text-secondary-foreground",
-                        entry.source === "system" && "bg-muted text-muted-foreground",
+                        entry.source === "system" && "bg-muted text-foreground",
                       )}
                     >
                       {entry.source === "user" && "U"}
@@ -134,11 +136,11 @@ export default function App() {
                         "flex-1 rounded-lg px-4 py-3",
                         entry.source === "user" && "bg-primary text-primary-foreground",
                         entry.source === "assistant" && "bg-secondary text-secondary-foreground",
-                        entry.source === "system" && "bg-muted text-muted-foreground",
+                        entry.source === "system" && "bg-muted text-foreground",
                       )}
                     >
                       <p className="text-sm">{entry.text}</p>
-                      <span className="mt-1 text-xs opacity-70">
+                      <span className="mt-1 text-xs opacity-90">
                         {entry.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
@@ -160,6 +162,7 @@ export default function App() {
                   {VISUALIZATION_BARS.map((bar) => (
                     <div
                       key={bar.id}
+                      data-testid="audio-visualizer-bar"
                       className={cn(
                         "w-2 rounded-t-sm bg-primary/20 transition-all",
                         isListening && "animate-pulse bg-primary/40",

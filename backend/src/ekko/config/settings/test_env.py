@@ -7,6 +7,8 @@ from ekko.config.settings.base import BaseAppConfig
 class TestingConfig(BaseAppConfig):
     """Settings for automated test runs."""
 
+    __test__ = False
+
     environment: Environment = Environment.TEST
     debug: bool = False
     log_level: str = "WARNING"

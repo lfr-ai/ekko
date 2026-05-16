@@ -273,7 +273,9 @@ async def test_audio_controller_stop_timeout_terminate(
         mock_process.returncode = None
         mock_process.terminate = MagicMock()
         mock_process.kill = MagicMock()
-        mock_process.wait = AsyncMock()
+        # wait_for is fully mocked in this test, so a sync wait stub avoids
+        # creating coroutine objects that would never be awaited.
+        mock_process.wait = MagicMock(return_value=None)
         mock_exec.return_value = mock_process
 
         mock_get_devices.return_value = {"sys_name": "test_system", "mic_name": "test_mic"}
