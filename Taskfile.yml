@@ -225,6 +225,16 @@ tasks:
     cmds:
       - uv run python generate_registry.py
 
+  prompts:provision:
+    desc: "Provision prompt versions from current prompt sources"
+    cmds:
+      - task: backend:prompts:provision
+
+  prompts:list:
+    desc: "List prompt version history"
+    cmds:
+      - task: backend:prompts:list
+
   # ── Installation ─────────────────────────────────────────────
   install:
     desc: "Install all project dependencies"

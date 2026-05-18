@@ -55,6 +55,22 @@ task dev:backend   # Backend only (port 8000)
 task dev:frontend  # Frontend only (port 5173)
 ```
 
+### Prompt Versioning
+
+Ekko now includes a built-in prompt registry with immutable prompt snapshots.
+
+- Prompt sources are provisioned into version files under `backend/src/ekko/ai/prompts/versions/`.
+- When `EKKO_PROMPT_AUTO_PROVISION=true`, changing a source prompt creates a new version on next use.
+- Use `EKKO_PROMPT_VERSION` to pin the app to a specific prompt version (e.g. `v2`).
+
+```bash
+# Provision/update prompt versions from current prompt sources
+task prompts:provision
+
+# List available prompt versions
+task prompts:list
+```
+
 ### Quality Checks
 
 ```bash

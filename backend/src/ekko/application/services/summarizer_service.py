@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ekko.ai.prompts import PROMPT_KEY_SUMMARY_CHUNKS, PromptRegistryError, get_prompt_text
 from ekko.config.settings import BaseAppConfig, get_settings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from ekko.core.interfaces import OpenAIGateway
+
+
+logger = logging.getLogger(__name__)
+FALLBACK_SUMMARY_TEMPLATE = "Summarize the following content concisely:\n{content}"
 
 
 @dataclass(slots=True)
@@ -26,13 +31,13 @@ class SummarizerService:
         at application level (chunking, prompt assembly).
         """
         settings = self.settings or get_settings()
-        prompt_path = settings.prompt_dir_path / "summary_prompt_chunks.txt"
 
         system_prompt = "Summarizer"
         try:
-            template = Path(prompt_path).read_text(encoding="utf-8")
-        except Exception:
-            template = "Summarize the following content concisely:\n{content}"
+            template = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+        except PromptRegistryError:
+            logger.exception("Falling back to built-in summarization prompt template")
+            template = FALLBACK_SUMMARY_TEMPLATE
 
         payload = "\n\n".join(chunks)
         user_prompt = template.replace("{content}", payload)

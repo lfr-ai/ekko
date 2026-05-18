@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ekko.ai.llm.adapter import LLMAdapter
 
+from ekko.ai.prompts import PROMPT_KEY_CONVERSATIONAL_SYSTEM, PromptRegistryError, get_prompt_text
 from ekko.ai.prompts.templates import CONVERSATIONAL_SYSTEM
 from ekko.core.enums import MessageRole
 from ekko.core.registry_constants import FIELD_CONTENT, FIELD_ROLE
@@ -40,7 +41,12 @@ class ConversationalChain:
         self.history.append({FIELD_ROLE: MessageRole.USER, FIELD_CONTENT: user_message})
 
         context = self._build_context()
-        system_prompt = CONVERSATIONAL_SYSTEM.format(context=context)
+        try:
+            template = get_prompt_text(PROMPT_KEY_CONVERSATIONAL_SYSTEM)
+        except PromptRegistryError:
+            logger.exception("Falling back to inline conversational system prompt")
+            template = CONVERSATIONAL_SYSTEM
+        system_prompt = template.format(context=context)
 
         response = await self.llm.async_chat(
             system_prompt=system_prompt,

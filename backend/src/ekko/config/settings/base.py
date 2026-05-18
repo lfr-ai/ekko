@@ -62,6 +62,8 @@ class BaseAppConfig(BaseSettings):
     package_dir_path: Path = src_dir_path / "ekko"
     logs_dir_path: Path = Path("./logs")
     prompt_dir_path: Path = package_dir_path / "ai" / "prompts"
+    prompt_version: str | None = None
+    prompt_auto_provision: bool = True
     interaction_dir_path: Path = package_dir_path / "interaction"
 
     # ── Audio / IPC ───────────────────────────────────────────

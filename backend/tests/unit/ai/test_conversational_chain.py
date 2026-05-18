@@ -1,8 +1,11 @@
 """Tests for conversational chain."""
 
+import asyncio
+
 import pytest
 
 from ekko.ai.chains.conversational import ConversationalChain
+from ekko.ai.prompts.templates import CONVERSATIONAL_SYSTEM
 from ekko.core.enums import MessageRole
 
 
@@ -17,10 +20,19 @@ class MockLLMAdapter:
 
     async def async_chat(self, *, system_prompt: str, user_prompt: str) -> str:
         """Mock async chat method."""
+        await asyncio.sleep(0)
         self.call_count += 1
         self.last_system_prompt = system_prompt
         self.last_user_prompt = user_prompt
         return self.response
+
+
+@pytest.fixture(autouse=True)
+def stub_prompt_registry(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "ekko.ai.chains.conversational.get_prompt_text",
+        lambda *_args, **_kwargs: CONVERSATIONAL_SYSTEM,
+    )
 
 
 @pytest.mark.unit

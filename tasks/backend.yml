@@ -139,6 +139,21 @@ tasks:
       - uv run alembic downgrade base
       - uv run alembic upgrade head
 
+  # ── Prompt Registry ───────────────────────────────────────
+  prompts:provision:
+    desc: "Provision prompt registry versions from current prompt sources"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry provision
+
+  prompts:list:
+    desc: "List prompt registry versions"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry list
+
   # ── Cleanup ──────────────────────────────────────────────────
   clean:
     desc: "Remove build artifacts and caches"

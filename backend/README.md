@@ -10,6 +10,19 @@ Backend package for Ekko (FastAPI + Strawberry GraphQL + Clean Architecture).
   - `EKKO_DUCKDB_DATABASE_PATH=./ekko_analytics.duckdb`
 - REST `/health` and GraphQL `healthReady` keep existing behavior and add optional DuckDB probe results when enabled.
 
+## Prompt Registry / Versioning
+
+- Runtime prompts are versioned through a registry in `src/ekko/ai/prompts/versions/registry.json`.
+- Prompt snapshots are stored as immutable files in `src/ekko/ai/prompts/versions/`.
+- Configure behavior with:
+  - `EKKO_PROMPT_AUTO_PROVISION=true|false`
+  - `EKKO_PROMPT_VERSION=vN` (optional pin for all prompts)
+
+Provision and inspect prompt versions:
+
+- `uv run python -m ekko.cli.prompt_registry provision`
+- `uv run python -m ekko.cli.prompt_registry list`
+
 ## Testing Notes
 
 - Integration database tests run against PostgreSQL via `testcontainers` (Docker required).
