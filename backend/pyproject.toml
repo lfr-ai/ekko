@@ -84,7 +84,7 @@ db = [
 rag = [
     "langchain-community>=0.4.1",
     "langchain-text-splitters>=1.1.2",
-    "chromadb>=0.3.25",
+    "chromadb>=1.5.9",
 ]
 
 [tool.uv]
