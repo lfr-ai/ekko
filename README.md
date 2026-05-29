@@ -18,7 +18,7 @@ Distributed as a standalone Windows EXE.
 - 🔒 **PII Anonymization** - Regex-based sensitive data scrubbing
 - 📊 **GraphQL + REST** - Flexible API layer with subscriptions
 - 🧪 **Comprehensive Testing** - Unit, integration, property-based, and E2E tests
-- 🛠️ **Modern Tooling** - AI code review, OpenAPI docs, Warp workflows
+- 🛠️ **Modern Tooling** - AI code review, OpenAPI docs, OpenSpec planning, MCP tools
 
 ## 🚦 Quickstart
 
@@ -242,7 +242,8 @@ Clean Architecture with strict dependency direction:
 - GitHub Copilot with Claude 3.5 Sonnet
 - CodeRabbit (AI code review)
 - Custom VS Code agents
-- Warp terminal workflows
+- OpenSpec (spec-driven planning)
+- MCP servers (Context7, GitNexus, shadcn)
 
 ## 📚 Documentation
 
@@ -294,16 +295,16 @@ task tools:openapi:view
 
 Output: `docs/api/`
 
-### Warp Terminal
+### OpenSpec
 
-Modern terminal with AI features and workflows.
+Spec-driven planning workflow for non-trivial changes.
 
 ```bash
-# Install project workflows
-task tools:warp:install
+# Validate OpenSpec scaffold in this repo
+task tools:openspec:validate
 ```
 
-Configuration: `.warp/`
+Repository structure: `openspec/`
 
 ### GitNexus
 

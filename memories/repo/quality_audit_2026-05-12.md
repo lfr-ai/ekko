@@ -4,6 +4,6 @@
 - Pre-commit normalized line endings in scaffold tests on first run; second run clean.
 - `task verify` and `task ci:local` now pass end-to-end (with non-failing ty warning and yamllint warnings).
 - Reduced warning surface: removed `BaseSettings` fallback stubs in `backend/src/ekko/config/settings/base.py`.
-- Reduced YAML line-length warnings in `.warp/workflows/ekko-workflows.yaml`, `backend/src/ekko/ai/crewai/config/agents.yaml`, `docker/compose*.yaml`.
+- Reduced YAML line-length warnings in `backend/src/ekko/ai/crewai/config/agents.yaml` and `docker/compose*.yaml`.
 - Added persistent audit report at `docs/audits/2026-05-12-production-readiness-audit.md`.
 - Added runtime fullstack smoke verifier `scripts/verify-fullstack.ps1` and Taskfile entry `verify:fullstack`.

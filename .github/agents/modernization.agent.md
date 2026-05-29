@@ -2,7 +2,7 @@
 name: Modernization
 description: Human-in-the-loop modernization planning mode.
 model: claude-opus-4-7
-tools: ['search/codebase', 'web/fetch', 'context7/*']
+tools: ['search/codebase', 'web/fetch', 'context7/*', 'gitnexus/*']
 agents: ['*']
 ---
 

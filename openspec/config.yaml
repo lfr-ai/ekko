@@ -1,0 +1,23 @@
+schema: spec-driven
+
+context: |
+  Project: Ekko
+  Architecture: Clean Architecture with strict dependency direction.
+  Backend stack: Python 3.12, FastAPI, SQLAlchemy async, Strawberry GraphQL.
+  Frontend stack: React 19, TypeScript, Vite, shadcn/ui, Tailwind CSS v4.
+  Quality: Typed Python, behavior-first changes, tests and docs updated together.
+
+rules:
+  proposal:
+    - Define intent, scope (in/out), and risk boundaries.
+    - Call out impacted layers (core/application/infrastructure/presentation/frontend).
+  specs:
+    - Use RFC 2119 language (MUST/SHALL/SHOULD).
+    - Include Given/When/Then scenarios for acceptance.
+    - Keep behavior-only language; no implementation internals.
+  design:
+    - Explain architecture impact and dependency-boundary compliance.
+    - Include rollback or mitigation strategy for risky changes.
+  tasks:
+    - Use numbered, checkable tasks.
+    - Keep tasks small, testable, and implementation-ready.

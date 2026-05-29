@@ -51,6 +51,34 @@ applyTo: "**"
 - Root `Taskfile.yml` orchestrates via includes from `tasks/`.
 - Run `task check` (lint + tests + typecheck) before finalizing changes.
 
+## OpenSpec-First Planning
+
+- For non-trivial feature changes and refactors, use OpenSpec planning before code.
+- Store specs and change artifacts under `openspec/` in this repository.
+- Prefer behavior-first requirements with Given/When/Then scenarios.
+- Use spec deltas (ADDED/MODIFIED/REMOVED) to describe changes.
+- Keep implementation details in task/design artifacts, not in behavior specs.
+
+Default OpenSpec flow:
+
+- `/opsx:propose <change>`
+- `/opsx:apply <change>`
+- `/opsx:sync <change>`
+- `/opsx:archive <change>`
+
+## MCP and Agent Tooling
+
+- MCP runtime config for VS Code lives in `.vscode/mcp.json`.
+- Keep `context7`, `gitnexus`, and `shadcn` configured for this repository.
+- Avoid root-level `.mcp.json` to prevent duplicate MCP discovery in VS Code.
+- Keep `.vscode/settings.json` aligned with MCP best practices:
+	- `"chat.mcp.discovery.enabled": false`
+	- `"chat.mcp.autoStart": true`
+- Agent profiles in `.github/agents/*.agent.md` should expose:
+	- `'context7/*'` for documentation retrieval
+	- `'gitnexus/*'` for graph-aware code exploration
+	- `'shadcn/*'` for frontend component workflows where relevant
+
 ## Quality Rules
 
 - Keep changes minimal and scoped.

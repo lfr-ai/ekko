@@ -315,7 +315,7 @@ tasks:
       - uv run cz bump --yes
 
   # ══════════════════════════════════════════════════════════════════════════
-  # Tool Management (CodeRabbit, OpenSpec, Warp, GitNexus)
+  # Tool Management (CodeRabbit, OpenSpec, GitNexus)
   # ══════════════════════════════════════════════════════════════════════════
 
   tools:openapi:generate:
@@ -356,13 +356,14 @@ tasks:
         fi
 
   tools:openspec:validate:
-    desc: "Validate OpenSpec configuration"
+    desc: "Validate OpenSpec repository scaffolding"
     cmds:
       - |
-        if [ -f .spectral.yaml ]; then
-          echo "✓ OpenSpec/Spectral configuration found (.spectral.yaml)"
+        if [ -f openspec/config.yaml ] && [ -d openspec/specs ] && [ -d openspec/changes ]; then
+          echo "✓ OpenSpec repository scaffold found (openspec/config.yaml + specs/ + changes/)"
         else
-          echo "✗ OpenSpec/Spectral configuration missing"
+          echo "✗ OpenSpec scaffold missing"
+          echo "  Expected: openspec/config.yaml, openspec/specs/, openspec/changes/"
           exit 1
         fi
 
@@ -378,30 +379,14 @@ tasks:
           echo "⚠ actionlint not installed locally (CI workflow will still validate workflows)"
         fi
 
-  tools:warp:install:
-    desc: "Install Warp terminal configurations"
-    cmds:
-      - cmd: |
-          mkdir -p ~/.warp/launch_configurations
-          mkdir -p ~/.warp/workflows
-          cp .warp/launch_configurations/ekko.yaml ~/.warp/launch_configurations/
-          cp .warp/workflows/ekko-workflows.yaml ~/.warp/workflows/
-          echo "✓ Warp configurations installed (unix)"
-        platforms: [darwin, linux]
-      - cmd: |
-          echo "For Windows/WSL, use scripts/install/install-warp.zsh for best results."
-          echo "This ensures Warp + zsh/OMZ paths are configured consistently."
-        platforms: [windows]
-
   tools:setup:
-    desc: "Setup all development tools (CodeRabbit, OpenSpec, Warp, GitNexus)"
+    desc: "Setup all development tools (CodeRabbit, OpenSpec, GitNexus)"
     cmds:
       - task: tools:coderabbit:validate
       - task: tools:gitnexus:validate
       - task: tools:openspec:validate
       - task: tools:actionlint:validate
       - task: tools:openapi:generate
-      - task: tools:warp:install
       - echo "✓ All tools configured successfully"
 
   tools:status:
@@ -436,13 +421,6 @@ tasks:
           echo "  ✓ Generated (docs/api/)"
         else
           echo "  ⚠ Not yet generated (run: task tools:openapi:generate)"
-        fi
-        echo ""
-        echo "Warp:"
-        if [ -f .warp/launch_configurations/ekko.yaml ]; then
-          echo "  ✓ Project configs present"
-        else
-          echo "  ✗ Not configured"
         fi
         echo ""
         echo "VS Code:"

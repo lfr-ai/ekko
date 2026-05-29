@@ -2,7 +2,7 @@
 name: Backend Python
 description: Specialized agent for Python backend development with Clean Architecture
 model: claude-sonnet-4-6
-tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'gitnexus/*']
 agents: ['*']
 ---
 

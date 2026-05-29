@@ -2,7 +2,7 @@
 name: Security
 description: Security best practices, authentication, authorization, and vulnerability prevention
 model: claude-sonnet-4-6
-tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*']
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'gitnexus/*']
 agents: ['*']
 ---
 

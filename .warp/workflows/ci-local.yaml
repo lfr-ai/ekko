@@ -1,7 +1,0 @@
----
-name: CI Local
-command: task ci:local
-tags: [ci, quality, pre-push]
-description: Run full CI validation locally before pushing
-arguments: []
----

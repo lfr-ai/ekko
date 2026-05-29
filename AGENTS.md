@@ -10,6 +10,69 @@ working within this codebase.
   - `use context7`
 - Prefer Context7 for authoritative API/reference answers.
 
+## OpenSpec Workflow Baseline
+
+OpenSpec is required for non-trivial feature work and architectural changes.
+
+- Use OpenSpec before implementation to define intent and requirements.
+- Keep specs in-repo under `openspec/` as the planning source of truth.
+- For default flow, use: propose → apply → sync → archive.
+
+Recommended command path:
+
+- `/opsx:explore` (optional, for ambiguous problems)
+- `/opsx:propose <change>`
+- `/opsx:apply <change>`
+- `/opsx:sync <change>`
+- `/opsx:archive <change>`
+
+For expanded flow (if enabled), use `/opsx:new`, `/opsx:continue` or
+`/opsx:ff`, `/opsx:verify`, `/opsx:archive`.
+
+OpenSpec quality expectations:
+
+- Specs must be behavior-first and testable.
+- Use explicit ADDED/MODIFIED/REMOVED deltas for change specs.
+- Keep implementation details in `design.md` and `tasks.md`, not in `spec.md`.
+- Keep changes focused and named clearly (e.g., `add-dark-mode`,
+  `fix-login-redirect`).
+
+## MCP Baseline and Tool Parity
+
+### MCP configuration sources
+
+| File | Purpose | Read by |
+| ---- | ------- | ------- |
+| `.vscode/mcp.json` | VS Code runtime (authoritative for Copilot) | VS Code |
+| `.claude/mcp.json` | Claude Code CLI runtime | Claude Code |
+
+There is **no** `.mcp.json` at project root. Keeping a root-level MCP file can
+cause duplicate server discovery and drift between clients.
+
+### Required baseline MCP servers
+
+- `context7` — authoritative, up-to-date documentation lookup
+- `gitnexus` — code-graph intelligence for architecture-aware search
+- `shadcn` — registry-aware component discovery and installation for frontend work
+
+### VS Code MCP policy
+
+- `.vscode/mcp.json` is the source of truth for workspace MCP in VS Code.
+- `.vscode/settings.json` must keep:
+  - `"chat.mcp.discovery.enabled": false` (avoid duplicate/discovered entries)
+  - `"chat.mcp.autoStart": true` (auto-start configured MCP servers)
+- Do not install duplicate marketplace MCP servers when equivalent workspace
+  entries already exist.
+
+### Agent tool parity requirement
+
+All `.github/agents/*.agent.md` profiles must include at least:
+
+- `'context7/*'`
+- `'gitnexus/*'`
+
+Frontend-focused agent profiles should additionally include `'shadcn/*'`.
+
 ---
 
 ## Architecture Overview

@@ -62,7 +62,7 @@ Observed outcomes:
   - Wrapped long reference comment line.
   - Split `healthcheck.test` array to multiline and shortened inline Python snippet.
 
-- File: `.warp/workflows/ekko-workflows.yaml`
+- File: `docker/compose.yaml`
   - Converted long command strings in migration/DB verification to folded scalars.
 
 ### 5) Independent + together runtime verification scaffold
@@ -100,4 +100,6 @@ Observed outcomes:
 
 ## Conclusion
 
-The repository was upgraded from “mostly healthy with blockers” to “security- and quality-gate clean” in this session, with concrete fixes applied to imports, dependency security, typing robustness, and YAML maintainability.
+The repository was upgraded from “mostly healthy with blockers” to
+“security- and quality-gate clean” in this session, with concrete fixes applied
+to imports, dependency security, typing robustness, and YAML maintainability.

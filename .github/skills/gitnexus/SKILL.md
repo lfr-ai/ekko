@@ -40,9 +40,10 @@ bun install -g gitnexus@latest
 
 ## MCP Integration
 
-GitNexus is configured as an MCP server in `.vscode/mcp.json`. Once configured,
-VS Code Copilot (and other MCP-aware agents) can query the knowledge graph
-directly during chat sessions -- no manual CLI invocation required.
+GitNexus is configured as an MCP server in both `.vscode/mcp.json` (VS Code)
+and `.claude/mcp.json` (Claude Code CLI). Once configured, MCP-aware agents can
+query the knowledge graph directly during chat sessions -- no manual CLI
+invocation required.
 
 Example `.vscode/mcp.json` entry:
 
@@ -59,6 +60,11 @@ Example `.vscode/mcp.json` entry:
 
 After adding the entry, restart VS Code or reload the MCP server list to
 activate the integration.
+
+Repository policy:
+
+- Keep workspace MCP config in `.vscode/mcp.json` and `.claude/mcp.json`.
+- Do not add a root-level `.mcp.json` to avoid duplicate server discovery.
 
 ## When to Rebuild the Index
 

@@ -2,7 +2,7 @@
 name: Frontend React
 description: Specialized agent for React frontend development with modern patterns
 model: claude-sonnet-4-6
-tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'shadcn/*']
+tools: ['edit', 'search/codebase', 'web/fetch', 'context7/*', 'gitnexus/*', 'shadcn/*']
 agents: ['*']
 ---
 

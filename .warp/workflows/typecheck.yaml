@@ -1,7 +1,0 @@
----
-name: Type Check
-command: task typecheck
-tags: [types, typecheck]
-description: Run type checkers (ty + tsc)
-arguments: []
----

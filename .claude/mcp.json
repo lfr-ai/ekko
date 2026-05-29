@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.anthropic.com/mcp/servers.json",
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "shadcn": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"],
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    "gitnexus": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["gitnexus@latest", "mcp"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}

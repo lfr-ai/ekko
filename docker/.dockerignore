@@ -145,7 +145,6 @@ ty.toml
 # Development Tools
 # ---------------------------------------------------------------
 .devcontainer/
-.warp/
 .claude/
 .agents/
 .gsd/

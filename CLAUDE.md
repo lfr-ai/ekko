@@ -377,7 +377,7 @@ as an agent: `claude --agent code-reviewer`.
 
 | Config file | Tool | Servers |
 | --- | --- | --- |
-| `.mcp.json` | Claude Code CLI | context7, shadcn, gitnexus |
+| `.claude/mcp.json` | Claude Code CLI | context7, shadcn, gitnexus |
 | `.vscode/mcp.json` | VS Code Copilot | context7, shadcn, gitnexus |
 
 ### VS Code Copilot (`.github/`)
@@ -466,7 +466,7 @@ as an agent: `claude --agent code-reviewer`.
 | **Multi-file refactors** | Native (reads full tree) | Manual or via Copilot Edits |
 | **Test execution** | Runs `task test` directly | Requires terminal passthrough |
 | **Git operations** | Full git CLI access | Via Source Control UI |
-| **MCP servers** | `.mcp.json` | `.vscode/mcp.json` |
+| **MCP servers** | `.claude/mcp.json` | `.vscode/mcp.json` |
 
 Both tools share skill packs in `.github/skills/` and respect `AGENTS.md`
 for general conventions. `CLAUDE.md` provides CLI-specific overrides and
