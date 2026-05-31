@@ -69,6 +69,16 @@ task prompts:provision
 
 # List available prompt versions
 task prompts:list
+
+# Show active prompt versions used at runtime
+uv run --project backend python -m ekko.cli.prompt_registry active
+
+# Resolve one explicit prompt version
+uv run --project backend python -m ekko.cli.prompt_registry resolve --prompt-key summary_chunks --version v1
+
+# Generate backtest run name/metadata with prompt versions embedded
+task eval:backtest:run-name -- --dataset-label baseline-dataset --model-label gpt-4o
+task eval:backtest:metadata -- --dataset-label baseline-dataset --model-label gpt-4o
 ```
 
 ### Quality Checks

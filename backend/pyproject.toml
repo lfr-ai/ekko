@@ -47,6 +47,7 @@ license = {text = "MIT"}
 [project.scripts]
 ekko = "ekko.cli.run_app:main"
 ekko-prompts = "ekko.cli.prompt_registry:main"
+ekko-eval = "ekko.cli.evaluator:main"
 
 [build-system]
 requires = ["hatchling"]

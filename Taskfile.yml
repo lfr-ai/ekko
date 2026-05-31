@@ -235,6 +235,16 @@ tasks:
     cmds:
       - task: backend:prompts:list
 
+  eval:backtest:run-name:
+    desc: "Generate a prompt-version-aware backtest run name"
+    cmds:
+      - task: backend:eval:backtest:run-name
+
+  eval:backtest:metadata:
+    desc: "Generate backtest metadata (run name + prompt versions)"
+    cmds:
+      - task: backend:eval:backtest:metadata
+
   # ── Installation ─────────────────────────────────────────────
   install:
     desc: "Install all project dependencies"
@@ -410,8 +420,8 @@ tasks:
         fi
         echo ""
         echo "OpenSpec:"
-        if [ -f .spectral.yaml ]; then
-          echo "  ✓ Configured (.spectral.yaml)"
+        if [ -f openspec/config.yaml ] && [ -d openspec/specs ] && [ -d openspec/changes ]; then
+          echo "  ✓ Configured (openspec/config.yaml + specs/ + changes/)"
         else
           echo "  ✗ Not configured"
         fi

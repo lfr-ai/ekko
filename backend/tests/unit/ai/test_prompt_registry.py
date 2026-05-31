@@ -8,9 +8,12 @@ from typing import TYPE_CHECKING
 import pytest
 
 from ekko.ai.prompts.registry import (
+    PROMPT_KEY_CONVERSATIONAL_SYSTEM,
     PROMPT_KEY_SUMMARY_CHUNKS,
     PromptRegistryError,
+    get_active_prompt_versions,
     get_prompt_text,
+    get_prompt_version_info,
     get_prompt_versions,
     provision_prompt,
 )
@@ -99,3 +102,40 @@ def test_get_prompt_text_raises_for_unknown_version(tmp_path: Path) -> None:
 
     with pytest.raises(PromptRegistryError):
         get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+
+@pytest.mark.unit
+def test_get_active_prompt_versions_with_auto_provision_returns_versions(tmp_path: Path) -> None:
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+    source_file = prompt_dir / "summary_prompt_chunks.txt"
+    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+
+    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
+    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+    provision_prompt(prompt_key=PROMPT_KEY_CONVERSATIONAL_SYSTEM, settings=settings)
+
+    active_versions = get_active_prompt_versions(settings=settings)
+
+    assert active_versions[PROMPT_KEY_SUMMARY_CHUNKS].version == "v1"
+    assert active_versions[PROMPT_KEY_CONVERSATIONAL_SYSTEM].version == "v1"
+
+
+@pytest.mark.unit
+def test_get_prompt_version_info_with_existing_version_returns_metadata(tmp_path: Path) -> None:
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+    source_file = prompt_dir / "summary_prompt_chunks.txt"
+    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+
+    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
+    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+    version_info = get_prompt_version_info(
+        prompt_key=PROMPT_KEY_SUMMARY_CHUNKS,
+        version="v1",
+        settings=settings,
+    )
+
+    assert version_info is not None
+    assert version_info.version == "v1"

@@ -15,6 +15,11 @@
       "command": "bunx",
       "args": ["gitnexus@latest", "mcp"],
       "cwd": "${workspaceFolder}"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--isolated"]
     }
   }
 }

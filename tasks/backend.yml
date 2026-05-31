@@ -154,6 +154,20 @@ tasks:
     cmds:
       - uv run python -m ekko.cli.prompt_registry list
 
+  eval:backtest:run-name:
+    desc: "Generate a prompt-version-aware backtest run name"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.evaluator run-name {{.CLI_ARGS}}
+
+  eval:backtest:metadata:
+    desc: "Generate backtest metadata (run name + prompt versions)"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.evaluator metadata {{.CLI_ARGS}}
+
   # ── Cleanup ──────────────────────────────────────────────────
   clean:
     desc: "Remove build artifacts and caches"

@@ -22,6 +22,13 @@ Provision and inspect prompt versions:
 
 - `uv run python -m ekko.cli.prompt_registry provision`
 - `uv run python -m ekko.cli.prompt_registry list`
+- `uv run python -m ekko.cli.prompt_registry active`
+- `uv run python -m ekko.cli.prompt_registry resolve --prompt-key summary_chunks --version v1`
+
+Generate reproducible backtest run metadata with prompt version tags:
+
+- `uv run python -m ekko.cli.evaluator run-name --dataset-label baseline --model-label gpt-4o`
+- `uv run python -m ekko.cli.evaluator metadata --dataset-label baseline --model-label gpt-4o`
 
 ## Testing Notes
 

@@ -162,6 +162,77 @@ def get_prompt_versions(
     ]
 
 
+def get_prompt_version_info(
+    prompt_key: str,
+    version: str,
+    *,
+    settings: BaseAppConfig | None = None,
+) -> PromptVersionInfo | None:
+    """Resolve metadata for a specific prompt key/version pair."""
+    config = settings or get_settings()
+    if prompt_key not in PROMPT_SOURCES:
+        raise PromptRegistryError(f"Unknown prompt key: {prompt_key}")
+
+    normalized_version = _normalize_prompt_version(version)
+    if normalized_version is None:
+        return None
+
+    return _get_prompt_version(
+        prompt_key=prompt_key,
+        version=normalized_version,
+        settings=config,
+    )
+
+
+def get_active_prompt_version(
+    prompt_key: str,
+    *,
+    settings: BaseAppConfig | None = None,
+) -> PromptVersionInfo:
+    """Resolve active prompt metadata for a single prompt key."""
+    config = settings or get_settings()
+    source = PROMPT_SOURCES.get(prompt_key)
+    if source is None:
+        raise PromptRegistryError(f"Unknown prompt key: {prompt_key}")
+
+    selected_version = _normalize_prompt_version(config.prompt_version)
+    if selected_version is not None:
+        selected_info = _get_prompt_version(
+            prompt_key=prompt_key,
+            version=selected_version,
+            settings=config,
+        )
+        if selected_info is None:
+            raise PromptRegistryError(
+                f"Prompt version '{selected_version}' not found for key '{prompt_key}'.",
+            )
+        return selected_info
+
+    if config.prompt_auto_provision:
+        return provision_prompt(prompt_key=prompt_key, settings=config)
+
+    prompt_dir = Path(config.prompt_dir_path)
+    source_text = _resolve_source_text(source=source, prompt_dir=prompt_dir)
+    return _provision_disabled_info(
+        prompt_key=prompt_key,
+        source=source,
+        source_text=source_text,
+        prompt_dir=prompt_dir,
+    )
+
+
+def get_active_prompt_versions(
+    *,
+    settings: BaseAppConfig | None = None,
+) -> dict[str, PromptVersionInfo]:
+    """Return active prompt metadata for all known prompt keys."""
+    config = settings or get_settings()
+    return {
+        prompt_key: get_active_prompt_version(prompt_key=prompt_key, settings=config)
+        for prompt_key in PROMPT_SOURCES
+    }
+
+
 def provision_prompt(
     *,
     prompt_key: str,
@@ -220,7 +291,6 @@ def provision_prompt(
             "versions": [record],
         }
         document["prompts"][prompt_key] = new_entry
-        prompt_entry = new_entry
     else:
         prompt_entry["versions"].append(record)
         prompt_entry["current_version"] = version_value
