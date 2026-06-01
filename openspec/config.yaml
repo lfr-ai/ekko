@@ -1,4 +1,4 @@
-schema: spec-driven
+schema: ekko-production
 
 context: |
   Project: Ekko
@@ -11,6 +11,7 @@ rules:
   proposal:
     - Define intent, scope (in/out), and risk boundaries.
     - Call out impacted layers (core/application/infrastructure/presentation/frontend).
+    - Include measurable success criteria.
   specs:
     - Use RFC 2119 language (MUST/SHALL/SHOULD).
     - Include Given/When/Then scenarios for acceptance.
@@ -18,6 +19,11 @@ rules:
   design:
     - Explain architecture impact and dependency-boundary compliance.
     - Include rollback or mitigation strategy for risky changes.
+    - Document data/contract and observability implications.
+  review:
+    - Evaluate security, performance, reliability, and test completeness before implementation.
+    - Record approval decision with rationale and follow-ups.
   tasks:
     - Use numbered, checkable tasks.
     - Keep tasks small, testable, and implementation-ready.
+    - Include explicit test, docs, and final validation tasks.

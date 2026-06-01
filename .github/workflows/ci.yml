@@ -287,6 +287,28 @@ jobs:
           fail: true
 
   # =================================================================
+  # OpenSpec Validation
+  # =================================================================
+  openspec-validation:
+    name: OpenSpec strict validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate OpenSpec artifacts (strict)
+        run: npx --yes @fission-ai/openspec@latest validate --all --strict
+
+      - name: Validate OpenSpec schema
+        run: npx --yes @fission-ai/openspec@latest schema validate ekko-production
+
+  # =================================================================
   # Frontend: Lint, Type Check, Test, and Build
   # =================================================================
   frontend-quality:
@@ -362,6 +384,7 @@ jobs:
       - actionlint
       - shellcheck
       - links
+      - openspec-validation
       - frontend-quality
       - frontend-storybook
     steps:

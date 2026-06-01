@@ -310,11 +310,22 @@ Output: `docs/api/`
 Spec-driven planning workflow for non-trivial changes.
 
 ```bash
-# Validate OpenSpec scaffold in this repo
+# Initialize/refresh OpenSpec guidance for Copilot + Claude + Codex
+task tools:openspec:init
+task tools:openspec:update
+
+# Validate OpenSpec scaffold + artifacts + schema
 task tools:openspec:validate
 ```
 
 Repository structure: `openspec/`
+
+Default project schema: `openspec/schemas/ekko-production/`
+
+Notes:
+
+- Use behavior deltas with `ADDED` / `MODIFIED` / `REMOVED` requirements.
+- Run strict OpenSpec validation before archiving major changes.
 
 ### GitNexus
 

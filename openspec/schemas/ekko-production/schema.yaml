@@ -1,0 +1,64 @@
+name: ekko-production
+version: 1
+description: >-
+  Ekko production schema with explicit review gate for security,
+  architecture boundaries, tests, and operational readiness.
+
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Intent, scope boundaries, and risk profile
+    template: proposal.md
+    instruction: |
+      Define the business/problem intent, in-scope and out-of-scope boundaries,
+      and measurable success outcomes. Capture risk level and rollback trigger.
+    requires: []
+
+  - id: specs
+    generates: specs/**/spec.md
+    description: Behavior deltas in ADDED/MODIFIED/REMOVED format
+    template: spec.md
+    instruction: |
+      Write behavior-only delta requirements using RFC 2119 terms and
+      Given/When/Then scenarios. No implementation details.
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: Technical implementation strategy and architecture impact
+    template: design.md
+    instruction: |
+      Document architecture impact, dependency-boundary compliance,
+      data/contract changes, observability impact, and mitigation/rollback plan.
+    requires:
+      - proposal
+      - specs
+
+  - id: review
+    generates: review.md
+    description: Pre-implementation quality checklist and acceptance gate
+    template: review.md
+    instruction: |
+      Perform a production-readiness review with explicit checks for
+      security, testing strategy, performance risks, and operability.
+    requires:
+      - specs
+      - design
+
+  - id: tasks
+    generates: tasks.md
+    description: Ordered implementation checklist with verification work
+    template: tasks.md
+    instruction: |
+      Build a concrete, testable, sequenced task plan including implementation,
+      test updates, docs updates, and final validation tasks.
+    requires:
+      - specs
+      - design
+      - review
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md

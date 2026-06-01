@@ -7,6 +7,7 @@ Example:
 - `openspec/changes/add-feature-x/`
   - `proposal.md`
   - `design.md`
+  - `review.md`
   - `tasks.md`
   - `specs/<domain>/spec.md` (delta specs)
 

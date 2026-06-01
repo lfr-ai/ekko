@@ -66,6 +66,12 @@ Default OpenSpec flow:
 - `/opsx:sync <change>`
 - `/opsx:archive <change>`
 
+For GitHub Copilot prompt-file commands in this repository, use the hyphen form:
+
+- `/opsx-propose <change>`
+- `/opsx-apply <change>`
+- `/opsx-archive <change>`
+
 ## MCP and Agent Tooling
 
 - MCP runtime config for VS Code lives in `.vscode/mcp.json`.

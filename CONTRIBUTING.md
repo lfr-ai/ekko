@@ -38,6 +38,47 @@ task db:migrate
 
 > **Note**: This repository is standardized on `uv` for Python dependency management. PDM is not part of the supported contributor workflow.
 
+## OpenSpec Workflow (Required for Non-Trivial Changes)
+
+For feature work, architectural changes, or multi-file refactors, use OpenSpec
+artifacts before implementation.
+
+### Initialize / Refresh OpenSpec Tooling
+
+```bash
+task tools:openspec:init
+task tools:openspec:update
+```
+
+### Recommended Workflow
+
+```text
+/opsx:explore (optional)
+/opsx:propose <change>
+/opsx:apply <change>
+/opsx:sync <change>   (optional, archive will prompt)
+/opsx:archive <change>
+```
+
+For expanded workflows (if enabled):
+
+```text
+/opsx:new <change>
+/opsx:continue or /opsx:ff
+/opsx:apply <change>
+/opsx:verify <change>
+/opsx:archive <change>
+```
+
+### Validate OpenSpec Artifacts
+
+```bash
+task tools:openspec:validate
+```
+
+This performs strict validation of all specs/changes and validates the
+`ekko-production` schema.
+
 ## Pre-Commit Hooks
 
 Pre-commit hooks provide fast local feedback before you commit changes. They are automatically installed when you run `task install`.

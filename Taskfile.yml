@@ -366,7 +366,7 @@ tasks:
         fi
 
   tools:openspec:validate:
-    desc: "Validate OpenSpec repository scaffolding"
+    desc: "Validate OpenSpec scaffolding and strict artifact/schema integrity"
     cmds:
       - |
         if [ -f openspec/config.yaml ] && [ -d openspec/specs ] && [ -d openspec/changes ]; then
@@ -376,6 +376,18 @@ tasks:
           echo "  Expected: openspec/config.yaml, openspec/specs/, openspec/changes/"
           exit 1
         fi
+      - npx --yes @fission-ai/openspec@latest validate --all --strict
+      - npx --yes @fission-ai/openspec@latest schema validate ekko-production
+
+  tools:openspec:init:
+    desc: "Initialize OpenSpec integrations for Copilot, Claude, and Codex"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest init . --tools github-copilot,claude,codex --profile core --force
+
+  tools:openspec:update:
+    desc: "Refresh OpenSpec-generated agent skills and command prompts"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest update .
 
   tools:actionlint:validate:
     desc: "Validate GitHub Actions workflows"

@@ -37,6 +37,20 @@ OpenSpec quality expectations:
 - Keep changes focused and named clearly (e.g., `add-dark-mode`,
   `fix-login-redirect`).
 
+OpenSpec operational baseline in this repo:
+
+- Default project schema: `openspec/schemas/ekko-production/`.
+- Strict validation command: `task tools:openspec:validate`.
+- Bootstrap/update OpenSpec integrations:
+  - `task tools:openspec:init`
+  - `task tools:openspec:update`
+
+Tool command syntax note:
+
+- Claude/Codex style generally uses `/opsx:<command>`.
+- GitHub Copilot custom prompts in `.github/prompts/` are invoked as
+  `/opsx-<command>`.
+
 ## MCP Baseline and Tool Parity
 
 ### MCP configuration sources
