@@ -20,14 +20,15 @@ def _set_sqlite_pragmas(dbapi_conn, _connection_record) -> None:
     cursor.close()
 
 
+def _is_sqlite_url(database_url: str) -> bool:
+    return database_url.startswith(("sqlite+", "sqlite://"))
+
+
 def create_engine(database_url: str, echo: bool = False) -> AsyncEngine:
-    engine = create_async_engine(
-        database_url,
-        echo=echo,
-        future=True,
-        connect_args={"check_same_thread": False},
-    )
-    event.listen(engine.sync_engine, "connect", _set_sqlite_pragmas)
+    connect_args: dict[str, bool] = {"check_same_thread": False} if _is_sqlite_url(database_url) else {}
+    engine = create_async_engine(database_url, echo=echo, future=True, connect_args=connect_args)
+    if _is_sqlite_url(database_url):
+        event.listen(engine.sync_engine, "connect", _set_sqlite_pragmas)
     return engine
 
 

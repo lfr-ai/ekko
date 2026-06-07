@@ -26,7 +26,7 @@ orchestration), and presents results through a local web UI.
 | Attribute | Value |
 | --- | --- |
 | Runtime | Python 3.12, FastAPI, Uvicorn |
-| ORM | SQLAlchemy 2.0+ async, aiosqlite (SQLite) |
+| ORM | SQLAlchemy 2.0+ async, dual backends: SQLite (local/test) and PostgreSQL (dev/prod) |
 | AI | LangChain, OpenAI, CrewAI, faster-whisper |
 | GraphQL | Strawberry GraphQL (subscriptions) |
 | Frontend | React 19, TypeScript, Vite 6 + SWC, shadcn/ui, Tailwind CSS v4 |
@@ -71,6 +71,7 @@ task db:migrate           # Run Alembic migrations
 task db:revision          # Create new Alembic migration
 task db:downgrade         # Rollback last migration
 task db:reset             # Delete SQLite DB and re-migrate
+task db:migrate:pg-to-sqlite   # Copy local PostgreSQL data into SQLite
 
 # Build & Deploy
 task build:exe            # Build standalone PyInstaller EXE
@@ -107,7 +108,7 @@ backend/src/ekko/
 ├── infrastructure/      # Persistence (ORM, repos), clients, adapters
 │   ├── adapters/        # Audio, STT adapters
 │   ├── concurrency/     # QueueManager, ThreadManager
-│   ├── db/              # SQLAlchemy engine, models (SQLite + aiosqlite)
+│   ├── db/              # SQLAlchemy engine, models (SQLite local/test + PostgreSQL dev/prod)
 │   ├── llm/             # LLM chat adapters
 │   └── stt/             # Speech-to-text transcriber
 ├── ai/                  # AI vertical

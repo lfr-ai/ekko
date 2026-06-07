@@ -13,6 +13,16 @@ class Environment(ParseableEnum):
 
     LOCAL = auto()
     TEST = auto()
+    DEV = auto()
+    PROD = auto()
+
+
+@unique
+class DatabaseBackend(ParseableEnum):
+    """Supported runtime database backends."""
+
+    SQLITE = auto()
+    POSTGRESQL = auto()
 
 
 @unique
@@ -37,4 +47,4 @@ class ChatModel(ParseableEnum):
     GPT_5 = "gpt-5"
 
 
-__all__ = ["ChatModel", "Environment", "LLMProvider"]
+__all__ = ["ChatModel", "DatabaseBackend", "Environment", "LLMProvider"]

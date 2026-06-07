@@ -218,6 +218,11 @@ tasks:
       - cmd: rm -f backend/ekko.db
       - task: backend:db:migrate
 
+  db:migrate:pg-to-sqlite:
+    desc: "Copy local PostgreSQL data into SQLite"
+    cmds:
+      - task: backend:db:migrate:pg-to-sqlite
+
   # ── Registry ─────────────────────────────────────────────────
   registry:generate:
     desc: "Generate registry constants from naming_registry.json"

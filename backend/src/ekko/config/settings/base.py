@@ -9,11 +9,12 @@ import logging
 import sys
 from functools import cached_property
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from ekko.config.enums import ChatModel, Environment, LLMProvider
+from ekko.config.enums import ChatModel, DatabaseBackend, Environment, LLMProvider
 
 
 class BaseAppConfig(BaseSettings):
@@ -49,8 +50,17 @@ class BaseAppConfig(BaseSettings):
     rag_embedding_model: str = "text-embedding-3-small"
     rag_llm_model: str = ChatModel.GPT_4O
 
-    # ── Database (SQLite) ─────────────────────────────────────
+    # ── Database ───────────────────────────────────────────────
+    database_backend: DatabaseBackend = DatabaseBackend.SQLITE
     database_path: str = "./ekko.db"
+    postgresql_host: str = "127.0.0.1"
+    postgresql_port: int = 5432
+    postgresql_name: str = "ekko"
+    postgresql_user: str = "postgres"
+    postgresql_password: SecretStr | None = None
+    postgresql_sslmode: str = "prefer"
+    postgresql_async_database_url_override: str | None = None
+    postgresql_sync_database_url_override: str | None = None
 
     # ── Database (DuckDB analytics over SQLite) ───────────────
     duckdb_enabled: bool = False
@@ -123,10 +133,43 @@ class BaseAppConfig(BaseSettings):
 
     @cached_property
     def database_url(self) -> str:
-        """Async SQLite DSN for SQLAlchemy async engines (aiosqlite)."""
-        return f"sqlite+aiosqlite:///{self._resolved_db_path}"
+        """Async DSN for SQLAlchemy async engines based on configured backend."""
+        if self.database_backend == DatabaseBackend.SQLITE:
+            return f"sqlite+aiosqlite:///{self._resolved_db_path}"
+
+        return self.postgresql_async_database_url
 
     @cached_property
     def database_sync_url(self) -> str:
-        """Synchronous SQLite DSN for Alembic migrations."""
-        return f"sqlite:///{self._resolved_db_path}"
+        """Synchronous DSN for Alembic migrations based on configured backend."""
+        if self.database_backend == DatabaseBackend.SQLITE:
+            return f"sqlite:///{self._resolved_db_path}"
+
+        return self.postgresql_sync_database_url
+
+    @cached_property
+    def postgresql_async_database_url(self) -> str:
+        """Async PostgreSQL DSN used by SQLAlchemy async engines."""
+        if self.postgresql_async_database_url_override:
+            return self.postgresql_async_database_url_override
+        return self._build_postgresql_url(async_mode=True)
+
+    @cached_property
+    def postgresql_sync_database_url(self) -> str:
+        """Sync PostgreSQL DSN used by Alembic migration engines."""
+        if self.postgresql_sync_database_url_override:
+            return self.postgresql_sync_database_url_override
+        return self._build_postgresql_url(async_mode=False)
+
+    def _build_postgresql_url(self, *, async_mode: bool) -> str:
+        """Build PostgreSQL SQLAlchemy URL from structured settings values."""
+        driver = "postgresql+asyncpg" if async_mode else "postgresql+psycopg"
+        user = quote_plus(self.postgresql_user)
+        password = self.postgresql_password.get_secret_value() if self.postgresql_password else ""
+        password_segment = f":{quote_plus(password)}" if password else ""
+
+        return (
+            f"{driver}://{user}{password_segment}@"
+            f"{self.postgresql_host}:{self.postgresql_port}/{self.postgresql_name}"
+            f"?sslmode={self.postgresql_sslmode}"
+        )

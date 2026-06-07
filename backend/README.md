@@ -2,6 +2,31 @@
 
 Backend package for Ekko (FastAPI + Strawberry GraphQL + Clean Architecture).
 
+## Database Runtime Modes
+
+- `local` / `test`: SQLite backend by default.
+- `dev` / `prod`: PostgreSQL backend by default.
+- Override backend in any environment with `EKKO_DATABASE_BACKEND=sqlite|postgresql`.
+
+Primary DB settings:
+
+- `EKKO_DATABASE_PATH` (SQLite file)
+- `EKKO_POSTGRESQL_HOST`, `EKKO_POSTGRESQL_PORT`, `EKKO_POSTGRESQL_NAME`
+- `EKKO_POSTGRESQL_USER`, `EKKO_POSTGRESQL_PASSWORD`, `EKKO_POSTGRESQL_SSLMODE`
+- Optional URL overrides:
+  - `EKKO_POSTGRESQL_ASYNC_DATABASE_URL_OVERRIDE`
+  - `EKKO_POSTGRESQL_SYNC_DATABASE_URL_OVERRIDE`
+
+### Migrate local PostgreSQL data into SQLite
+
+- Task: `task db:migrate:pg-to-sqlite`
+- CLI: `uv run python -m ekko.cli.postgres_to_sqlite`
+- Useful flags:
+  - `--source-url` (override source PostgreSQL URL)
+  - `--target-url` (override target SQLite URL)
+  - `--tables users ...` (migrate selected tables only)
+  - `--append` (keep existing target rows; default behavior truncates target tables)
+
 ## DuckDB Migration (existing health checks)
 
 - DuckDB can be enabled for readiness probes over the existing SQLite database.

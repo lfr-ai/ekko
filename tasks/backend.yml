@@ -139,6 +139,13 @@ tasks:
       - uv run alembic downgrade base
       - uv run alembic upgrade head
 
+  db:migrate:pg-to-sqlite:
+    desc: "Copy data from PostgreSQL into local SQLite"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.postgres_to_sqlite {{.CLI_ARGS}}
+
   # ── Prompt Registry ───────────────────────────────────────
   prompts:provision:
     desc: "Provision prompt registry versions from current prompt sources"

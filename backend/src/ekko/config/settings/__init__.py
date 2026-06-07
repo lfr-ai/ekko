@@ -17,11 +17,15 @@ from dotenv import dotenv_values
 
 from ekko.config.enums import Environment
 from ekko.config.settings.base import BaseAppConfig
+from ekko.config.settings.dev import DevelopmentConfig
 from ekko.config.settings.local import LocalConfig
+from ekko.config.settings.prod import ProductionConfig
 from ekko.config.settings.test_env import TestingConfig
 
 _ROOT_DIR = Path(__file__).resolve().parents[4]
 _ENV_FILE_BY_ENV: dict[Environment, Path] = {
+    Environment.DEV: _ROOT_DIR / ".env.dev",
+    Environment.PROD: _ROOT_DIR / ".env.prod",
     Environment.TEST: _ROOT_DIR / ".env.test",
 }
 _LOCAL_OVERRIDE_FILE = _ROOT_DIR / ".env.local"
@@ -53,7 +57,9 @@ def _load_environment_file(*, environment: Environment) -> None:
 
 
 _SETTINGS_MAP: dict[Environment, type[BaseAppConfig]] = {
+    Environment.DEV: DevelopmentConfig,
     Environment.LOCAL: LocalConfig,
+    Environment.PROD: ProductionConfig,
     Environment.TEST: TestingConfig,
 }
 
@@ -86,7 +92,9 @@ __all__ = [
     "SETTINGS",
     "AppSettings",
     "BaseAppConfig",
+    "DevelopmentConfig",
     "LocalConfig",
+    "ProductionConfig",
     "Settings",
     "TestingConfig",
     "get_settings",

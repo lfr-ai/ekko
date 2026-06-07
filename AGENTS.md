@@ -136,7 +136,7 @@ backend/src/ekko/
 ├── infrastructure/      # External integrations, persistence
 │   ├── adapters/        # Audio, STT adapters
 │   ├── concurrency/     # QueueManager, ThreadManager
-│   ├── db/              # SQLAlchemy engine, models (SQLite + aiosqlite)
+│   ├── db/              # SQLAlchemy engine, models (SQLite local/test + PostgreSQL dev/prod)
 │   ├── llm/             # LLM chat adapters
 │   └── stt/             # Speech-to-text transcriber
 ├── ai/                  # AI vertical
@@ -194,7 +194,7 @@ registry/                # Naming registry (JSON -> generated constants)
 
 - **Python 3.12**, uv for dependency management, Taskfile for task running
 - **FastAPI** + Uvicorn for HTTP
-- **SQLAlchemy 2.0+** async ORM with aiosqlite driver (SQLite)
+- **SQLAlchemy 2.0+** async ORM with dual backends: aiosqlite (local/test) and asyncpg/psycopg (dev/prod PostgreSQL)
 - **Pydantic v2** for validation with `Annotated` + `Field`
 - **ruff** for linting/formatting (config in `backend/ruff.toml`), **ty** for type checking
 - **structlog** for structured logging (never `print()`)

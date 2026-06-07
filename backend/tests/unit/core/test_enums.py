@@ -21,6 +21,8 @@ class TestEnvironmentEnum:
     def test_members_exist(self):
         assert Environment.LOCAL
         assert Environment.TEST
+        assert Environment.DEV
+        assert Environment.PROD
 
     def test_values_are_lowercase(self):
         for member in Environment:
@@ -29,6 +31,8 @@ class TestEnvironmentEnum:
     def test_string_coercion(self):
         assert str(Environment.LOCAL) == "local"
         assert str(Environment.TEST) == "test"
+        assert str(Environment.DEV) == "dev"
+        assert str(Environment.PROD) == "prod"
 
 
 class TestLLMProviderEnum:
@@ -49,6 +53,8 @@ class TestEnumValues:
         assert isinstance(result, list)
         assert "local" in result
         assert "test" in result
+        assert "dev" in result
+        assert "prod" in result
 
     def test_all_str_enums_have_values(self):
         for enum_cls in [

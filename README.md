@@ -42,6 +42,9 @@ cp .env.example .env.local
 
 # Initialize database
 task db:migrate
+
+# Optional: migrate existing local PostgreSQL data into SQLite
+task db:migrate:pg-to-sqlite
 ```
 
 ### Development
@@ -220,9 +223,17 @@ Clean Architecture with strict dependency direction:
 
 - FastAPI, Uvicorn
 - Strawberry GraphQL
-- SQLAlchemy, Alembic, SQLite
+- SQLAlchemy, Alembic, SQLite (local), PostgreSQL (dev/prod)
 - CrewAI, LangChain, OpenAI
 - Pydantic v2, structlog
+
+### Database Modes
+
+- `local` and `test` default to SQLite (`EKKO_DATABASE_BACKEND=sqlite`).
+- `dev` and `prod` default to PostgreSQL (`EKKO_DATABASE_BACKEND=postgresql`).
+- You can explicitly override backend mode in any environment using `EKKO_DATABASE_BACKEND`.
+- To copy existing local PostgreSQL data into SQLite for local development, run:
+  - `task db:migrate:pg-to-sqlite`
 
 **Frontend**:
 
