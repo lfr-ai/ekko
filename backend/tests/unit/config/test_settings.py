@@ -96,7 +96,9 @@ class TestDatabaseUrls:
         )
         assert cfg.database_url.startswith("postgresql+asyncpg://ekko_user:test-password@db.internal:5439/ekko_dev")
         assert cfg.database_url.endswith("sslmode=require")
-        assert cfg.database_sync_url.startswith("postgresql+psycopg://ekko_user:test-password@db.internal:5439/ekko_dev")
+        assert cfg.database_sync_url.startswith(
+            "postgresql+psycopg://ekko_user:test-password@db.internal:5439/ekko_dev"
+        )
 
     def test_postgresql_database_urls_support_overrides(self):
         cfg = DevelopmentConfig(

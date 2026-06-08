@@ -2,9 +2,7 @@
 name = "ekko"
 version = "0.1.0"
 description = "Ekko — AI-powered voice assistant platform"
-authors = [
-    {name = "Laurits Fromberg", email = "lfr@tik-ai.dk"},
-]
+authors = [{ name = "Laurits Fromberg", email = "lfr@tik-ai.dk" }]
 dependencies = [
     "fastapi>=0.116.1",
     "uvicorn>=0.35.0",
@@ -43,7 +41,7 @@ dependencies = [
 
 requires-python = ">=3.12,<4.0"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [project.scripts]
 ekko = "ekko.cli.run_app:main"
@@ -86,11 +84,7 @@ dev = [
     "testcontainers[postgres]>=4.8.2",
     "asyncpg>=0.30.0",
 ]
-db = [
-    "sqlalchemy>=2.0",
-    "alembic>=1.11",
-    "aiosqlite>=0.20.0",
-]
+db = ["sqlalchemy>=2.0", "alembic>=1.11", "aiosqlite>=0.20.0"]
 rag = [
     "langchain-community>=0.4.1",
     "langchain-text-splitters>=1.1.2",

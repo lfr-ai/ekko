@@ -59,6 +59,9 @@ coverage/
 .cache
 nosetests.xml
 .benchmarks/
+backend/keploy/reports/
+backend/keploy/debug-*.log
+backend/keploy/*/secret.yaml
 
 # Type checkers
 .mypy_cache/

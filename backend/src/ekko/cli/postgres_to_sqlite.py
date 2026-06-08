@@ -88,11 +88,7 @@ async def _run_migration(
                 target_table=target_table,
                 chunk_size=chunk_size,
             )
-            source_rows = (
-                await _count_rows(engine=source_engine, table=source_table)
-                if source_table is not None
-                else 0
-            )
+            source_rows = await _count_rows(engine=source_engine, table=source_table) if source_table is not None else 0
             target_rows = await _count_rows(engine=target_engine, table=target_table)
             migrated_table_results.append(
                 TableMigrationResult(

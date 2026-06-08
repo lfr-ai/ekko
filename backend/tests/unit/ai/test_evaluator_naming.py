@@ -76,3 +76,15 @@ def test_build_backtest_metadata_with_active_prompt_versions_returns_metadata(
     assert metadata["dataset_label"] == "eval-dataset"
     assert metadata["model_label"] == "gpt-4o-mini"
     assert metadata["prompt_versions"]["summary_chunks"]["version"] == "v3"
+
+
+@pytest.mark.unit
+def test_build_backtest_run_name_with_no_prompt_versions_uses_placeholder_segment() -> None:
+    run_name = build_backtest_run_name(
+        dataset_label="dataset",
+        model_label="gpt-4o",
+        prompt_versions={},
+        now_utc=datetime(2026, 2, 3, 4, 5, 6, tzinfo=UTC),
+    )
+
+    assert "-noprompts-" in run_name

@@ -250,6 +250,26 @@ tasks:
     cmds:
       - task: backend:eval:backtest:metadata
 
+  keploy:version:
+    desc: "Print Keploy CLI version"
+    cmds:
+      - task: backend:keploy:version
+
+  keploy:record:
+    desc: "Record API traffic into Keploy test cases"
+    cmds:
+      - task: backend:keploy:record
+
+  keploy:test:
+    desc: "Replay Keploy test cases"
+    cmds:
+      - task: backend:keploy:test
+
+  keploy:report:
+    desc: "Show Keploy test run summary"
+    cmds:
+      - task: backend:keploy:report
+
   # ── Installation ─────────────────────────────────────────────
   install:
     desc: "Install all project dependencies"

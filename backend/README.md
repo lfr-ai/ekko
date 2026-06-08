@@ -49,11 +49,45 @@ Provision and inspect prompt versions:
 - `uv run python -m ekko.cli.prompt_registry list`
 - `uv run python -m ekko.cli.prompt_registry active`
 - `uv run python -m ekko.cli.prompt_registry resolve --prompt-key summary_chunks --version v1`
+- `task prompts:active`
+- `task prompts:resolve -- --prompt-key summary_chunks --version v1`
 
 Generate reproducible backtest run metadata with prompt version tags:
 
 - `uv run python -m ekko.cli.evaluator run-name --dataset-label baseline --model-label gpt-4o`
 - `uv run python -m ekko.cli.evaluator metadata --dataset-label baseline --model-label gpt-4o`
+
+## Keploy Integration
+
+Keploy traffic capture/replay is integrated through backend task commands with explicit runtime defaults.
+
+Local workflow:
+
+- `task keploy:version`
+- `task keploy:record`
+- `task keploy:test`
+- `task keploy:report`
+
+Optional local config-file workflow:
+
+- `keploy config --generate --path .`
+- Then run `keploy record` / `keploy test` directly with `--config-path .` if you prefer a file-driven setup.
+
+Cloud suite workflow note (CI-friendly):
+
+- Cloud `test-suite` execution is available in newer Keploy CLI generations.
+- If you use that mode, store `KEPLOY_API_KEY` only in environment/secret stores.
+
+Operational best practices applied:
+
+- Filter out noisy non-business endpoints from recording (`/health`, `/metrics`).
+- Use `globalNoise` to ignore volatile response headers and timing noise.
+- Keep app deterministic during replay (`EKKO_DISABLE_AUDIO=true`, local SQLite backend).
+- Do not commit Keploy test-set secrets (`backend/keploy/*/secret.yaml`).
+
+Windows note:
+
+- Keploy eBPF capabilities require WSL/Docker-backed flow on Windows; ensure prerequisites from Keploy install docs are satisfied.
 
 ## Testing Notes
 

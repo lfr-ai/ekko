@@ -8,18 +8,27 @@ provisioned automatically (unless disabled in settings).
 from __future__ import annotations
 
 import json
+import os
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
-from typing import Final, Literal, TypedDict, cast
+from time import monotonic, sleep, time_ns
+from typing import TYPE_CHECKING, Final, Literal, TypedDict, cast
 
 from ekko.ai.prompts.templates import CONVERSATIONAL_SYSTEM
 from ekko.config.settings import BaseAppConfig, get_settings
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 REGISTRY_SCHEMA_VERSION: Final[int] = 1
 VERSIONS_DIRECTORY_NAME: Final[str] = "versions"
 REGISTRY_FILE_NAME: Final[str] = "registry.json"
+REGISTRY_LOCK_FILE_NAME: Final[str] = ".registry.lock"
+REGISTRY_LOCK_TIMEOUT_SECONDS: Final[float] = 5.0
+REGISTRY_LOCK_POLL_INTERVAL_SECONDS: Final[float] = 0.05
 
 PROMPT_KEY_SUMMARY_CHUNKS: Final[str] = "summary_chunks"
 PROMPT_KEY_CONVERSATIONAL_SYSTEM: Final[str] = "conversational_system"
@@ -255,53 +264,88 @@ def provision_prompt(
             prompt_dir=prompt_dir,
         )
 
-    versions_directory = _versions_directory(prompt_dir=prompt_dir)
-    registry_path = versions_directory / REGISTRY_FILE_NAME
-    document = _load_registry_document(prompt_dir=prompt_dir)
+    with _prompt_registry_lock(prompt_dir=prompt_dir):
+        versions_directory = _versions_directory(prompt_dir=prompt_dir)
+        registry_path = versions_directory / REGISTRY_FILE_NAME
+        document = _load_registry_document(prompt_dir=prompt_dir)
 
-    checksum = _calculate_checksum(source_text)
-    prompt_entry = document["prompts"].get(prompt_key)
-    if prompt_entry is not None:
-        current_record = _find_version(prompt_entry=prompt_entry, version=prompt_entry["current_version"])
-        if current_record is not None and current_record["checksum"] == checksum:
-            return _record_to_info(
-                prompt_key=prompt_key,
-                record=current_record,
-                versions_directory=versions_directory,
-                is_new=False,
-            )
+        checksum = _calculate_checksum(source_text)
+        prompt_entry = document["prompts"].get(prompt_key)
+        if prompt_entry is not None:
+            current_record = _find_version(prompt_entry=prompt_entry, version=prompt_entry["current_version"])
+            if current_record is not None and current_record["checksum"] == checksum:
+                return _record_to_info(
+                    prompt_key=prompt_key,
+                    record=current_record,
+                    versions_directory=versions_directory,
+                    is_new=False,
+                )
 
-    version_value = _next_version(prompt_entry=prompt_entry)
-    file_name = f"{prompt_key}.{version_value}.txt"
-    file_path = versions_directory / file_name
-    _write_text(file_path=file_path, content=source_text)
+        version_value = _next_version(prompt_entry=prompt_entry)
+        file_name = f"{prompt_key}.{version_value}.txt"
+        file_path = versions_directory / file_name
+        _write_text(file_path=file_path, content=source_text)
 
-    created_at = datetime.now(tz=UTC)
-    record: VersionRecord = {
-        "version": version_value,
-        "file_name": file_name,
-        "source_name": source.source_name,
-        "checksum": checksum,
-        "created_at": created_at.isoformat(),
-    }
-
-    if prompt_entry is None:
-        new_entry: PromptEntry = {
-            "current_version": version_value,
-            "versions": [record],
+        created_at = datetime.now(tz=UTC)
+        record: VersionRecord = {
+            "version": version_value,
+            "file_name": file_name,
+            "source_name": source.source_name,
+            "checksum": checksum,
+            "created_at": created_at.isoformat(),
         }
-        document["prompts"][prompt_key] = new_entry
-    else:
-        prompt_entry["versions"].append(record)
-        prompt_entry["current_version"] = version_value
 
-    _write_registry_document(registry_path=registry_path, document=document)
-    return _record_to_info(
-        prompt_key=prompt_key,
-        record=record,
-        versions_directory=versions_directory,
-        is_new=True,
-    )
+        if prompt_entry is None:
+            new_entry: PromptEntry = {
+                "current_version": version_value,
+                "versions": [record],
+            }
+            document["prompts"][prompt_key] = new_entry
+        else:
+            prompt_entry["versions"].append(record)
+            prompt_entry["current_version"] = version_value
+
+        _write_registry_document(registry_path=registry_path, document=document)
+        return _record_to_info(
+            prompt_key=prompt_key,
+            record=record,
+            versions_directory=versions_directory,
+            is_new=True,
+        )
+
+
+@contextmanager
+def _prompt_registry_lock(*, prompt_dir: Path) -> Iterator[None]:
+    lock_path = _versions_directory(prompt_dir=prompt_dir) / REGISTRY_LOCK_FILE_NAME
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    deadline = monotonic() + REGISTRY_LOCK_TIMEOUT_SECONDS
+    lock_fd: int | None = None
+
+    while lock_fd is None:
+        try:
+            lock_fd = os.open(
+                str(lock_path),
+                os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+            )
+        except FileExistsError:
+            if monotonic() >= deadline:
+                raise PromptRegistryError(
+                    f"Timed out waiting for prompt registry lock '{lock_path}'.",
+                ) from None
+            sleep(REGISTRY_LOCK_POLL_INTERVAL_SECONDS)
+        except OSError as error:
+            raise PromptRegistryError(
+                f"Unable to create prompt registry lock file '{lock_path}'.",
+            ) from error
+
+    try:
+        os.write(lock_fd, f"pid={os.getpid()}".encode())
+        yield
+    finally:
+        with suppress(OSError):
+            os.close(lock_fd)
+        with suppress(OSError):
+            lock_path.unlink(missing_ok=True)
 
 
 def _get_prompt_version(
@@ -368,7 +412,7 @@ def _read_text(path: Path) -> str:
 def _write_text(*, file_path: Path, content: str) -> None:
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(content, encoding="utf-8")
+        _write_text_atomic(file_path=file_path, content=content)
     except OSError as error:
         raise PromptRegistryError(f"Unable to write prompt version file '{file_path}'.") from error
 
@@ -420,7 +464,7 @@ def _parse_prompt_entry(*, key: object, entry: object) -> PromptEntry | None:
     if not isinstance(key, str) or not isinstance(entry, dict):
         return None
 
-    entry_dict = cast(dict[str, object], entry)
+    entry_dict = cast("dict[str, object]", entry)
     current_version = entry_dict.get("current_version")
     versions = entry_dict.get("versions")
     if not isinstance(current_version, str) or not isinstance(versions, list):
@@ -441,7 +485,7 @@ def _parse_version_record(*, item: object) -> VersionRecord | None:
     if not isinstance(item, dict):
         return None
 
-    item_dict = cast(dict[str, object], item)
+    item_dict = cast("dict[str, object]", item)
     version = item_dict.get("version")
     file_name = item_dict.get("file_name")
     source_name = item_dict.get("source_name")
@@ -467,12 +511,18 @@ def _parse_version_record(*, item: object) -> VersionRecord | None:
 def _write_registry_document(*, registry_path: Path, document: PromptRegistryDocument) -> None:
     try:
         registry_path.parent.mkdir(parents=True, exist_ok=True)
-        registry_path.write_text(
-            json.dumps(document, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
-            encoding="utf-8",
+        _write_text_atomic(
+            file_path=registry_path,
+            content=json.dumps(document, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
         )
     except OSError as error:
         raise PromptRegistryError(f"Unable to write prompt registry file '{registry_path}'.") from error
+
+
+def _write_text_atomic(*, file_path: Path, content: str) -> None:
+    temp_file_path = file_path.with_name(f"{file_path.name}.tmp-{os.getpid()}-{time_ns()}")
+    temp_file_path.write_text(content, encoding="utf-8")
+    temp_file_path.replace(file_path)
 
 
 def _next_version(*, prompt_entry: PromptEntry | None) -> str:

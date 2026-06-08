@@ -74,15 +74,47 @@ task prompts:provision
 task prompts:list
 
 # Show active prompt versions used at runtime
-uv run --project backend python -m ekko.cli.prompt_registry active
+task prompts:active
 
 # Resolve one explicit prompt version
-uv run --project backend python -m ekko.cli.prompt_registry resolve --prompt-key summary_chunks --version v1
+task prompts:resolve -- --prompt-key summary_chunks --version v1
 
 # Generate backtest run name/metadata with prompt versions embedded
 task eval:backtest:run-name -- --dataset-label baseline-dataset --model-label gpt-4o
 task eval:backtest:metadata -- --dataset-label baseline-dataset --model-label gpt-4o
 ```
+
+### Keploy Record/Replay API Testing
+
+Ekko includes first-class Keploy integration for traffic-based API regression testing.
+
+- Keploy commands are wired through root Task targets with production-safe defaults.
+- Recorded artifacts are stored under `backend/keploy/`.
+- Volatile reports and secrets are ignored in Git (`backend/keploy/reports/`, `backend/keploy/*/secret.yaml`).
+
+```bash
+# Verify Keploy CLI is installed
+task keploy:version
+
+# Record traffic into Keploy test cases/mocks (run requests against the app while recording)
+task keploy:record
+
+# Replay recorded test sets for deterministic regression checks
+task keploy:test
+
+# Summarize the latest Keploy run
+task keploy:report
+
+# Optional: generate local keploy.yaml if you want config-file driven runs
+cd backend && keploy config --generate --path .
+```
+
+Production-readiness notes:
+
+- Keep Keploy recordings focused with filters (for example: exclude `/health` and `/metrics`) to reduce flaky noise.
+- Use `globalNoise` for volatile response fields (date/time/process timing headers, IDs, timestamps).
+- Never commit `secret.yaml` files generated for test sets.
+- If you upgrade to Keploy v3+ for cloud suite execution, inject `KEPLOY_API_KEY` via CI secrets and avoid plaintext tokens in workflow files.
 
 ### Quality Checks
 

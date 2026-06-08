@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+import ekko.ai.prompts.registry as prompt_registry
 from ekko.ai.prompts.registry import (
     PROMPT_KEY_CONVERSATIONAL_SYSTEM,
     PROMPT_KEY_SUMMARY_CHUNKS,
@@ -139,3 +140,26 @@ def test_get_prompt_version_info_with_existing_version_returns_metadata(tmp_path
 
     assert version_info is not None
     assert version_info.version == "v1"
+
+
+@pytest.mark.unit
+def test_provision_prompt_with_stale_lock_raises_registry_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+    source_file = prompt_dir / "summary_prompt_chunks.txt"
+    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+
+    versions_dir = prompt_dir / "versions"
+    versions_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = versions_dir / ".registry.lock"
+    lock_path.write_text("stale-lock", encoding="utf-8")
+
+    monkeypatch.setattr(prompt_registry, "REGISTRY_LOCK_TIMEOUT_SECONDS", 0.01)
+    monkeypatch.setattr(prompt_registry, "REGISTRY_LOCK_POLL_INTERVAL_SECONDS", 0.005)
+
+    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
+    with pytest.raises(PromptRegistryError, match="Timed out waiting for prompt registry lock"):
+        provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)

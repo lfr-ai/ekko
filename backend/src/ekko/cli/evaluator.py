@@ -20,6 +20,7 @@ PROMPT_KEY_ALIASES: Final[dict[str, str]] = {
     "summary_chunks": "sum",
     "conversational_system": "conv",
 }
+NO_PROMPTS_SEGMENT: Final[str] = "noprompts"
 
 
 def build_backtest_run_name(
@@ -31,7 +32,11 @@ def build_backtest_run_name(
     now_utc: datetime | None = None,
 ) -> str:
     """Build a deterministic, prompt-version-aware backtest run name."""
-    active_prompt_versions = prompt_versions or get_active_prompt_versions()
+    active_prompt_versions = (
+        get_active_prompt_versions()
+        if prompt_versions is None
+        else prompt_versions
+    )
     timestamp = (now_utc or datetime.now(tz=UTC)).strftime("%Y%m%d-%H%M%S")
 
     segments = [
@@ -83,6 +88,9 @@ def build_backtest_metadata(
 
 
 def _build_prompt_version_segment(*, prompt_versions: dict[str, PromptVersionInfo]) -> str:
+    if not prompt_versions:
+        return NO_PROMPTS_SEGMENT
+
     segments = []
     for prompt_key, info in sorted(prompt_versions.items()):
         alias = PROMPT_KEY_ALIASES.get(prompt_key, prompt_key)

@@ -161,6 +161,20 @@ tasks:
     cmds:
       - uv run python -m ekko.cli.prompt_registry list
 
+  prompts:active:
+    desc: "Show active prompt versions"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry active {{.CLI_ARGS}}
+
+  prompts:resolve:
+    desc: "Resolve prompt version metadata"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry resolve {{.CLI_ARGS}}
+
   eval:backtest:run-name:
     desc: "Generate a prompt-version-aware backtest run name"
     env:
@@ -174,6 +188,49 @@ tasks:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
       - uv run python -m ekko.cli.evaluator metadata {{.CLI_ARGS}}
+
+  # ── Keploy Record/Replay ───────────────────────────────────
+  keploy:version:
+    desc: "Print Keploy CLI version"
+    cmds:
+      - keploy --version
+
+  keploy:record:
+    desc: "Record API traffic and generate Keploy test cases/mocks"
+    env:
+      EKKO_DISABLE_AUDIO: "true"
+      EKKO_ENVIRONMENT: "local"
+      EKKO_DATABASE_BACKEND: "sqlite"
+    cmds:
+      - >-
+        keploy record
+        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
+        --path .
+        --delay 10
+        {{.CLI_ARGS}}
+
+  keploy:test:
+    desc: "Replay Keploy test cases against the local backend"
+    env:
+      EKKO_DISABLE_AUDIO: "true"
+      EKKO_ENVIRONMENT: "local"
+      EKKO_DATABASE_BACKEND: "sqlite"
+    cmds:
+      - >-
+        keploy test
+        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
+        --path .
+        --delay 10
+        --api-timeout 15
+        --ignore-ordering
+        --remove-unused-mocks
+        --skip-coverage
+        {{.CLI_ARGS}}
+
+  keploy:report:
+    desc: "Show Keploy test run summary"
+    cmds:
+      - keploy report --path . --summary {{.CLI_ARGS}}
 
   # ── Cleanup ──────────────────────────────────────────────────
   clean:
