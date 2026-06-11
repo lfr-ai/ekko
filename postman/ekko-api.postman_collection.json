@@ -1,0 +1,1978 @@
+{
+    "info": {
+        "name": "Ekko API",
+        "description": "API collection for Ekko — AI-Powered Voice Assistant Platform.\n\nCovers:\n- REST health and stream control endpoints\n- GraphQL queries, mutations, and subscriptions\n- Automated test scripts with response validation\n\n## Authentication\nLocal-only app: auto-authenticates as `dev-user`. No tokens required.\n\n## Error Responses\nAll errors follow:\n```json\n{\n  \"detail\": \"Human-readable message\"\n}\n```",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "noauth"
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// ── Collection-level Pre-request Script ──────────────────────",
+                    "// Generates a unique X-Request-ID for request correlation/tracing",
+                    "const requestId = pm.variables.replaceIn('{{$guid}}');",
+                    "pm.request.headers.add({",
+                    "    key: 'X-Request-ID',",
+                    "    value: requestId",
+                    "});"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// ── Collection-level Test Script ─────────────────────────────",
+                    "// Applies to ALL requests unless overridden",
+                    "",
+                    "// Response time SLA check (uses environment timeout or 2000ms default)",
+                    "const slaMs = parseInt(pm.environment.get('requestTimeoutMs')) || 2000;",
+                    "pm.test(`Response time is acceptable (< ${slaMs}ms)`, function () {",
+                    "    pm.expect(pm.response.responseTime).to.be.below(slaMs);",
+                    "});",
+                    "",
+                    "// Validate Content-Type header (skip for OPTIONS preflight)",
+                    "if (pm.request.method !== 'OPTIONS') {",
+                    "    pm.test('Content-Type header is present', function () {",
+                    "        pm.response.to.have.header('Content-Type');",
+                    "    });",
+                    "}",
+                    "",
+                    "// No server error leakage in non-5xx responses",
+                    "if (pm.response.code < 500) {",
+                    "    pm.test('No internal error details leaked', function () {",
+                    "        const body = pm.response.text();",
+                    "        pm.expect(body).to.not.include('Traceback');",
+                    "        pm.expect(body).to.not.include('Internal Server Error');",
+                    "    });",
+                    "}"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000",
+            "description": "Base URL for the Ekko API server"
+        },
+        {
+            "key": "graphqlUrl",
+            "value": "http://localhost:8000/graphql/graphql",
+            "description": "GraphQL endpoint URL"
+        },
+        {
+            "key": "activeConversationId",
+            "value": "",
+            "description": "ID of the currently active conversation (set by start_conversation)"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health",
+            "description": "System health and readiness checks. Use these to verify the server is running and all dependencies are operational.",
+            "item": [
+                {
+                    "name": "Health Check (REST)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response has correct schema', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('ok');",
+                                    "    pm.expect(json).to.have.property('details');",
+                                    "    pm.expect(json.ok).to.be.a('boolean');",
+                                    "    pm.expect(json.details).to.be.an('object');",
+                                    "});",
+                                    "",
+                                    "pm.test('Health check passes', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.ok).to.be.true;",
+                                    "});",
+                                    "",
+                                    "pm.test('Details contain expected fields', function () {",
+                                    "    const details = pm.response.json().details;",
+                                    "    pm.expect(details).to.have.property('sys_server_listening');",
+                                    "    pm.expect(details).to.have.property('mic_server_listening');",
+                                    "    pm.expect(details).to.have.property('duckdb_enabled');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Lightweight health check reporting TCP audio servers and queue status.\n\nReturns:\n- `ok`: Overall system health boolean\n- `details.sys_server_listening`: System audio TCP server status\n- `details.mic_server_listening`: Microphone TCP server status\n- `details.transcripts_queue_present`: Transcript processing queue availability\n- `details.duckdb_enabled`: DuckDB analytics engine status\n- `details.duckdb_sqlite_probe`: (conditional) SQLite attachment test result"
+                    }
+                },
+                {
+                    "name": "Health Check (GraphQL)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Health data structure is valid', function () {",
+                                    "    const data = pm.response.json().data.health;",
+                                    "    pm.expect(data).to.have.property('status');",
+                                    "    pm.expect(data).to.have.property('environment');",
+                                    "    pm.expect(data).to.have.property('dependencies');",
+                                    "    pm.expect(data.dependencies).to.be.an('array');",
+                                    "});",
+                                    "",
+                                    "pm.test('Health status is healthy', function () {",
+                                    "    const data = pm.response.json().data.health;",
+                                    "    pm.expect(data.status).to.equal('healthy');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query Health {\n  health {\n    status\n    environment\n    dependencies {\n      name\n      healthy\n      detail\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Basic GraphQL health check returning service status and environment info."
+                    }
+                },
+                {
+                    "name": "Health Ready (Deep Check)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Deep health check has dependencies', function () {",
+                                    "    const data = pm.response.json().data.healthReady;",
+                                    "    pm.expect(data.dependencies).to.be.an('array');",
+                                    "    pm.expect(data.dependencies.length).to.be.above(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('All dependencies are healthy', function () {",
+                                    "    const deps = pm.response.json().data.healthReady.dependencies;",
+                                    "    deps.forEach(dep => {",
+                                    "        pm.expect(dep.healthy, `${dep.name} should be healthy`).to.be.true;",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query HealthReady {\n  healthReady {\n    status\n    environment\n    dependencies {\n      name\n      healthy\n      detail\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Deep health check with dependency probes (database, DuckDB). Use this to verify all external services are connected and operational."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Stream Control",
+            "description": "Audio stream lifecycle management. Controls real-time audio capture from system/microphone sources.",
+            "item": [
+                {
+                    "name": "Start Stream (REST)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response confirms stream started', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('status');",
+                                    "    pm.expect(json.status).to.equal('started');",
+                                    "});",
+                                    "",
+                                    "pm.test('Response schema is valid StreamResponse', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.status).to.be.a('string');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/start_stream",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "start_stream"
+                            ]
+                        },
+                        "description": "Start audio streaming. Initiates device check and begins capturing audio from configured sources.\n\nPreconditions:\n- Audio device must be available\n- Server must be in idle or paused state\n\nPossible errors:\n- 503: Audio device not available"
+                    }
+                },
+                {
+                    "name": "Pause Stream (REST)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response confirms stream paused', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('status');",
+                                    "    pm.expect(json.status).to.equal('paused');",
+                                    "});",
+                                    "",
+                                    "pm.test('Response schema is valid StreamResponse', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json.status).to.be.a('string');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/pause_stream",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "pause_stream"
+                            ]
+                        },
+                        "description": "Pause audio streaming. Suspends audio capture without releasing device resources.\n\nThe stream can be resumed with start_stream."
+                    }
+                },
+                {
+                    "name": "Control Stream (GraphQL - Start)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Stream started via mutation', function () {",
+                                    "    const data = pm.response.json().data.controlStream;",
+                                    "    pm.expect(data.active).to.be.true;",
+                                    "    pm.expect(data.message).to.include('start');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation ControlStream($command: StreamCommandInput!) {\n  controlStream(command: $command) {\n    active\n    message\n  }\n}",
+                                "variables": "{\"command\": {\"action\": \"start\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Start audio stream via GraphQL mutation."
+                    }
+                },
+                {
+                    "name": "Control Stream (GraphQL - Pause)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Stream paused via mutation', function () {",
+                                    "    const data = pm.response.json().data.controlStream;",
+                                    "    pm.expect(data.active).to.be.false;",
+                                    "    pm.expect(data.message).to.include('pause');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation ControlStream($command: StreamCommandInput!) {\n  controlStream(command: $command) {\n    active\n    message\n  }\n}",
+                                "variables": "{\"command\": {\"action\": \"pause\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Pause audio stream via GraphQL mutation."
+                    }
+                },
+                {
+                    "name": "Control Stream (GraphQL - Invalid Action)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200 (GraphQL always returns 200)', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Returns inactive status for invalid action', function () {",
+                                    "    const data = pm.response.json().data.controlStream;",
+                                    "    pm.expect(data.active).to.be.false;",
+                                    "    pm.expect(data.message).to.include('Unknown action');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation ControlStream($command: StreamCommandInput!) {\n  controlStream(command: $command) {\n    active\n    message\n  }\n}",
+                                "variables": "{\"command\": {\"action\": \"invalid_action\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Negative test: send an invalid stream command to verify graceful error handling."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Conversations",
+            "description": "Conversation lifecycle management. Create, query, message, and end AI-powered voice conversations.",
+            "item": [
+                {
+                    "name": "Start Conversation",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Conversation created with valid structure', function () {",
+                                    "    const conv = pm.response.json().data.startConversation;",
+                                    "    pm.expect(conv).to.have.property('id');",
+                                    "    pm.expect(conv).to.have.property('startedAt');",
+                                    "    pm.expect(conv).to.have.property('isActive');",
+                                    "    pm.expect(conv.id).to.be.a('string');",
+                                    "    pm.expect(conv.id).to.have.lengthOf(36); // UUID format",
+                                    "    pm.expect(conv.isActive).to.be.true;",
+                                    "});",
+                                    "",
+                                    "// Store conversation ID for subsequent requests",
+                                    "const conv = pm.response.json().data.startConversation;",
+                                    "if (conv && conv.id) {",
+                                    "    pm.collectionVariables.set('activeConversationId', conv.id);",
+                                    "    console.log(`Stored conversation ID: ${conv.id}`);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation StartConversation($input: StartConversationInput) {\n  startConversation(input: $input) {\n    id\n    startedAt\n    endedAt\n    summary\n    isActive\n  }\n}",
+                                "variables": "{\"input\": {\"metadata\": \"postman-test-session\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Start a new conversation session. Optionally attach metadata for tracking.\n\nThe returned `id` is stored in collection variables as `activeConversationId` for use in subsequent requests."
+                    }
+                },
+                {
+                    "name": "Start Conversation (No Metadata)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Conversation created without metadata', function () {",
+                                    "    const conv = pm.response.json().data.startConversation;",
+                                    "    pm.expect(conv.id).to.be.a('string');",
+                                    "    pm.expect(conv.isActive).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation StartConversation {\n  startConversation {\n    id\n    startedAt\n    isActive\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Start a conversation with no input (uses defaults)."
+                    }
+                },
+                {
+                    "name": "Send Message",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Ensure we have a conversation ID",
+                                    "const convId = pm.collectionVariables.get('activeConversationId');",
+                                    "if (!convId) {",
+                                    "    console.warn('No activeConversationId set. Run \"Start Conversation\" first.');",
+                                    "}"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Message acknowledged', function () {",
+                                    "    const result = pm.response.json().data.sendMessage;",
+                                    "    pm.expect(result).to.be.a('string');",
+                                    "    pm.expect(result).to.include('Message received');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SendMessage($input: SendMessageInput!) {\n  sendMessage(input: $input)\n}",
+                                "variables": "{\"input\": {\"conversationId\": \"{{activeConversationId}}\", \"content\": \"Hello, can you summarize the last meeting?\", \"role\": \"user\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Send a user message to an active conversation.\n\nRequires `activeConversationId` to be set (run \"Start Conversation\" first)."
+                    }
+                },
+                {
+                    "name": "Send Message (Assistant Role)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Message with assistant role accepted', function () {",
+                                    "    const result = pm.response.json().data.sendMessage;",
+                                    "    pm.expect(result).to.include('Message received');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SendMessage($input: SendMessageInput!) {\n  sendMessage(input: $input)\n}",
+                                "variables": "{\"input\": {\"conversationId\": \"{{activeConversationId}}\", \"content\": \"Here is the summary of your meeting...\", \"role\": \"assistant\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Send a message with assistant role (simulating AI response injection)."
+                    }
+                },
+                {
+                    "name": "Get Conversation by ID",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Conversation query returns result or null', function () {",
+                                    "    const data = pm.response.json().data;",
+                                    "    // May be null if not persisted yet (placeholder impl)",
+                                    "    pm.expect(data).to.have.property('conversation');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConversation($id: String!) {\n  conversation(id: $id) {\n    id\n    startedAt\n    endedAt\n    summary\n    isActive\n  }\n}",
+                                "variables": "{\"id\": \"{{activeConversationId}}\"}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Retrieve a specific conversation by its UUID."
+                    }
+                },
+                {
+                    "name": "List Conversations",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Conversations list is an array', function () {",
+                                    "    const conversations = pm.response.json().data.conversations;",
+                                    "    pm.expect(conversations).to.be.an('array');",
+                                    "});",
+                                    "",
+                                    "pm.test('Pagination parameters respected', function () {",
+                                    "    const conversations = pm.response.json().data.conversations;",
+                                    "    pm.expect(conversations.length).to.be.at.most(10);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query ListConversations($limit: Int, $offset: Int) {\n  conversations(limit: $limit, offset: $offset) {\n    id\n    startedAt\n    endedAt\n    summary\n    isActive\n  }\n}",
+                                "variables": "{\"limit\": 10, \"offset\": 0}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "List conversations with pagination. Supports `limit` (default 20) and `offset` (default 0) parameters."
+                    }
+                },
+                {
+                    "name": "End Conversation",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Conversation ended successfully', function () {",
+                                    "    const conv = pm.response.json().data.endConversation;",
+                                    "    pm.expect(conv.isActive).to.be.false;",
+                                    "    pm.expect(conv.endedAt).to.not.be.null;",
+                                    "});",
+                                    "",
+                                    "// Clear the active conversation",
+                                    "pm.collectionVariables.set('activeConversationId', '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation EndConversation($conversationId: String!) {\n  endConversation(conversationId: $conversationId) {\n    id\n    startedAt\n    endedAt\n    isActive\n  }\n}",
+                                "variables": "{\"conversationId\": \"{{activeConversationId}}\"}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "End an active conversation. Sets `endedAt` timestamp and `isActive` to false."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "PII Anonymization",
+            "description": "PII (Personally Identifiable Information) detection and anonymization. Tests the regex-based scrubbing pipeline.",
+            "item": [
+                {
+                    "name": "Check PII (Query)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('PII result has correct structure', function () {",
+                                    "    const result = pm.response.json().data.checkPii;",
+                                    "    pm.expect(result).to.have.property('anonymizedText');",
+                                    "    pm.expect(result).to.have.property('piiFound');",
+                                    "    pm.expect(result).to.have.property('matchCount');",
+                                    "    pm.expect(result.piiFound).to.be.a('boolean');",
+                                    "    pm.expect(result.matchCount).to.be.a('number');",
+                                    "});",
+                                    "",
+                                    "pm.test('PII detected in test input', function () {",
+                                    "    const result = pm.response.json().data.checkPii;",
+                                    "    pm.expect(result.piiFound).to.be.true;",
+                                    "    pm.expect(result.matchCount).to.be.above(0);",
+                                    "    // Original email should be redacted",
+                                    "    pm.expect(result.anonymizedText).to.not.include('john.doe@example.com');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query CheckPII($text: String!) {\n  checkPii(text: $text) {\n    anonymizedText\n    piiFound\n    matchCount\n  }\n}",
+                                "variables": "{\"text\": \"Please contact john.doe@example.com or call +45 12345678 for the meeting with CPR 010190-1234.\"}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Check text for PII without permanently modifying it. Returns anonymized version and match statistics.\n\nDetects:\n- Email addresses\n- Phone numbers\n- Danish CPR numbers\n- Credit card numbers\n- IP addresses"
+                    }
+                },
+                {
+                    "name": "Anonymize Text (Mutation)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No GraphQL errors', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.not.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "pm.test('Anonymization result is valid', function () {",
+                                    "    const result = pm.response.json().data.anonymizeText;",
+                                    "    pm.expect(result.anonymizedText).to.be.a('string');",
+                                    "    pm.expect(result.piiFound).to.be.true;",
+                                    "    pm.expect(result.matchCount).to.be.above(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Sensitive data is redacted', function () {",
+                                    "    const result = pm.response.json().data.anonymizeText;",
+                                    "    pm.expect(result.anonymizedText).to.not.include('4111111111111111');",
+                                    "    pm.expect(result.anonymizedText).to.not.include('192.168.1.100');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation AnonymizeText($input: AnonymizeTextInput!) {\n  anonymizeText(input: $input) {\n    anonymizedText\n    piiFound\n    matchCount\n  }\n}",
+                                "variables": "{\"input\": {\"text\": \"Customer card 4111111111111111 from IP 192.168.1.100 reported by user@company.dk\"}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Anonymize PII in text using the mutation endpoint. Supports selective type filtering."
+                    }
+                },
+                {
+                    "name": "Anonymize Text (Selective Types)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Selective anonymization applied', function () {",
+                                    "    const result = pm.response.json().data.anonymizeText;",
+                                    "    pm.expect(result).to.have.property('anonymizedText');",
+                                    "    // Email should be redacted (it's in enabled_types)",
+                                    "    pm.expect(result.anonymizedText).to.not.include('secret@company.com');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation AnonymizeText($input: AnonymizeTextInput!) {\n  anonymizeText(input: $input) {\n    anonymizedText\n    piiFound\n    matchCount\n  }\n}",
+                                "variables": "{\"input\": {\"text\": \"Contact secret@company.com about project Alpha\", \"enabledTypes\": [\"email\"]}}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Anonymize only specific PII types. Pass `enabledTypes` array to filter which patterns are applied."
+                    }
+                },
+                {
+                    "name": "Check PII (No PII Present)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('No PII detected in clean text', function () {",
+                                    "    const result = pm.response.json().data.checkPii;",
+                                    "    pm.expect(result.piiFound).to.be.false;",
+                                    "    pm.expect(result.matchCount).to.equal(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Text unchanged when no PII found', function () {",
+                                    "    const result = pm.response.json().data.checkPii;",
+                                    "    pm.expect(result.anonymizedText).to.equal('The weather is nice today.');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query CheckPII($text: String!) {\n  checkPii(text: $text) {\n    anonymizedText\n    piiFound\n    matchCount\n  }\n}",
+                                "variables": "{\"text\": \"The weather is nice today.\"}"
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Negative test: verify clean text passes through without modification."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GraphQL Introspection",
+            "description": "Schema introspection and discovery queries. Useful for exploring the GraphQL API surface.",
+            "item": [
+                {
+                    "name": "Full Schema Introspection",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Schema introspection returns types', function () {",
+                                    "    const schema = pm.response.json().data.__schema;",
+                                    "    pm.expect(schema).to.have.property('types');",
+                                    "    pm.expect(schema.types).to.be.an('array');",
+                                    "    pm.expect(schema.types.length).to.be.above(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Schema has Query, Mutation, Subscription roots', function () {",
+                                    "    const schema = pm.response.json().data.__schema;",
+                                    "    pm.expect(schema.queryType.name).to.equal('Query');",
+                                    "    pm.expect(schema.mutationType.name).to.equal('Mutation');",
+                                    "    pm.expect(schema.subscriptionType.name).to.equal('Subscription');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query IntrospectionQuery {\n  __schema {\n    queryType { name }\n    mutationType { name }\n    subscriptionType { name }\n    types {\n      name\n      kind\n      description\n      fields {\n        name\n        type {\n          name\n          kind\n          ofType {\n            name\n            kind\n          }\n        }\n      }\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Full schema introspection query. Returns all types, fields, and root operation types."
+                    }
+                },
+                {
+                    "name": "List Available Queries",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Query type has expected fields', function () {",
+                                    "    const fields = pm.response.json().data.__type.fields;",
+                                    "    const fieldNames = fields.map(f => f.name);",
+                                    "    pm.expect(fieldNames).to.include('health');",
+                                    "    pm.expect(fieldNames).to.include('healthReady');",
+                                    "    pm.expect(fieldNames).to.include('conversation');",
+                                    "    pm.expect(fieldNames).to.include('conversations');",
+                                    "    pm.expect(fieldNames).to.include('checkPii');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query ListQueries {\n  __type(name: \"Query\") {\n    fields {\n      name\n      description\n      args {\n        name\n        type {\n          name\n          kind\n        }\n      }\n      type {\n        name\n        kind\n      }\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Discover all available query operations with their arguments and return types."
+                    }
+                },
+                {
+                    "name": "List Available Mutations",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Mutation type has expected fields', function () {",
+                                    "    const fields = pm.response.json().data.__type.fields;",
+                                    "    const fieldNames = fields.map(f => f.name);",
+                                    "    pm.expect(fieldNames).to.include('controlStream');",
+                                    "    pm.expect(fieldNames).to.include('startConversation');",
+                                    "    pm.expect(fieldNames).to.include('endConversation');",
+                                    "    pm.expect(fieldNames).to.include('sendMessage');",
+                                    "    pm.expect(fieldNames).to.include('anonymizeText');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query ListMutations {\n  __type(name: \"Mutation\") {\n    fields {\n      name\n      description\n      args {\n        name\n        type {\n          name\n          kind\n        }\n      }\n      type {\n        name\n        kind\n      }\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Discover all available mutation operations."
+                    }
+                },
+                {
+                    "name": "List Available Subscriptions",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Subscription type has expected fields', function () {",
+                                    "    const fields = pm.response.json().data.__type.fields;",
+                                    "    const fieldNames = fields.map(f => f.name);",
+                                    "    pm.expect(fieldNames).to.include('transcriptStream');",
+                                    "    pm.expect(fieldNames).to.include('agentStatus');",
+                                    "    pm.expect(fieldNames).to.include('conversationEvents');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query ListSubscriptions {\n  __type(name: \"Subscription\") {\n    fields {\n      name\n      description\n      args {\n        name\n        type {\n          name\n          kind\n        }\n      }\n      type {\n        name\n        kind\n      }\n    }\n  }\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Discover all available subscription operations for real-time events."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "OpenAPI & Documentation",
+            "description": "API documentation and specification endpoints.",
+            "item": [
+                {
+                    "name": "OpenAPI Specification (JSON)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Valid OpenAPI 3.x spec', function () {",
+                                    "    const spec = pm.response.json();",
+                                    "    pm.expect(spec).to.have.property('openapi');",
+                                    "    pm.expect(spec.openapi).to.match(/^3\\./);",
+                                    "    pm.expect(spec).to.have.property('info');",
+                                    "    pm.expect(spec).to.have.property('paths');",
+                                    "});",
+                                    "",
+                                    "pm.test('Spec contains health endpoint', function () {",
+                                    "    const paths = pm.response.json().paths;",
+                                    "    pm.expect(paths).to.have.property('/health');",
+                                    "});",
+                                    "",
+                                    "pm.test('Spec contains stream endpoints', function () {",
+                                    "    const paths = pm.response.json().paths;",
+                                    "    pm.expect(paths).to.have.property('/start_stream');",
+                                    "    pm.expect(paths).to.have.property('/pause_stream');",
+                                    "});",
+                                    "",
+                                    "pm.test('API info metadata is present', function () {",
+                                    "    const info = pm.response.json().info;",
+                                    "    pm.expect(info.title).to.equal('Ekko API');",
+                                    "    pm.expect(info).to.have.property('version');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/openapi.json",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "openapi.json"
+                            ]
+                        },
+                        "description": "Retrieve the OpenAPI 3.x specification in JSON format. Useful for code generation and documentation tools."
+                    }
+                },
+                {
+                    "name": "Swagger UI (Docs)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Returns HTML page', function () {",
+                                    "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/docs",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "docs"
+                            ]
+                        },
+                        "description": "Interactive Swagger UI documentation page."
+                    }
+                },
+                {
+                    "name": "ReDoc",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Returns HTML page', function () {",
+                                    "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/redoc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "redoc"
+                            ]
+                        },
+                        "description": "ReDoc alternative documentation renderer."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Error Handling",
+            "description": "Negative tests and error scenario validation. Ensures graceful degradation and proper error responses.",
+            "item": [
+                {
+                    "name": "404 - Non-existent Endpoint",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Returns 404 for unknown route', function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test('Error response has detail field', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('detail');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/non-existent-endpoint",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "non-existent-endpoint"
+                            ]
+                        },
+                        "description": "Verify 404 response for non-existent routes."
+                    }
+                },
+                {
+                    "name": "405 - Method Not Allowed",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Returns 405 for wrong HTTP method', function () {",
+                                    "    pm.response.to.have.status(405);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Verify 405 response when using wrong HTTP method (DELETE on GET-only endpoint)."
+                    }
+                },
+                {
+                    "name": "GraphQL - Invalid Query Syntax",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status code is 200 (GraphQL spec)', function () {",
+                                    "    // GraphQL always returns 200 even for errors",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response contains errors array', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('errors');",
+                                    "    pm.expect(json.errors).to.be.an('array');",
+                                    "    pm.expect(json.errors.length).to.be.above(0);",
+                                    "});",
+                                    "",
+                                    "pm.test('Error message describes syntax issue', function () {",
+                                    "    const error = pm.response.json().errors[0];",
+                                    "    pm.expect(error).to.have.property('message');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query { invalidField { nonExistent } }",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Send an invalid GraphQL query to verify proper error response format."
+                    }
+                },
+                {
+                    "name": "GraphQL - Missing Required Variable",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Returns error for missing required variable', function () {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.expect(json).to.have.property('errors');",
+                                    "    pm.expect(json.errors.length).to.be.above(0);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SendMessage($input: SendMessageInput!) {\n  sendMessage(input: $input)\n}",
+                                "variables": null
+                            }
+                        },
+                        "url": {
+                            "raw": "{{graphqlUrl}}",
+                            "host": [
+                                "{{graphqlUrl}}"
+                            ]
+                        },
+                        "description": "Test GraphQL validation: required variable `$input` is missing."
+                    }
+                },
+                {
+                    "name": "CORS Preflight Check",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('CORS preflight returns 200', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});",
+                                    "",
+                                    "pm.test('CORS headers present', function () {",
+                                    "    pm.response.to.have.header('access-control-allow-origin');",
+                                    "    pm.response.to.have.header('access-control-allow-methods');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "OPTIONS",
+                        "header": [
+                            {
+                                "key": "Origin",
+                                "value": "http://localhost:5173"
+                            },
+                            {
+                                "key": "Access-Control-Request-Method",
+                                "value": "POST"
+                            },
+                            {
+                                "key": "Access-Control-Request-Headers",
+                                "value": "Content-Type, X-Request-ID"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Verify CORS preflight handling. Tests that the frontend origin (localhost:5173) is allowed."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Workflows",
+            "description": "End-to-end workflow tests that chain multiple requests. Run these in sequence to test complete user journeys.",
+            "item": [
+                {
+                    "name": "Full Conversation Lifecycle",
+                    "description": "Complete workflow: start conversation → send messages → end conversation",
+                    "item": [
+                        {
+                            "name": "1. Verify Server Health",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Server is healthy', function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "    pm.expect(pm.response.json().ok).to.be.true;",
+                                            "});",
+                                            "",
+                                            "// Only proceed if server is healthy",
+                                            "if (!pm.response.json().ok) {",
+                                            "    postman.setNextRequest(null);",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/health",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "health"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "2. Start New Conversation",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Conversation started', function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "    const conv = pm.response.json().data.startConversation;",
+                                            "    pm.expect(conv.isActive).to.be.true;",
+                                            "    pm.collectionVariables.set('activeConversationId', conv.id);",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  startConversation(input: { metadata: \"workflow-test\" }) {\n    id\n    startedAt\n    isActive\n  }\n}",
+                                        "variables": null
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "3. Send User Message",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Message sent successfully', function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "    const result = pm.response.json().data.sendMessage;",
+                                            "    pm.expect(result).to.include('Message received');",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation SendMessage($input: SendMessageInput!) {\n  sendMessage(input: $input)\n}",
+                                        "variables": "{\"input\": {\"conversationId\": \"{{activeConversationId}}\", \"content\": \"Summarize the key decisions from today's standup.\", \"role\": \"user\"}}"
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "4. End Conversation",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Conversation ended', function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "    const conv = pm.response.json().data.endConversation;",
+                                            "    pm.expect(conv.isActive).to.be.false;",
+                                            "    pm.expect(conv.endedAt).to.not.be.null;",
+                                            "});",
+                                            "",
+                                            "pm.collectionVariables.set('activeConversationId', '');"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation EndConversation($conversationId: String!) {\n  endConversation(conversationId: $conversationId) {\n    id\n    startedAt\n    endedAt\n    isActive\n  }\n}",
+                                        "variables": "{\"conversationId\": \"{{activeConversationId}}\"}"
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "PII Scrub Workflow",
+                    "description": "Test PII detection accuracy across various input types",
+                    "item": [
+                        {
+                            "name": "1. Check Email PII",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Email detected as PII', function () {",
+                                            "    const result = pm.response.json().data.checkPii;",
+                                            "    pm.expect(result.piiFound).to.be.true;",
+                                            "    pm.expect(result.anonymizedText).to.not.include('@');",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query { checkPii(text: \"Send report to manager@company.dk\") { anonymizedText piiFound matchCount } }",
+                                        "variables": null
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "2. Check Phone PII",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Phone number detected as PII', function () {",
+                                            "    const result = pm.response.json().data.checkPii;",
+                                            "    pm.expect(result.piiFound).to.be.true;",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query { checkPii(text: \"Call me at +45 22334455\") { anonymizedText piiFound matchCount } }",
+                                        "variables": null
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "3. Check CPR PII",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Danish CPR number detected as PII', function () {",
+                                            "    const result = pm.response.json().data.checkPii;",
+                                            "    pm.expect(result.piiFound).to.be.true;",
+                                            "    pm.expect(result.anonymizedText).to.not.include('010190-1234');",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query { checkPii(text: \"Patient CPR: 010190-1234\") { anonymizedText piiFound matchCount } }",
+                                        "variables": null
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "4. Check Mixed PII",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test('Multiple PII types detected', function () {",
+                                            "    const result = pm.response.json().data.checkPii;",
+                                            "    pm.expect(result.piiFound).to.be.true;",
+                                            "    pm.expect(result.matchCount).to.be.above(1);",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query { checkPii(text: \"User admin@corp.dk with CPR 150585-4321 called from +45 11223344\") { anonymizedText piiFound matchCount } }",
+                                        "variables": null
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{graphqlUrl}}",
+                                    "host": [
+                                        "{{graphqlUrl}}"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

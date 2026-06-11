@@ -1,6 +1,0 @@
-🐰 Keploy: 2026-06-04T09:45:51+02:00 	[31mERROR[0m	Error removing file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
-🐰 Keploy: 2026-06-04T09:45:51+02:00 	[31mERROR[0m	failed to delete keploy-logs file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
-🐰 Keploy: 2026-06-04T09:46:22+02:00 	[31mERROR[0m	Error removing file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
-🐰 Keploy: 2026-06-04T09:46:22+02:00 	[31mERROR[0m	failed to delete keploy-logs file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
-🐰 Keploy: 2026-06-04T09:49:02+02:00 	[31mERROR[0m	Error removing file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
-🐰 Keploy: 2026-06-04T09:49:02+02:00 	[31mERROR[0m	failed to delete keploy-logs file	{"error": "remove keploy-logs.txt: The process cannot access the file because it is being used by another process."}
