@@ -1,6 +1,17 @@
 # Tool Guardian — PreToolUse hook (Windows)
+# Blocks dangerous tool operations before the Copilot coding agent executes them.
+# Shared script: used by both .github/hooks and .claude hooks.
+# Canonical source: hooks/scripts/guard-tool.ps1
 param()
 
+# Delegate to the canonical script in hooks/scripts/
+$canonical = Join-Path $PSScriptRoot "..\..\..\hooks\scripts\guard-tool.ps1"
+if (Test-Path $canonical) {
+    & $canonical
+    exit $LASTEXITCODE
+}
+
+# Fallback: inline implementation if canonical is missing
 if ($env:SKIP_TOOL_GUARD -eq "true") { exit 0 }
 
 $GuardMode = if ($env:GUARD_MODE) { $env:GUARD_MODE } else { "block" }

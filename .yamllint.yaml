@@ -11,7 +11,7 @@ ignore: |
 
 rules:
   line-length:
-    max: 120
+    max: 88
     level: warning
   indentation:
     spaces: 2

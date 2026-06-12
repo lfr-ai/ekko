@@ -3,13 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from ekko.config.enums import DatabaseBackend
+from ekko.config.enums import DatabaseBackend, Environment
 from ekko.config.settings import BaseAppConfig, get_settings
 from ekko.config.settings.dev import DevelopmentConfig
 from ekko.config.settings.local import LocalConfig
 from ekko.config.settings.prod import ProductionConfig
 from ekko.config.settings.test_env import TestingConfig
-from ekko.core.enums import Environment
 
 
 @pytest.fixture(autouse=True)

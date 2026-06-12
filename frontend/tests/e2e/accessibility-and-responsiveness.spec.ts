@@ -32,7 +32,7 @@ test.describe("Accessibility and responsiveness", () => {
     });
 
     const criticalViolations = results.violations.filter(
-      (violation) => violation.impact === "critical",
+      (violation: { impact: string | null }) => violation.impact === "critical",
     );
     expect(criticalViolations).toEqual([]);
   });

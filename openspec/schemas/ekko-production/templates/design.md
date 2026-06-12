@@ -7,7 +7,7 @@
 
 ## Technical Approach
 
-- 
+-
 
 ## Data and Contract Changes
 
@@ -35,4 +35,4 @@
 
 ## Open Questions
 
-- 
+-

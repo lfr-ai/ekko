@@ -1,21 +1,30 @@
 {
   "$schema": "https://schemas.anthropic.com/mcp/servers.json",
   "mcpServers": {
+    "gitnexus": {
+      "type": "stdio",
+      "command": "gitnexus",
+      "args": ["mcp"],
+      "cwd": "${workspaceFolder}",
+      "description": "GitNexus MCP server for advanced git operations and repository analysis"
+    },
     "context7": {
       "type": "http",
-      "url": "https://mcp.context7.com/mcp"
+      "url": "https://mcp.context7.com/mcp",
+      "description": "Context7 MCP server for library documentation lookup"
     },
     "shadcn": {
       "type": "stdio",
       "command": "npx",
       "args": ["shadcn@latest", "mcp"],
-      "cwd": "${workspaceFolder}/frontend"
+      "cwd": "${workspaceFolder}/frontend",
+      "description": "shadcn/ui MCP server for component registry"
     },
-    "gitnexus": {
+    "playwright": {
       "type": "stdio",
-      "command": "bunx",
-      "args": ["gitnexus@latest", "mcp"],
-      "cwd": "${workspaceFolder}"
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "description": "Playwright MCP server for browser automation via accessibility snapshots"
     }
   }
 }

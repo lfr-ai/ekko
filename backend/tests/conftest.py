@@ -29,8 +29,8 @@ os.environ.setdefault("EKKO_ENVIRONMENT", "test")
 @pytest.fixture
 def settings():
     """Provide a fresh test settings instance."""
+    from ekko.config.enums import Environment
     from ekko.config.settings import BaseAppConfig
-    from ekko.core.enums import Environment
 
     return BaseAppConfig(environment=Environment.TEST, debug=False)
 

@@ -1,0 +1,50 @@
+{
+  "threshold": 3,
+  "reporters": ["console"],
+  "format": ["python", "typescript", "tsx", "javascript"],
+  "skipBlocks": [
+    {
+      "open": "\"\"\"",
+      "close": "\"\"\""
+    }
+  ],
+  "ignore": [
+    "**/.git/**",
+    "**/.venv/**",
+    "**/.tox/**",
+    "**/__pycache__/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.egg-info/**",
+    "**/uv.lock",
+    "**/bun.lockb",
+    "**/jscpd-report/**",
+    "**/htmlcov/**",
+    "**/logs/**",
+    "**/storybook-static/**",
+    "**/.github/**",
+    "**/.claude/**",
+    "**/.agents/**",
+    "**/.warp/**",
+    "**/.devcontainer/**",
+    "**/backend/src/ekko/ai/prompts/**",
+    "**/backend/src/ekko/ai/crewai/config/**",
+    "**/.gsd/**",
+    "**/docs/**",
+    "**/openspec/**",
+    "**/postman/**",
+    "**/memories/**",
+    "**/registry/**",
+    "**/alembic/versions/**",
+    "**/caddy/**",
+    "**/hooks/**",
+    "**/scripts/install/**",
+    "**/AGENTS.md",
+    "**/CLAUDE.md",
+    "**/CLAUDE.local.md",
+    "**/CHANGELOG.md",
+    "**/CONTRIBUTING.md",
+    "**/README.md"
+  ]
+}

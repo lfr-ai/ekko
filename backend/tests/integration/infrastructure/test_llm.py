@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 if TYPE_CHECKING:
-    from ekko.config.settings import AppSettings
+    from ekko.config.settings import BaseAppConfig as AppSettings
 
 pytestmark = pytest.mark.integration
 
@@ -16,8 +16,8 @@ pytestmark = pytest.mark.integration
 @pytest.fixture
 def llm_settings(integration_settings):
     """Settings configured for LLM integration testing."""
-    from ekko.config.settings import AppSettings
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
+    from ekko.config.settings import BaseAppConfig as AppSettings
 
     return AppSettings(
         environment=integration_settings.environment,
@@ -31,8 +31,8 @@ def llm_settings(integration_settings):
 @pytest.fixture
 def azure_llm_settings(integration_settings):
     """Settings configured for Azure OpenAI integration testing."""
-    from ekko.config.settings import AppSettings
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
+    from ekko.config.settings import BaseAppConfig as AppSettings
 
     return AppSettings(
         environment=integration_settings.environment,
@@ -63,7 +63,7 @@ def mock_langchain_model():
 
 def test_chat_adapter_init_openai(llm_settings: AppSettings) -> None:
     """Test initializing chat adapter with OpenAI settings."""
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
     from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
     adapter = ChatModelAdapter(settings=llm_settings)
@@ -75,7 +75,7 @@ def test_chat_adapter_init_openai(llm_settings: AppSettings) -> None:
 
 def test_chat_adapter_init_azure(azure_llm_settings: AppSettings) -> None:
     """Test initializing chat adapter with Azure OpenAI settings."""
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
     from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
     adapter = ChatModelAdapter(settings=azure_llm_settings)
@@ -127,7 +127,7 @@ def test_chat_adapter_sync_chat(llm_settings: AppSettings, mock_langchain_model:
     response = adapter.chat(
         system_prompt="You are a helpful assistant.",
         user_prompt="Hello!",
-        deployment_name="gpt-4",
+        model="gpt-4",
         max_completion_tokens=512,
         temperature=0.7,
     )
@@ -149,7 +149,7 @@ async def test_chat_adapter_async_chat(llm_settings: AppSettings, mock_langchain
     response = await adapter.async_chat(
         system_prompt="You are a helpful assistant.",
         user_prompt="Hello async!",
-        deployment_name="gpt-4",
+        model="gpt-4",
         max_completion_tokens=512,
         temperature=0.7,
     )
@@ -236,7 +236,7 @@ def test_chat_adapter_provider_kwargs_azure(azure_llm_settings: AppSettings) -> 
 
 def test_chat_adapter_provider_deployment_key_openai() -> None:
     """Test getting deployment key name for OpenAI."""
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
     from ekko.infrastructure.llm.chat_adapter import _provider_deployment_key
 
     key = _provider_deployment_key(LLMProvider.OPENAI)
@@ -245,7 +245,7 @@ def test_chat_adapter_provider_deployment_key_openai() -> None:
 
 def test_chat_adapter_provider_deployment_key_azure() -> None:
     """Test getting deployment key name for Azure OpenAI."""
-    from ekko.core.enums import LLMProvider
+    from ekko.config.enums import LLMProvider
     from ekko.infrastructure.llm.chat_adapter import _provider_deployment_key
 
     key = _provider_deployment_key(LLMProvider.AZURE_OPENAI)
@@ -265,7 +265,7 @@ async def test_chat_adapter_kwargs_passthrough(llm_settings: AppSettings, mock_l
     await adapter.async_chat(
         system_prompt="Test",
         user_prompt="Test",
-        deployment_name="gpt-4",
+        model="gpt-4",
         top_p=0.9,
         frequency_penalty=0.5,
     )

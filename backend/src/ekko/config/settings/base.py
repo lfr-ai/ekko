@@ -15,6 +15,7 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ekko.config.enums import ChatModel, DatabaseBackend, Environment, LLMProvider
+from ekko.config.runtime import ROOT_DIR
 
 
 class BaseAppConfig(BaseSettings):
@@ -25,6 +26,7 @@ class BaseAppConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="EKKO_",
+        env_file_encoding="utf-8",
         frozen=True,
         extra="ignore",
     )
@@ -67,7 +69,7 @@ class BaseAppConfig(BaseSettings):
     duckdb_database_path: str = "./ekko_analytics.duckdb"
 
     # ── Paths ─────────────────────────────────────────────────
-    root_dir_path: Path = Path(__file__).resolve().parents[4]
+    root_dir_path: Path = ROOT_DIR
     src_dir_path: Path = root_dir_path / "src"
     package_dir_path: Path = src_dir_path / "ekko"
     logs_dir_path: Path = Path("./logs")

@@ -41,15 +41,27 @@ def _integration_environment() -> Generator[None, None, None]:
 @pytest.fixture
 def integration_settings() -> object:
     """Settings configured for integration testing."""
+    from ekko.config.enums import Environment
     from ekko.config.settings import BaseAppConfig
-    from ekko.core.enums import Environment
 
-    return BaseAppConfig(environment=Environment.TEST, debug=False, disable_audio=True)
+    return BaseAppConfig(
+        environment=Environment.TEST,
+        debug=False,
+        disable_audio=True,
+        azure_speech_key=None,
+    )
 
 
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresContainer, None, None]:
     """Run PostgreSQL in Docker for integration tests."""
+    try:
+        import docker
+
+        docker.from_env().ping()
+    except Exception as exc:  # pragma: no cover - depends on local Docker runtime
+        pytest.skip(f"Docker not available: {exc}")
+
     container = PostgresContainer(image="postgres:16", driver=None)
 
     try:

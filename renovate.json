@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":rebaseStalePrs"
+  ],
+  "description": [
+    "Repository-level Renovate config for automated dependency updates."
+  ],
+  "configMigration": true,
+  "enabledManagers": [
+    "pep621",
+    "npm",
+    "dockerfile",
+    "docker-compose",
+    "github-actions"
+  ],
+  "fetchChangeLogs": "off",
+  "prCreation": "not-pending",
+  "packageRules": [
+    {
+      "description": "Skip requires-python lookups to avoid python-version datasource noise",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["requires-python"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["pep621"],
+      "groupName": "python dependencies"
+    },
+    {
+      "matchManagers": ["npm"],
+      "groupName": "frontend dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions dependencies"
+    },
+    {
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "groupName": "container image dependencies"
+    }
+  ]
+}

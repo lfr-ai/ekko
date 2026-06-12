@@ -12,8 +12,8 @@
     },
     "gitnexus": {
       "type": "stdio",
-      "command": "bunx",
-      "args": ["gitnexus@latest", "mcp"],
+      "command": "gitnexus",
+      "args": ["mcp"],
       "cwd": "${workspaceFolder}"
     },
     "playwright": {

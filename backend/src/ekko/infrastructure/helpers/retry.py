@@ -1,55 +1,73 @@
-"""Retry helpers for transient infrastructure failures."""
+"""Retry and backoff policy utilities.
+
+Uses tenacity for production-grade retry logic with exponential backoff.
+"""
 
 from __future__ import annotations
 
-import asyncio
-import time
 from collections.abc import Callable
-from functools import wraps
-from typing import TypeVar
+from typing import Final, TypeVar
+
+import httpx
+from fastapi import status
+from openai import APIConnectionError, RateLimitError
+from tenacity import (
+    retry,
+    retry_if_exception,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 F = TypeVar("F", bound=Callable[..., object])
 
+_MAX_RETRY_ATTEMPTS: Final[int] = 3
+_WAIT_MULTIPLIER: Final[int] = 1
+_WAIT_MIN: Final[int] = 1
+_WAIT_MAX: Final[int] = 10
 
-def api_retry(_func: F | None = None, *, max_attempts: int = 3, backoff_seconds: float = 0.5):  # noqa: UP047
-    """Decorator that retries a function or coroutine on exception.
+_RETRYABLE_HTTP_STATUS_CODES = frozenset(
+    {
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status.HTTP_502_BAD_GATEWAY,
+        status.HTTP_503_SERVICE_UNAVAILABLE,
+        status.HTTP_504_GATEWAY_TIMEOUT,
+    }
+)
 
-    Supports both usage forms:
-      @api_retry
-      @api_retry()
-      @api_retry(max_attempts=5)
+
+def _is_retryable_http_error(exception: BaseException) -> bool:
+    """Check if HTTP error is retryable based on status code.
+
+    Args:
+        exception (BaseException): Exception to check.
+
+    Returns:
+        bool: True if error should be retried.
     """
+    if isinstance(exception, httpx.HTTPStatusError):
+        return exception.response.status_code in _RETRYABLE_HTTP_STATUS_CODES
+    return False
 
-    def decorator(fn: F) -> F:
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            attempt = 0
-            while True:
-                try:
-                    return fn(*args, **kwargs)
-                except Exception:
-                    attempt += 1
-                    if attempt >= max_attempts:
-                        raise
-                    time.sleep(backoff_seconds * attempt)
 
-        async def async_wrapper(*args, **kwargs):
-            attempt = 0
-            while True:
-                try:
-                    return await fn(*args, **kwargs)  # type: ignore
-                except Exception:
-                    attempt += 1
-                    if attempt >= max_attempts:
-                        raise
-                    await asyncio.sleep(backoff_seconds * attempt)
+_TRANSIENT_ERRORS = (
+    ConnectionError,
+    TimeoutError,
+    httpx.ConnectError,
+    httpx.ConnectTimeout,
+    httpx.ReadTimeout,
+    httpx.WriteTimeout,
+    httpx.PoolTimeout,
+)
 
-        # Return async wrapper if original is coroutine function
-        if asyncio.iscoroutinefunction(fn):
-            return async_wrapper  # type: ignore
-        return wrapper  # type: ignore
-
-    # If used as @api_retry without args, _func will be the function
-    if _func is None:
-        return decorator
-    return decorator(_func)
+api_retry = retry(
+    stop=stop_after_attempt(_MAX_RETRY_ATTEMPTS),
+    wait=wait_exponential(multiplier=_WAIT_MULTIPLIER, min=_WAIT_MIN, max=_WAIT_MAX),
+    retry=(
+        retry_if_exception_type(_TRANSIENT_ERRORS)
+        | retry_if_exception_type((APIConnectionError, RateLimitError))
+        | retry_if_exception(_is_retryable_http_error)
+    ),
+    reraise=True,
+)
+"""Tenacity retry decorator for transient infrastructure failures."""

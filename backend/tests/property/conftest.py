@@ -3,7 +3,7 @@
 import pytest
 from hypothesis import strategies as st
 
-from ekko.core.enums import Environment, LLMProvider
+from ekko.config.enums import Environment, LLMProvider
 
 
 @pytest.fixture(autouse=True)

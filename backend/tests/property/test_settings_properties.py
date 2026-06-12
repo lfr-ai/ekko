@@ -3,9 +3,9 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from ekko.config.enums import Environment
 from ekko.config.settings.local import LocalConfig
 from ekko.config.settings.test_env import TestingConfig
-from ekko.core.enums import Environment
 
 ALL_CONFIG_CLASSES = [LocalConfig, TestingConfig]
 

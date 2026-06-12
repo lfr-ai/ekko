@@ -1,14 +1,12 @@
-"""Authoritative enums for the Ekko project.
+"""Authoritative domain enums for the Ekko project.
 
 Re-exports every enum from the sub-modules so existing imports
 (``from ekko.core.enums import X``) continue to work unchanged.
 
-Note: Environment, ChatModel, and LLMProvider are re-exported from
-config.enums for backward compatibility, as they are configuration
-concerns, not domain concerns.
+Configuration-level enums (Environment, ChatModel, LLMProvider, DatabaseBackend)
+live in ``ekko.config.enums`` and should be imported directly from there.
 """
 
-from ekko.config.enums import ChatModel, Environment, LLMProvider
 from ekko.core.enums.ai import STTProvider
 from ekko.core.enums.audio import (
     AudioChannel,
@@ -32,11 +30,8 @@ __all__ = [
     "AudioFormat",
     "AudioQueueName",
     "BitDepth",
-    "ChatModel",
     "DeploymentTarget",
-    "Environment",
     "FeatureFlag",
-    "LLMProvider",
     "LogLevel",
     "MessageRole",
     "ParseableEnum",

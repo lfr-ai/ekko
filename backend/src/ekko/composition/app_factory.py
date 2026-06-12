@@ -2,20 +2,14 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import sys
-from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-from queue import Empty
 
 from fastapi import FastAPI
 
 from ekko.composition.container import Container
+from ekko.composition.lifespan import create_lifespan
 from ekko.config.logging_config import configure_logging
 from ekko.config.openapi_config import (
     OPENAPI_CONTACT,
@@ -29,140 +23,11 @@ from ekko.config.openapi_config import (
     OPENAPI_VERSION,
 )
 from ekko.config.settings import get_settings
-from ekko.core.enums import AudioQueueName, QueueName
 from ekko.core.registry_constants import ROUTE_DOCS, ROUTE_GRAPHQL, ROUTE_OPENAPI_JSON, ROUTE_REDOC
-from ekko.infrastructure.concurrency.queue_manager import QueueManager
+from ekko.presentation.api.rate_limiter import limiter
 from ekko.presentation.api.routes import health_router, stream_router
 
 logger = logging.getLogger(__name__)
-
-
-# ── Lifespan helpers ─────────────────────────────────────────
-
-
-async def _start_audio_servers(app: FastAPI, settings, host: str) -> None:
-    """Start TCP audio receiver servers for system and microphone audio."""
-    sys_port = settings.audio_streamer_tcp_port + 1
-    mic_port = settings.audio_streamer_tcp_port + 2
-
-    async def _audio_receiver(reader, writer, queue_name: str):
-        try:
-            while True:
-                data = await reader.read(settings.audio_frames_per_buffer * 2 * settings.audio_channels)
-                if not data:
-                    break
-                await app.state.stt.accept_bytes(queue_name, data)
-        except Exception as e:
-            logger.debug("Audio receiver error for %s: %s", queue_name, e)
-        finally:
-            try:
-                writer.close()
-                await writer.wait_closed()
-            except Exception as e:
-                logger.debug("Failed to close writer: %s", e)
-
-    app.state.sys_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, AudioQueueName.SYSTEM),
-        host,
-        sys_port,
-    )
-    app.state.mic_server = await asyncio.start_server(
-        lambda r, w: _audio_receiver(r, w, AudioQueueName.MICROPHONE),
-        host,
-        mic_port,
-    )
-    logger.info("Audio servers listening on %s:%s (sys) and %s:%s (mic)", host, sys_port, host, mic_port)
-
-
-async def _start_transcript_bridge(app: FastAPI) -> None:
-    """Start background task draining transcripts from sync queue to async queue."""
-    app.state.async_transcript_queue = asyncio.Queue()
-
-    async def _drain():
-        qm = app.state.queue_manager
-        q = qm.get_queue(QueueName.TRANSCRIPTS)
-        try:
-            while True:
-                try:
-                    transcript = await asyncio.to_thread(q.get, True, 1)
-                except Empty:
-                    await asyncio.sleep(0.1)
-                    continue
-                try:
-                    await app.state.async_transcript_queue.put(transcript)
-                finally:
-                    try:
-                        q.task_done()
-                    except Exception as e:
-                        logger.debug("Failed to task_done on queue: %s", e)
-        except asyncio.CancelledError:
-            return
-
-    app.state._transcript_bridge_task = asyncio.create_task(_drain())
-
-
-async def _shutdown_services(app: FastAPI) -> None:
-    """Gracefully stop audio controller, STT, and transcript bridge."""
-    if hasattr(app.state, "controller"):
-        await app.state.controller.stop()
-    if hasattr(app.state, "stt"):
-        await app.state.stt.stop()
-
-    task = getattr(app.state, "_transcript_bridge_task", None)
-    if task:
-        task.cancel()
-        try:
-            await task
-        except Exception as e:
-            logger.debug("Transcript bridge task cancel/wait raised: %s", e)
-
-
-# ── Lifespan ─────────────────────────────────────────────────
-
-
-@asynccontextmanager
-async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Composition root lifespan. Uses Container for DI."""
-    container = app.state.container
-    settings = container.settings
-
-    # Queue manager
-    app.state.queue_manager = QueueManager()
-    try:
-        app.state.queue_manager.create_queue(QueueName.TRANSCRIPTS)
-    except Exception as e:
-        logger.debug("Queue %r already present or failed to create: %s", QueueName.TRANSCRIPTS, e)
-
-    # CrewAI / HMAS service (PII anonymization wired internally)
-    app.state.crewai_service = container.crewai_service
-
-    # Audio controller (skip if disabled, e.g., in containers)
-    if not settings.disable_audio:
-        app.state.controller = container.audio_controller
-
-    # STT with transcript bridge callback
-    def _on_transcript(transcript):
-        try:
-            app.state.queue_manager.put_in_queue(QueueName.TRANSCRIPTS, transcript)
-        except Exception as e:
-            logger.debug("Failed to put transcript into queue: %s", e)
-
-    from ekko.infrastructure.adapters.stt_adapter import create_azure_speech_stt
-
-    app.state.stt = create_azure_speech_stt(settings=settings, on_transcript=_on_transcript)
-
-    if not settings.disable_audio:
-        await app.state.stt.ensure_queue(AudioQueueName.SYSTEM)
-        await app.state.stt.ensure_queue(AudioQueueName.MICROPHONE)
-        await app.state.stt.start()
-
-        await _start_audio_servers(app, settings, settings.host)
-        await app.state.controller.start()
-        await _start_transcript_bridge(app)
-
-    yield
-
-    await _shutdown_services(app)
 
 
 # ── Middleware wiring ────────────────────────────────────────
@@ -175,12 +40,12 @@ def _register_middleware(app: FastAPI, container: Container) -> None:
         RequestIdMiddleware,
         SecurityHeadersMiddleware,
         TimingMiddleware,
-        register_error_handlers,
+        register_exception_handlers,
         setup_cors,
     )
 
     # Error handlers (exception → HTTP response mapping)
-    register_error_handlers(app)
+    register_exception_handlers(app)
 
     # CORS
     setup_cors(app, settings=container.settings)
@@ -212,6 +77,21 @@ def _mount_frontend(app: FastAPI) -> None:
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
+# ── Router registration ──────────────────────────────────────
+
+
+def _register_routers(app: FastAPI) -> None:
+    """Register all API routers on the application."""
+    # REST routers
+    app.include_router(health_router)
+    app.include_router(stream_router)
+
+    # GraphQL router
+    from ekko.presentation.graphql.router import graphql_router
+
+    app.include_router(graphql_router, prefix=ROUTE_GRAPHQL)
+
+
 # ── Factory ──────────────────────────────────────────────────
 
 
@@ -225,7 +105,7 @@ def create_app() -> FastAPI:
         title=OPENAPI_TITLE,
         description=OPENAPI_DESCRIPTION,
         version=OPENAPI_VERSION,
-        lifespan=_lifespan,
+        lifespan=create_lifespan,
         openapi_tags=OPENAPI_TAGS,
         servers=OPENAPI_SERVERS,
         contact=OPENAPI_CONTACT,
@@ -237,20 +117,15 @@ def create_app() -> FastAPI:
         responses=OPENAPI_RESPONSES,
     )
 
-    # Store container on app state for access in lifespan and routes
+    # Store container and rate limiter on app state
     app.state.container = container
+    app.state.limiter = limiter
 
     # Register middleware
     _register_middleware(app, container)
 
-    # REST routers
-    app.include_router(health_router)
-    app.include_router(stream_router)
-
-    # GraphQL router
-    from ekko.presentation.graphql.router import graphql_router
-
-    app.include_router(graphql_router, prefix=ROUTE_GRAPHQL)
+    # Register routers
+    _register_routers(app)
 
     # Serve built frontend when running as frozen EXE
     _mount_frontend(app)

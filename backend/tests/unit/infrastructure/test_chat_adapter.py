@@ -2,8 +2,8 @@ import asyncio
 import sys
 from types import ModuleType, SimpleNamespace
 
+from ekko.config.enums import LLMProvider
 from ekko.config.settings import BaseAppConfig
-from ekko.core.enums import LLMProvider
 
 
 class FakeModel:
@@ -54,7 +54,7 @@ def test_chat_adapter_sync(monkeypatch):
 
     settings = BaseAppConfig(llm_provider=LLMProvider.AZURE_OPENAI)
     adapter = ChatModelAdapter.from_settings(settings)
-    result = adapter.chat(system_prompt="S", user_prompt="U", deployment_name="m")
+    result = adapter.chat(system_prompt="S", user_prompt="U", model="m")
     assert result == "sync-ok"
 
 
@@ -65,7 +65,7 @@ def test_chat_adapter_async(monkeypatch):
     adapter = ChatModelAdapter.from_settings(settings)
 
     async def run():
-        return await adapter.async_chat(system_prompt="S", user_prompt="U", deployment_name="m")
+        return await adapter.async_chat(system_prompt="S", user_prompt="U", model="m")
 
     result = asyncio.run(run())
     assert result == "async-ok"

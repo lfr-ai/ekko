@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from ekko.core.enums import ChatModel
+from ekko.config.enums import ChatModel
 
 # ── HMAS settings ────────────────────────────────────────────────
 HMAS_MAX_DEPTH: Final[int] = 3

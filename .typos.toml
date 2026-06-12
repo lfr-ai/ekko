@@ -17,6 +17,8 @@ zustand = "zustand"
 shadcn = "shadcn"
 biome = "biome"
 biomejs = "biomejs"
+tre = "tre"
+alle = "alle"
 
 [files]
 extend-exclude = [
@@ -34,4 +36,5 @@ extend-exclude = [
     "CHANGELOG.md",
     "**/prompts/**",
     "docs/api/**",
+    ".gsd/**",
 ]

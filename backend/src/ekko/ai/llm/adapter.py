@@ -54,15 +54,15 @@ class LLMAdapter:
         system_prompt: str,
         user_prompt: str,
         *,
-        deployment_name: str | None = None,
+        model: str | None = None,
         max_completion_tokens: int = 1024,
         temperature: float = 0.0,
     ) -> str:
         """Synchronous chat completion."""
         return self.chat_adapter.chat(
-            system_prompt,
-            user_prompt,
-            deployment_name=deployment_name or self._default_deployment,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model or self._default_deployment,
             max_completion_tokens=max_completion_tokens,
             temperature=temperature,
         )
@@ -72,15 +72,15 @@ class LLMAdapter:
         system_prompt: str,
         user_prompt: str,
         *,
-        deployment_name: str | None = None,
+        model: str | None = None,
         max_completion_tokens: int = 1024,
         temperature: float = 0.0,
     ) -> str:
         """Asynchronous chat completion."""
         return await self.chat_adapter.async_chat(
-            system_prompt,
-            user_prompt,
-            deployment_name=deployment_name or self._default_deployment,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model or self._default_deployment,
             max_completion_tokens=max_completion_tokens,
             temperature=temperature,
         )

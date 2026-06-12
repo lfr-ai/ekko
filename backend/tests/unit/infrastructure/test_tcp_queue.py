@@ -4,7 +4,7 @@ import threading
 import time
 
 from ekko.infrastructure.concurrency.queue_manager import QueueManager
-from ekko.infrastructure.tcp_queue import TCPQueueServer
+from ekko.infrastructure.concurrency.tcp_queue import TCPQueueServer
 
 
 def tcp_server(host: str, port: int, qm: QueueManager, queue_name: str, stop_event):

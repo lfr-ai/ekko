@@ -1,6 +1,7 @@
 line-length = 120
 target-version = "py312"
-src = ["src", "tests"]
+src = ["src", "tests", "scripts"]
+exclude = [".venv", ".tox", "dist", "build"]
 
 [lint]
 select = [
@@ -82,6 +83,12 @@ ignore = [
 "src/ekko/presentation/api/middleware/**/*.py" = [
     "ARG001",  # FastAPI exception handlers require request/exc params
     "ARG002",  # middleware call signatures
+]
+"src/ekko/presentation/api/exception_handlers.py" = [
+    "ARG001",  # FastAPI exception handlers require request/exc params
+]
+"src/ekko/presentation/api/responses.py" = [
+    "UP040",   # TypeAlias kept for Python 3.12 compat until min version is 3.13
 ]
 "src/ekko/presentation/api/routes/**/*.py" = [
     "PLC0415", # lazy DI imports in route handlers

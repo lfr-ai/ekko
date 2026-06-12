@@ -66,17 +66,33 @@ Default OpenSpec flow:
 - `/opsx:sync <change>`
 - `/opsx:archive <change>`
 
+Expanded flow (all commands available):
+
+- `/opsx:new <change>` — create a new change container
+- `/opsx:continue <change>` — create next artifact incrementally
+- `/opsx:ff <change>` — fast-forward all artifacts in one go
+- `/opsx:verify <change>` — verify implementation matches artifacts
+- `/opsx:bulk-archive` — batch-archive multiple changes
+- `/opsx:onboard` — guided first-time workflow walkthrough
+
 For GitHub Copilot prompt-file commands in this repository, use the hyphen form:
 
 - `/opsx-propose <change>`
 - `/opsx-apply <change>`
 - `/opsx-archive <change>`
+- `/opsx-new <change>`
+- `/opsx-continue <change>`
+- `/opsx-ff <change>`
+- `/opsx-sync <change>`
+- `/opsx-verify <change>`
+- `/opsx-bulk-archive`
+- `/opsx-onboard`
 
 ## MCP and Agent Tooling
 
 - MCP runtime config for VS Code lives in `.vscode/mcp.json`.
 - Keep `context7`, `gitnexus`, and `shadcn` configured for this repository.
-- Avoid root-level `.mcp.json` to prevent duplicate MCP discovery in VS Code.
+- Root-level `.mcp.json` provides Claude Code fallback; `.vscode/mcp.json` is authoritative for VS Code.
 - Keep `.vscode/settings.json` aligned with MCP best practices:
 	- `"chat.mcp.discovery.enabled": false`
 	- `"chat.mcp.autoStart": true`
@@ -94,6 +110,15 @@ For GitHub Copilot prompt-file commands in this repository, use the hyphen form:
 - Use `@dataclass(frozen=True, slots=True)` for all dataclasses (except `Container`).
 - Docstring `Raises:` sections must only document exceptions directly raised in that function body.
 - Use `cn()` for Tailwind class merging, semantic color tokens only.
+
+## Cognitive Load
+
+- Write code for human brains (~4 chunks of working memory).
+- Prefer deep modules over shallow: simple interfaces hiding complex implementations.
+- Keep related code together (locality of behavior).
+- Extract complex conditionals into named intermediates.
+- Use early returns to reduce nesting depth.
+- Balanced DRY: a little duplication is better than a wrong abstraction.
 
 ## Security Rules
 

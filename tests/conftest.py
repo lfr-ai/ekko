@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from testcontainers.postgres import PostgresContainer
 
 if TYPE_CHECKING:
@@ -60,6 +65,13 @@ def _test_environment() -> Generator[None, None, None]:
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresContainer, None, None]:
     """Run PostgreSQL in Docker for container-backed test flows."""
+    try:
+        import docker  # noqa: PLC0415
+
+        docker.from_env().ping()
+    except Exception as exc:  # pragma: no cover - depends on local Docker runtime
+        pytest.skip(f"Docker not available: {exc}")
+
     container = PostgresContainer(image="postgres:16", driver=None)
 
     try:
@@ -79,7 +91,9 @@ def postgres_async_database_url(postgres_container: PostgresContainer) -> str:
 
 
 @pytest.fixture
-async def postgres_async_engine(postgres_async_database_url: str) -> AsyncGenerator[AsyncEngine, None]:
+async def postgres_async_engine(
+    postgres_async_database_url: str,
+) -> AsyncGenerator[AsyncEngine, None]:
     """Create a PostgreSQL async engine with test schema created."""
     from ekko.infrastructure.db import models as _  # noqa: F401, PLC0415
     from ekko.infrastructure.db.base import Base  # noqa: PLC0415
@@ -97,9 +111,13 @@ async def postgres_async_engine(postgres_async_database_url: str) -> AsyncGenera
 
 
 @pytest.fixture
-def postgres_session_factory(postgres_async_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+def postgres_session_factory(
+    postgres_async_engine: AsyncEngine,
+) -> async_sessionmaker[AsyncSession]:
     """Provide async SQLAlchemy session factory bound to Testcontainer DB."""
-    return async_sessionmaker(postgres_async_engine, class_=AsyncSession, expire_on_commit=False)
+    return async_sessionmaker(
+        postgres_async_engine, class_=AsyncSession, expire_on_commit=False
+    )
 
 
 @pytest.fixture
@@ -119,7 +137,9 @@ def app_with_postgres(postgres_async_database_url: str):
 
     app = create_app()
 
-    db_engine = create_async_engine(postgres_async_database_url, future=True, echo=False)
+    db_engine = create_async_engine(
+        postgres_async_database_url, future=True, echo=False
+    )
     app.state.db_engine = db_engine
     app.state.session_factory = async_sessionmaker(
         db_engine,

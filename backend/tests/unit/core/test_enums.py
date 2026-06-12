@@ -2,12 +2,11 @@
 
 import pytest
 
+from ekko.config.enums import Environment, LLMProvider
 from ekko.core.enums import (
     AudioFormat,
     DeploymentTarget,
-    Environment,
     FeatureFlag,
-    LLMProvider,
     MessageRole,
     QueueName,
     RecognitionMode,

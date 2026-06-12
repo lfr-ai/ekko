@@ -3,19 +3,33 @@ source = src/ekko
 branch = true
 omit =
     tests/*
+    scripts/*
     src/ekko/__main__.py
+    src/ekko/cli/*
 
 [report]
 show_missing = true
 skip_empty = true
-fail_under = 70
+fail_under = 80
+precision = 2
 exclude_lines =
     pragma: no cover
     if TYPE_CHECKING:
     if __name__ == .__main__.
     @abstractmethod
+    @abc.abstractmethod
     raise NotImplementedError
     \.\.\.
+    class .*\bProtocol\):
+    @overload
 
 [html]
 directory = htmlcov
+
+[xml]
+output = coverage.xml
+
+[paths]
+source =
+    src/ekko
+    */ekko/src/ekko

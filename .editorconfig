@@ -8,6 +8,9 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
+[*.py]
+max_line_length = 120
+
 [*.{ts,tsx,js,jsx,css,html}]
 indent_size = 2
 

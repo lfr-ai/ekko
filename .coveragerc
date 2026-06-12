@@ -3,13 +3,14 @@ source = backend/src/ekko
 branch = true
 omit =
     backend/tests/*
+    scripts/*
     backend/src/ekko/__main__.py
     backend/src/ekko/cli/*
 
 [report]
 show_missing = true
 skip_empty = true
-fail_under = 70
+fail_under = 80
 precision = 2
 exclude_lines =
     pragma: no cover
@@ -24,6 +25,9 @@ exclude_lines =
 
 [html]
 directory = htmlcov
+
+[xml]
+output = coverage.xml
 
 [paths]
 source =

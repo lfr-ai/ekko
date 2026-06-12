@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import strawberry
+from strawberry.types import Info
 
 from ekko.presentation.graphql.types import (
     AnonymizeTextInput,
@@ -59,12 +60,9 @@ class Mutation:
         return f"Message received in conversation {input.conversation_id}"
 
     @strawberry.mutation
-    async def anonymize_text(self, input: AnonymizeTextInput) -> PIIResultType:  # noqa: A002
+    async def anonymize_text(self, info: Info, input: AnonymizeTextInput) -> PIIResultType:  # noqa: A002
         """Anonymize PII in the given text."""
-        from ekko.ai.pii.anonymizer import PIIAnonymizer
-
-        enabled = frozenset(input.enabled_types) if input.enabled_types else None
-        anonymizer = PIIAnonymizer(enabled_types=enabled)
+        anonymizer = info.context["pii_anonymizer"]
         result = anonymizer.anonymize(input.text)
         return PIIResultType(
             anonymized_text=result.anonymized_text,

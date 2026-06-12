@@ -13,20 +13,16 @@ from typing import TYPE_CHECKING, Any
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
-from ekko.config.settings import AppSettings, get_settings
-from ekko.core.enums import LLMProvider
+from ekko.config.enums import LLMProvider
+from ekko.config.settings import BaseAppConfig, get_settings
 from ekko.core.interfaces import ChatPort
-from ekko.infrastructure.helpers.retry import (
-    api_retry,  # create a small retry helper below
-)
+from ekko.infrastructure.helpers.retry import api_retry
 
 if TYPE_CHECKING:
     from langchain_core.language_models.chat_models import BaseChatModel
 
-    from ekko.config.settings import AppSettings as SettingsType
 
-
-def _build_provider_kwargs(settings: SettingsType) -> dict[str, Any]:
+def _build_provider_kwargs(settings: BaseAppConfig) -> dict[str, Any]:
     if settings.llm_provider == LLMProvider.AZURE_OPENAI:
         return {
             "azure_endpoint": settings.azure_openai_endpoint,
@@ -65,14 +61,14 @@ def _extract_response_text(response: BaseMessage) -> str:
 class ChatModelAdapter(ChatPort):
     """Adapter that exposes a provider-agnostic chat interface using LangChain."""
 
-    def __init__(self, *, settings: AppSettings | None = None) -> None:
+    def __init__(self, *, settings: BaseAppConfig | None = None) -> None:
         self._settings = settings or get_settings()
         self._provider = self._settings.llm_provider
         self._provider_kwargs = _build_provider_kwargs(self._settings)
         self._models: dict[str, BaseChatModel] = {}
 
     @classmethod
-    def from_settings(cls, settings: AppSettings) -> ChatModelAdapter:
+    def from_settings(cls, settings: BaseAppConfig) -> ChatModelAdapter:
         return cls(settings=settings)
 
     def _get_model(self, deployment_name: str) -> BaseChatModel:
@@ -108,12 +104,12 @@ class ChatModelAdapter(ChatPort):
         *,
         system_prompt: str,
         user_prompt: str,
-        deployment_name: str,
+        model: str,
         max_completion_tokens: int = 1024,
         temperature: float = 0.0,
         kwargs: dict[str, Any] | None = None,
     ) -> tuple[BaseChatModel, list[BaseMessage], dict[str, Any]]:
-        model = self._get_model(deployment_name)
+        llm = self._get_model(model)
         messages = self._build_messages(system_prompt, user_prompt)
         invoke_kwargs: dict[str, Any] = {
             "max_tokens": max_completion_tokens,
@@ -121,44 +117,44 @@ class ChatModelAdapter(ChatPort):
         }
         if kwargs:
             invoke_kwargs.update(kwargs)
-        return model, messages, invoke_kwargs
+        return llm, messages, invoke_kwargs
 
     async def async_chat(
         self,
         system_prompt: str,
         user_prompt: str,
         *,
-        deployment_name: str,
+        model: str,
         max_completion_tokens: int = 1024,
         temperature: float = 0.0,
         **kwargs: Any,
     ) -> str:
-        model, messages, invoke_kwargs = self._prepare_invocation(
+        llm, messages, invoke_kwargs = self._prepare_invocation(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            deployment_name=deployment_name,
+            model=model,
             max_completion_tokens=max_completion_tokens,
             temperature=temperature,
             kwargs=kwargs,
         )
-        return await self._run_completion_async(model, messages, **invoke_kwargs)
+        return await self._run_completion_async(llm, messages, **invoke_kwargs)
 
     def chat(
         self,
+        *,
         system_prompt: str,
         user_prompt: str,
-        *,
-        deployment_name: str,
+        model: str,
         max_completion_tokens: int = 1024,
         temperature: float = 0.0,
         **kwargs: Any,
     ) -> str:
-        model, messages, invoke_kwargs = self._prepare_invocation(
+        llm, messages, invoke_kwargs = self._prepare_invocation(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            deployment_name=deployment_name,
+            model=model,
             max_completion_tokens=max_completion_tokens,
             temperature=temperature,
             kwargs=kwargs,
         )
-        return self._run_completion(model, messages, **invoke_kwargs)
+        return self._run_completion(llm, messages, **invoke_kwargs)

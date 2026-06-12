@@ -29,8 +29,9 @@ class _FakeStreamController:
         """Lifespan-compatible shutdown hook used by app teardown."""
 
 
-
-def test_health_when_lifespan_started_then_reports_ok_payload(containerized_client) -> None:
+def test_health_when_lifespan_started_then_reports_ok_payload(
+    containerized_client,
+) -> None:
     """Health endpoint should return payload with operational details."""
     # Arrange / Act
     response = containerized_client.get("/health")
@@ -43,8 +44,9 @@ def test_health_when_lifespan_started_then_reports_ok_payload(containerized_clie
     assert payload["details"]["transcripts_queue_present"] is True
 
 
-
-def test_graphql_health_when_queried_then_returns_service_status(containerized_client) -> None:
+def test_graphql_health_when_queried_then_returns_service_status(
+    containerized_client,
+) -> None:
     """GraphQL health query should be available end-to-end."""
     # Arrange
     query = {"query": "query { health { status environment } }"}
@@ -59,8 +61,9 @@ def test_graphql_health_when_queried_then_returns_service_status(containerized_c
     assert payload["data"]["health"]["status"] in {"healthy", "degraded", "unhealthy"}
 
 
-
-def test_graphql_health_ready_when_db_available_then_dependency_is_healthy(containerized_client) -> None:
+def test_graphql_health_ready_when_db_available_then_dependency_is_healthy(
+    containerized_client,
+) -> None:
     """GraphQL readiness should report healthy database dependency with Testcontainer."""
     # Arrange
     query = {
@@ -80,8 +83,9 @@ def test_graphql_health_ready_when_db_available_then_dependency_is_healthy(conta
     assert database_dependency["healthy"] is True
 
 
-
-def test_graphql_anonymize_text_when_pii_present_then_returns_redacted_text(containerized_client) -> None:
+def test_graphql_anonymize_text_when_pii_present_then_returns_redacted_text(
+    containerized_client,
+) -> None:
     """Anonymize mutation should redact PII in end-to-end API flow."""
     # Arrange
     mutation = {
@@ -110,7 +114,9 @@ def test_graphql_anonymize_text_when_pii_present_then_returns_redacted_text(cont
     assert "integration@example.com" not in data["anonymizedText"]
 
 
-def test_start_stream_when_controller_injected_then_returns_started_status(containerized_client) -> None:
+def test_start_stream_when_controller_injected_then_returns_started_status(
+    containerized_client,
+) -> None:
     """Start stream endpoint should invoke controller and return started status."""
     # Arrange
     controller = _FakeStreamController()
@@ -127,7 +133,9 @@ def test_start_stream_when_controller_injected_then_returns_started_status(conta
     assert controller.commands == ["start_stream"]
 
 
-def test_pause_stream_when_controller_injected_then_returns_paused_status(containerized_client) -> None:
+def test_pause_stream_when_controller_injected_then_returns_paused_status(
+    containerized_client,
+) -> None:
     """Pause stream endpoint should invoke controller and return paused status."""
     # Arrange
     controller = _FakeStreamController()
@@ -149,9 +157,7 @@ def test_graphql_conversation_lifecycle_when_mutations_called_then_state_transit
     """Conversation start/send/end mutations should produce consistent lifecycle outputs."""
     # Arrange
     start_mutation = {
-        "query": (
-            "mutation { startConversation { id startedAt endedAt isActive } }"
-        )
+        "query": ("mutation { startConversation { id startedAt endedAt isActive } }")
     }
 
     # Act: start conversation
@@ -170,9 +176,7 @@ def test_graphql_conversation_lifecycle_when_mutations_called_then_state_transit
 
     # Act: send message
     send_mutation = {
-        "query": (
-            "mutation($input: SendMessageInput!) { sendMessage(input: $input) }"
-        ),
+        "query": ("mutation($input: SendMessageInput!) { sendMessage(input: $input) }"),
         "variables": {
             "input": {
                 "conversationId": conversation_id,

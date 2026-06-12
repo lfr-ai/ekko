@@ -134,10 +134,7 @@ def get_prompt_text(
 def provision_all_prompts(*, settings: BaseAppConfig | None = None) -> list[PromptVersionInfo]:
     """Provision all known prompts and return their active version metadata."""
     config = settings or get_settings()
-    return [
-        provision_prompt(prompt_key=prompt_key, settings=config)
-        for prompt_key in PROMPT_SOURCES
-    ]
+    return [provision_prompt(prompt_key=prompt_key, settings=config) for prompt_key in PROMPT_SOURCES]
 
 
 def get_prompt_versions(
@@ -237,8 +234,7 @@ def get_active_prompt_versions(
     """Return active prompt metadata for all known prompt keys."""
     config = settings or get_settings()
     return {
-        prompt_key: get_active_prompt_version(prompt_key=prompt_key, settings=config)
-        for prompt_key in PROMPT_SOURCES
+        prompt_key: get_active_prompt_version(prompt_key=prompt_key, settings=config) for prompt_key in PROMPT_SOURCES
     }
 
 
@@ -470,11 +466,7 @@ def _parse_prompt_entry(*, key: object, entry: object) -> PromptEntry | None:
     if not isinstance(current_version, str) or not isinstance(versions, list):
         return None
 
-    typed_versions = [
-        parsed
-        for item in versions
-        if (parsed := _parse_version_record(item=item)) is not None
-    ]
+    typed_versions = [parsed for item in versions if (parsed := _parse_version_record(item=item)) is not None]
     return {
         "current_version": current_version,
         "versions": typed_versions,

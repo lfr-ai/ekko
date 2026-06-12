@@ -36,11 +36,11 @@ class QueueManager:
         except KeyError as err:
             raise KeyError(f"Queue '{name}' does not exist.") from err
 
-    def put_in_queue(self, name: str, item: Any) -> None:
+    def put_in_queue(self, name: str, item: object) -> None:
         """Put *item* into the named queue."""
         self.get_queue(name).put(item)
 
-    def get_from_queue(self, name: str, timeout: float | int | None = None) -> Any:
+    def get_from_queue(self, name: str, timeout: float | int | None = None) -> object:
         """Get an item from the named queue."""
         return self.get_queue(name).get(timeout=timeout)
 

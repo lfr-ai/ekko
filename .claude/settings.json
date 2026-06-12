@@ -8,7 +8,11 @@
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTHONUNBUFFERED": "1"
   },
-  "includeGitInstructions": true,
+  "includeGitInstructions": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Read",
@@ -21,6 +25,9 @@
       "Bash(task *)",
       "Bash(python *)",
       "Bash(pre-commit *)",
+      "Bash(pytest *)",
+      "Bash(alembic *)",
+      "Bash(ruff *)",
       "Bash(bun *)",
       "Bash(bunx *)",
       "Bash(npx *)",
@@ -35,17 +42,24 @@
       "Bash(wc *)",
       "Bash(find *)",
       "Bash(grep *)",
+      "Bash(rg *)",
       "Bash(sort *)",
       "Bash(head *)",
       "Bash(tail *)",
       "Bash(sed *)",
+      "Bash(tree *)",
+      "Bash(diff *)",
+      "Bash(docker *)",
+      "Bash(docker compose *)",
       "mcp__context7__*",
       "mcp__shadcn__*",
-      "mcp__gitnexus__*"
+      "mcp__gitnexus__*",
+      "mcp__playwright__*"
     ],
     "ask": [
-      "Bash(git *)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(docker system prune *)",
+      "Bash(docker volume rm *)"
     ],
     "deny": [
       "Read(./.env)",
@@ -55,8 +69,14 @@
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Read(**/*.crt)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/id_rsa*)",
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf $HOME)",
+      "Bash(git *)",
       "Bash(git push --force *)",
       "Bash(git reset --hard *)",
       "Bash(git clean -fd *)",
@@ -65,7 +85,13 @@
       "Bash(git branch -D *)",
       "Bash(curl * | bash)",
       "Bash(wget * | bash)",
-      "Bash(pip install *)"
+      "Bash(pip install *)",
+      "Bash(npm install -g *)",
+      "Bash(apt-get *)",
+      "Bash(yum *)",
+      "Bash(brew install *)",
+      "Bash(choco install *)",
+      "Bash(sudo *)"
     ]
   },
   "enableAllProjectMcpServers": true,
@@ -76,9 +102,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\.claude\\hooks\\guard-destructive.ps1\"",
+            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\hooks\\scripts\\guard-tool.ps1\"",
             "timeout": 10,
-            "statusMessage": "Checking for destructive commands..."
+            "statusMessage": "Tool Guardian: checking for dangerous operations..."
           }
         ]
       }
@@ -89,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& { $f = ($input | ConvertFrom-Json).tool_input.file_path; if ($f -and (Test-Path $f)) { uv run ruff check --fix $f 2>&1 | Out-Null }; exit 0 }\"",
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& { $f = ($input | ConvertFrom-Json).tool_input.file_path; if ($f -and (Test-Path $f)) { uv run --project backend ruff check --fix $f 2>&1 | Out-Null }; exit 0 }\"",
             "if": "Edit(*.py)|Write(*.py)",
             "timeout": 15,
             "statusMessage": "Linting Python file..."
@@ -103,9 +129,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\.claude\\hooks\\stop-uncommitted-reminder.ps1\"",
-            "timeout": 10,
-            "statusMessage": "Checking working tree..."
+            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\hooks\\scripts\\check-licenses.ps1\"",
+            "timeout": 60,
+            "statusMessage": "License Checker: scanning dependency licenses..."
           }
         ]
       }
@@ -116,12 +142,16 @@
       "node_modules",
       ".venv",
       "__pycache__",
-      ".cache"
+      ".pytest_cache",
+      ".ruff_cache",
+      ".mypy_cache",
+      ".cache",
+      "dist",
+      "build",
+      "*.egg-info"
     ]
   },
   "enabledPlugins": {
-    "pyright-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
     "github@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,

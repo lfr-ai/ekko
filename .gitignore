@@ -23,7 +23,6 @@ ehthumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
-!.vscode/voice.code-workspace
 
 # ═══════════════════════════════════════════════════════════════
 # Python
@@ -62,6 +61,11 @@ nosetests.xml
 backend/keploy/reports/
 backend/keploy/debug-*.log
 backend/keploy/*/secret.yaml
+backend/keploy-logs.txt
+
+# DuckDB analytics (runtime-generated)
+*.duckdb
+*.duckdb.wal
 
 # Type checkers
 .mypy_cache/
@@ -183,11 +187,10 @@ data/*
 .claude/memory/
 .claude/todos/
 .claude/statsig/
-.claude/skills/
+.claude/settings.local.json
 CLAUDE.local.md
 
 # Other AI agents
-.agents/
 .copilot/
 
 # GSD (Get Shit Done) — ignore all runtime state
@@ -210,6 +213,11 @@ CLAUDE.local.md
 # Link Checker Cache
 # ═══════════════════════════════════════════════════════════════
 .lycheecache
+
+# ═══════════════════════════════════════════════════════════════
+# Postman (keep collection, ignore environments with secrets)
+# ═══════════════════════════════════════════════════════════════
+postman/*.postman_environment.json
 
 # ═══════════════════════════════════════════════════════════════
 # Jupyter Notebooks

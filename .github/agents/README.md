@@ -15,6 +15,10 @@ Custom agents for VS Code GitHub Copilot, stored as `.agent.md` files with YAML 
 | Deep Thinking | `deep-thinking.agent.md` | Cross-cutting architectural analysis |
 | Modernization | `modernization.agent.md` | Repo-wide modernization planning |
 | DDD | `ddd.agent.md` | Domain-Driven Design modeling and review |
+| TDD | `tdd.agent.md` | Red-Green-Refactor workflow |
+| SDD | `sdd.agent.md` | Specification-Driven Development (Given-When-Then) |
+| Refactor | `refactor.agent.md` | Fowler's catalog refactoring |
+| DevOps | `devops.agent.md` | CI/CD, Docker, infrastructure |
 
 ## Copilot Agent Format
 

@@ -22,14 +22,14 @@ if TYPE_CHECKING:
     from ekko.application.services.summarizer_service import SummarizerService
     from ekko.core.interfaces import (
         AudioStreamerControllerProtocol,
-        OpenAIGateway,
+        ChatPort,
         STTService,
     )
 
 
 # Note: slots=True omitted — cached_property requires __dict__
 @final
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class Container:
     """Application-scoped DI container.
 
@@ -46,13 +46,13 @@ class Container:
         """Build a container from the current environment settings."""
         return cls(settings=get_settings())
 
-    # ── OpenAI ───────────────────────────────────────────────
+    # ── Chat / LLM ────────────────────────────────────────────
     @cached_property
-    def openai_gateway(self) -> OpenAIGateway:
-        """Lazily build the OpenAI gateway."""
-        from ekko.infrastructure.openai.openai_client import AzureOpenAIClient
+    def chat_adapter(self) -> ChatPort:
+        """Lazily build the chat/LLM adapter."""
+        from ekko.infrastructure.llm.chat_adapter import ChatModelAdapter
 
-        return AzureOpenAIClient(settings=self.settings)
+        return ChatModelAdapter(settings=self.settings)
 
     # ── STT ──────────────────────────────────────────────────
     @cached_property
@@ -129,8 +129,9 @@ class Container:
     def summarizer_service(self) -> SummarizerService:
         """Lazily build the summarizer service."""
         from ekko.application.services.summarizer_service import SummarizerService as _SummarizerService
+        from ekko.infrastructure.adapters.prompt_adapter import RegistryPromptProvider
 
         return _SummarizerService(
-            gateway=self.openai_gateway,
-            settings=self.settings,
+            gateway=self.chat_adapter,
+            prompt_provider=RegistryPromptProvider(settings=self.settings),
         )

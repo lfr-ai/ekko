@@ -1,3 +1,5 @@
 [install]
 # Use text lockfile for better diffs
 saveTextLockfile = true
+# Use copyfile backend to avoid hardlink/symlink issues on Windows/OneDrive
+backend = "copyfile"

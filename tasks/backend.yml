@@ -30,66 +30,66 @@ tasks:
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/ -v --tb=short {{.CLI_ARGS}}
 
   test:unit:
     desc: "Run unit tests only"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/unit/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/unit/ -v --tb=short {{.CLI_ARGS}}
 
   test:integration:
     desc: "Run integration tests"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/integration/ -v --tb=short -m integration {{.CLI_ARGS}}
+      - uv run python -m pytest tests/integration/ -v --tb=short -m integration {{.CLI_ARGS}}
 
   test:property:
     desc: "Run property-based tests"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/property/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/property/ -v --tb=short {{.CLI_ARGS}}
 
   test:performance:
     desc: "Run performance benchmarks"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
+      - uv run python -m pytest tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
 
   test:e2e:
     desc: "Run end-to-end tests"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/e2e/ -v --tb=short {{.CLI_ARGS}}
+      - uv run python -m pytest tests/e2e/ -v --tb=short {{.CLI_ARGS}}
 
   test:coverage:
     desc: "Run tests with coverage report"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
-      - uv run python -m pytest ../tests/ --cov=src/ekko --cov-report=term-missing --cov-report=html {{.CLI_ARGS}}
+      - uv run python -m pytest tests/ --cov=src/ekko --cov-report=term-missing --cov-report=html {{.CLI_ARGS}}
 
   # ── Linting ──────────────────────────────────────────────────
   lint:
     desc: "Lint Python code (ruff check)"
     cmds:
-      - uv run ruff check src ../tests
+      - uv run ruff check src tests
 
   format:
     desc: "Format Python code"
     cmds:
-      - uv run ruff format src ../tests
-      - uv run ruff check --fix src ../tests
+      - uv run ruff format src tests
+      - uv run ruff check --fix src tests
 
   format:check:
     desc: "Check formatting without modifying files"
     cmds:
-      - uv run ruff format --check src ../tests
+      - uv run ruff format --check src tests
 
   typecheck:
     desc: "Run type checker"
@@ -99,7 +99,7 @@ tasks:
   xenon:
     desc: "Cyclomatic complexity gate"
     cmds:
-      - uv run python -m xenon --max-absolute=C --max-modules=B --max-average=A src
+      - uv run python -m xenon --max-absolute=B --max-modules=B --max-average=A src
 
   # ── Security ─────────────────────────────────────────────────
   security:audit:

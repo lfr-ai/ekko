@@ -17,6 +17,7 @@
     "ms-python.vscode-pylance",
     "ms-python.debugpy",
     "charliermarsh.ruff",
+    "astral-sh.ty",
 
     // ──────────────────────────────────────────────────────────
     // TypeScript/JavaScript/React
@@ -89,6 +90,7 @@
     "ms-python.flake8",
     "ms-python.pylint",
     "ms-python.black-formatter",
+    "ms-pyright.pyright",
     "prettier.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "orta.vscode-jest",

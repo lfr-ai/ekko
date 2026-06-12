@@ -1,7 +1,54 @@
 # AGENTS.md
 
-This file provides instructions for AI coding agents (GitHub Copilot, Cursor, Cline, etc.)
-working within this codebase.
+This file defines the default operating policy for AI coding agents working in
+this repository. It is **platform-agnostic** — any agent runtime (IDE extension,
+CLI tool, cloud service, etc.) must follow these rules.
+
+## Hard Rules
+
+1. **No `Any`** — never introduce `Any` in production type annotations. Use
+   concrete types, protocols, unions, or `object` as fallback.
+2. **Immutable dataclasses** — `@dataclass(frozen=True, kw_only=True, slots=True)`.
+   Mutable classes: `kw_only=True` and `slots=True` when compatible.
+3. **Internal constants untyped** — never add type annotations to internal
+   (underscore-prefixed) constants. Public constants may use `Final[...]`.
+4. **Typed docstrings** — docstrings that include `Args`, `Returns`, `Yields`, or
+   `Raises` sections must include explicit types in each entry.
+    - Never start a docstring summary line with "Return", "Returns", "Response",
+      "Request", or "Payload". Use a descriptive noun-phrase or imperative verb.
+    - Property docstrings: simple noun-phrase one-liners, no `Returns:` section.
+5. **No `-> None` on `__init__`** — the implicit `None` return is universally
+   understood and the annotation adds noise.
+6. **Dead code removal** — remove unused code in the same change-set.
+7. **Architecture boundaries** — dependencies always flow inward.
+8. **No legacy shims** — update call sites directly, no compatibility wrappers.
+9. **No git commands by agents** — agents must never execute `git` shell
+   commands. Branching, staging, commit, reset, and push are always manual user
+   actions.
+10. **Follow language conventions** — adhere to the coding conventions defined
+    in `.github/instructions/` and `.claude/rules/`.
+11. **Cognitive load** — write code for human brains (~4 chunks). Early returns,
+    named conditionals, deep modules over shallow.
+12. **Annotated-first metadata** — prefer `typing.Annotated` for framework
+    metadata declarations (FastAPI, Pydantic, Strawberry).
+
+## Agent Profiles
+
+| Agent             | Use For                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `backend-python`  | Python backend development, Clean Architecture, FastAPI, SQLAlchemy      |
+| `frontend-react`  | React 19 + TypeScript + Vite + shadcn/ui + Tailwind CSS v4              |
+| `database`        | SQLAlchemy, Alembic, repository patterns, migrations                     |
+| `ddd`             | Domain-Driven Design, domain modeling, bounded contexts, aggregates      |
+| `sdd`             | Specification-Driven Development, executable specs, living documentation |
+| `tdd`             | Test-Driven Development, Red-Green-Refactor cycles, test suites          |
+| `debug`           | Defect isolation, root cause analysis, systematic troubleshooting        |
+| `deep-thinking`   | Complex problem analysis, architectural trade-offs, strategic decisions  |
+| `devops`          | Docker, CI/CD, infrastructure, deployment, containerization              |
+| `modernization`   | Large-scale analysis, documentation, migration planning                  |
+| `refactor`        | Code refactoring, technical debt reduction, code smell elimination       |
+| `security`        | Security best practices, authentication, authorization, vulnerability    |
+| `testing`         | Test strategy, quality assurance, coverage analysis                      |
 
 ## Documentation and Code-Example Search Policy
 
@@ -26,8 +73,15 @@ Recommended command path:
 - `/opsx:sync <change>`
 - `/opsx:archive <change>`
 
-For expanded flow (if enabled), use `/opsx:new`, `/opsx:continue` or
-`/opsx:ff`, `/opsx:verify`, `/opsx:archive`.
+Expanded flow (all commands available):
+
+- `/opsx:new <change>` — create a new change container
+- `/opsx:continue <change>` — create next artifact incrementally
+- `/opsx:ff <change>` — fast-forward all artifacts in one go
+- `/opsx:verify <change>` — verify implementation matches artifacts
+- `/opsx:sync <change>` — sync delta specs to main specs
+- `/opsx:bulk-archive` — batch-archive multiple changes
+- `/opsx:onboard` — guided first-time workflow walkthrough
 
 OpenSpec quality expectations:
 
@@ -59,9 +113,11 @@ Tool command syntax note:
 | ---- | ------- | ------- |
 | `.vscode/mcp.json` | VS Code runtime (authoritative for Copilot) | VS Code |
 | `.claude/mcp.json` | Claude Code CLI runtime | Claude Code |
+| `.mcp.json` | Claude Code fallback / neutral baseline | Claude Code |
 
-There is **no** `.mcp.json` at project root. Keeping a root-level MCP file can
-cause duplicate server discovery and drift between clients.
+The root-level `.mcp.json` provides a neutral MCP baseline for Claude Code
+discovery. `.vscode/mcp.json` remains authoritative for VS Code/Copilot.
+Both files must stay in sync with `.agents/mcp.servers.json`.
 
 ### Required baseline MCP servers
 
@@ -128,9 +184,12 @@ backend/src/ekko/
 ├── core/                # Domain entities, value objects, business rules
 │   ├── entities/        # Domain entities
 │   ├── enums/           # Domain enumerations (base, ai, audio, messaging, etc.)
+│   ├── events.py        # Domain events (past-tense facts)
 │   ├── exceptions/      # Domain exception hierarchy
-│   ├── interfaces/      # Port protocols (audio, chat, embedding, llm, pii)
-│   ├── protocols.py     # Shared protocols
+│   ├── interfaces/      # Port protocols
+│   │   ├── repositories/  # Persistence port protocols
+│   │   └── services/      # External service port protocols
+│   ├── types.py         # Shared type aliases (BaseDict, JSONDict, etc.)
 │   ├── value_objects/   # Immutable value objects
 │   └── registry_constants.py  # Generated naming constants
 ├── infrastructure/      # External integrations, persistence
@@ -283,8 +342,8 @@ _CACHE_KEY_PREFIX: Final[str] = "user_session"
 
 | Hook | Config | Events | Purpose |
 | --- | --- | --- | --- |
-| **Tool Guardian** | `hooks.json` → `guard-tool.{sh,ps1}` | `PreToolUse` | Block destructive ops (rm -rf, force push, DROP TABLE) |
-| **License Checker** | `hooks.json` → `check-licenses.{sh,ps1}` | `Stop` | Block copyleft / unapproved licenses |
+| **Tool Guardian** | `tool-guardian.json` → `guard-tool.{sh,ps1}` | `PreToolUse` | Block destructive ops (rm -rf, force push, DROP TABLE) |
+| **License Checker** | `dependency-license-checker.json` → `check-licenses.{sh,ps1}` | `Stop` | Block copyleft / unapproved licenses |
 
 ---
 

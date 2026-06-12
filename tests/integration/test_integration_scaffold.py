@@ -57,7 +57,9 @@ async def test_user_read_when_row_exists_then_query_returns_it(
     await postgres_session.commit()
 
     # Act
-    result = await postgres_session.execute(select(User).where(User.username == "reader"))
+    result = await postgres_session.execute(
+        select(User).where(User.username == "reader")
+    )
     loaded_user = result.scalar_one()
 
     # Assert

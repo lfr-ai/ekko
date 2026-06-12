@@ -58,6 +58,13 @@ test_schema = strawberry.Schema(
 )
 
 
+def _make_context() -> dict:
+    """Build a minimal GraphQL context for tests."""
+    from ekko.ai.pii.anonymizer import PIIAnonymizer
+
+    return {"pii_anonymizer": PIIAnonymizer()}
+
+
 # ── Schema Structure Tests ───────────────────────────────────
 
 
@@ -82,8 +89,17 @@ class TestGraphQLSchemaStructure:
 
     def test_schema_has_required_extensions(self) -> None:
         """Schema includes security and performance extensions."""
-        # Handle both extension instances and classes
-        extension_names = {ext.__name__ if isinstance(ext, type) else type(ext).__name__ for ext in schema.extensions}
+        # Handle extension classes, instances, and factory callables (lambdas)
+        extension_names: set[str] = set()
+        for ext in schema.extensions:
+            if isinstance(ext, type):
+                extension_names.add(ext.__name__)
+            elif callable(ext):
+                # Factory callable — invoke to get the instance type name
+                instance = ext()
+                extension_names.add(type(instance).__name__)
+            else:
+                extension_names.add(type(ext).__name__)
 
         # Security and caching extensions
         assert "ParserCache" in extension_names
@@ -227,7 +243,7 @@ class TestGraphQLQueryExecution:
     async def test_check_pii_query_with_pii(self) -> None:
         """Check PII query detects PII in text."""
         variables = {"text": "My email is john.doe@example.com"}
-        result = await test_schema.execute(CHECK_PII_QUERY, variable_values=variables)
+        result = await test_schema.execute(CHECK_PII_QUERY, variable_values=variables, context_value=_make_context())
 
         assert result.errors is None
         assert result.data is not None
@@ -244,7 +260,7 @@ class TestGraphQLQueryExecution:
     async def test_check_pii_query_without_pii(self) -> None:
         """Check PII query handles clean text."""
         variables = {"text": "The weather is nice today."}
-        result = await test_schema.execute(CHECK_PII_QUERY, variable_values=variables, context_value={})
+        result = await test_schema.execute(CHECK_PII_QUERY, variable_values=variables, context_value=_make_context())
 
         assert result.errors is None
         assert result.data is not None
@@ -366,7 +382,9 @@ class TestGraphQLMutationExecution:
                 "text": "My SSN is 123-45-6789 and email is test@example.com",
             }
         }
-        result = await test_schema.execute(ANONYMIZE_TEXT_MUTATION, variable_values=variables)
+        result = await test_schema.execute(
+            ANONYMIZE_TEXT_MUTATION, variable_values=variables, context_value=_make_context()
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -387,7 +405,9 @@ class TestGraphQLMutationExecution:
                 "enabledTypes": ["email"],
             }
         }
-        result = await test_schema.execute(ANONYMIZE_TEXT_MUTATION, variable_values=variables)
+        result = await test_schema.execute(
+            ANONYMIZE_TEXT_MUTATION, variable_values=variables, context_value=_make_context()
+        )
 
         assert result.errors is None
         assert result.data is not None

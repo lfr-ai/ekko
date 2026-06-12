@@ -1,6 +1,6 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
+version_provider = "pep621"
 tag_format = "v$version"
-version_files = ["backend/pyproject.toml"]
 update_changelog_on_bump = true
 changelog_file = "CHANGELOG.md"

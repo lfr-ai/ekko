@@ -216,6 +216,22 @@ These are non-negotiable. Every change must satisfy all of them.
 | 11 | **Exception chaining** | Always `raise NewError(...) from original_error`. |
 | 12 | **`Final` constants** | Use `Final[type]` for module-level constants; `@final` for sealed classes. |
 | 13 | **No magic strings** | Extract repeated strings into `Final[str]` constants or use registry constants. |
+| 14 | **Cognitive load** | Max ~4 chunks per function. Early returns, named conditionals, deep modules. |
+
+---
+
+## 5a. Cognitive Load
+
+Write code for human brains. Working memory holds ~4 chunks simultaneously.
+
+- **Deep modules over shallow** — simple interfaces hiding complex implementations.
+- **Locality of behavior** — keep related code together.
+- **Extract complex conditionals** — name intermediate boolean variables.
+- **Early returns over nesting** — each nesting level adds a chunk.
+- **Balanced DRY** — a little duplication is better than a wrong abstraction.
+- **Comments for WHY** — code shows WHAT; comments explain intent.
+
+See `.claude/rules/cognitive-load.md` for full rules.
 
 ---
 
@@ -337,9 +353,23 @@ When you need official library or framework documentation:
 │   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
 │   ├── refactorer.md          # Refactoring (model: inherit, isolation: worktree)
 │   ├── researcher.md          # Codebase exploration (model: haiku, read-only)
+│   ├── sdd.md                 # SDD Given-When-Then scenarios (model: sonnet)
+│   ├── tdd.md                 # TDD Red-Green-Refactor (model: sonnet)
 │   └── test-writer.md         # Test writing (model: sonnet, effort: high)
 ├── commands/
-│   └── commit.md              # Conventional commit from staged diff
+│   ├── commit.md              # Conventional commit from staged diff
+│   └── opsx/                  # OpenSpec workflow commands (11 total)
+│       ├── apply.md
+│       ├── archive.md
+│       ├── bulk-archive.md
+│       ├── continue.md
+│       ├── explore.md
+│       ├── ff.md
+│       ├── new.md
+│       ├── onboard.md
+│       ├── propose.md
+│       ├── sync.md
+│       └── verify.md
 ├── hooks/
 │   ├── guard-destructive.sh   # PreToolUse: block dangerous commands (Unix)
 │   ├── guard-destructive.ps1  # PreToolUse: block dangerous commands (Windows)
@@ -355,6 +385,7 @@ When you need official library or framework documentation:
     ├── ddd.md                 # Scoped to core/**/*.py + application/**/*.py
     ├── tdd.md                 # Scoped to tests/**/*.py
     ├── sdd.md                 # Scoped to docs/specs/**/*.md
+    ├── cognitive-load.md      # Scoped to **/*.py
     └── docs-sync.md           # Scoped to **/*.{md,py,yml,yaml,toml,json}
 ```
 
@@ -369,6 +400,8 @@ When you need official library or framework documentation:
 | `refactorer` | inherit | Read, Grep, Glob, Write, Edit, Bash | worktree | high | acceptEdits |
 | `researcher` | haiku | Read, Grep, Glob | — | medium | plan |
 | `test-writer` | sonnet | Read, Grep, Glob, Write, Edit, Bash | — | high | acceptEdits |
+| `tdd` | sonnet | Read, Write, Edit, Glob, Grep, Bash | — | high | acceptEdits |
+| `sdd` | sonnet | Read, Write, Edit, Glob, Grep, Bash | — | high | acceptEdits |
 
 **Usage**: Claude auto-delegates based on the `description` field. You can also
 invoke explicitly: `@code-reviewer review auth changes` or run a full session
@@ -386,7 +419,7 @@ as an agent: `claude --agent code-reviewer`.
 ```text
 .github/
 ├── copilot-instructions.md         # Global VS Code Copilot instructions
-├── agents/                         # Agent definitions (9 agents)
+├── agents/                         # Agent definitions (13 agents)
 │   ├── backend-python.agent.md     # Python backend specialist
 │   ├── frontend-react.agent.md     # React frontend specialist
 │   ├── testing.agent.md            # Testing strategies
@@ -395,7 +428,11 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── debug.agent.md              # Bug investigation mode
 │   ├── deep-thinking.agent.md      # Cross-cutting architecture analysis
 │   ├── modernization.agent.md      # Repo-wide modernization planning
-│   └── ddd.agent.md                # DDD domain modeling expert
+│   ├── ddd.agent.md                # DDD domain modeling expert
+│   ├── tdd.agent.md                # TDD Red-Green-Refactor specialist
+│   ├── sdd.agent.md                # SDD Given-When-Then scenarios
+│   ├── refactor.agent.md           # Code refactoring (Fowler's catalog)
+│   └── devops.agent.md             # CI/CD, Docker, infrastructure
 ├── skills/                         # Skill packs (shared by Claude + Copilot)
 │   ├── clean-architecture/SKILL.md
 │   ├── python-conventions/SKILL.md
@@ -406,12 +443,14 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── openspec/SKILL.md
 │   ├── quality-gate/SKILL.md
 │   ├── deploy-check/SKILL.md
+│   ├── dry-refactoring/SKILL.md
 │   ├── ddd/SKILL.md
 │   ├── tdd/SKILL.md
 │   └── sdd/SKILL.md
 ├── instructions/                   # File-scoped instructions (auto-load via applyTo)
 │   ├── architecture.instructions.md        # backend/src/ekko/**/*.py
 │   ├── coding-conventions.instructions.md  # **/*.py
+│   ├── cognitive-load.instructions.md      # **/*.py
 │   ├── testing.instructions.md             # tests/**/*.py
 │   ├── shell.instructions.md               # **/*.{sh,ps1}
 │   ├── registry.instructions.md            # registry/**
@@ -420,7 +459,8 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── tdd.instructions.md                 # tests/**/*.py
 │   └── sdd.instructions.md                 # docs/specs/**/*.md
 ├── hooks/                          # VS Code Copilot hooks
-│   ├── hooks.json                  # Combined hook config (PreToolUse + Stop)
+│   ├── tool-guardian.json          # PreToolUse: block dangerous commands
+│   ├── dependency-license-checker.json  # Stop: license compliance
 │   └── scripts/                    # Hook implementation scripts
 │       ├── guard-tool.{sh,ps1}     # Block destructive commands
 │       └── check-licenses.{sh,ps1} # License compliance check
@@ -428,7 +468,18 @@ as an agent: `claude --agent code-reviewer`.
 │   ├── review.prompt.md
 │   ├── test.prompt.md
 │   ├── refactor.prompt.md
-│   └── debug.prompt.md
+│   ├── debug.prompt.md
+│   ├── opsx-apply.prompt.md
+│   ├── opsx-archive.prompt.md
+│   ├── opsx-bulk-archive.prompt.md
+│   ├── opsx-continue.prompt.md
+│   ├── opsx-explore.prompt.md
+│   ├── opsx-ff.prompt.md
+│   ├── opsx-new.prompt.md
+│   ├── opsx-onboard.prompt.md
+│   ├── opsx-propose.prompt.md
+│   ├── opsx-sync.prompt.md
+│   └── opsx-verify.prompt.md
 ├── knowledge/
 │   └── EKKO_KNOWLEDGE_GRAPH.md     # Codebase knowledge graph
 └── CODEOWNERS
@@ -460,8 +511,8 @@ as an agent: `claude --agent code-reviewer`.
 | **Primary config** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
 | **Path-scoped rules** | `.claude/rules/*.md` (`paths:`) | `.github/instructions/*.md` (`applyTo:`) |
 | **Skills** | `.github/skills/` (shared, with `paths:` for auto-loading) | `.github/skills/` |
-| **Agents** | `.claude/agents/` (7 agents) | `.github/agents/` (9 agents) |
-| **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/hooks.json` |
+| **Agents** | `.claude/agents/` (9 agents) | `.github/agents/` (13 agents) |
+| **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/{tool-guardian,dependency-license-checker}.json` |
 | **Shell access** | Full terminal (task, git, uv, bun) | Limited via `@terminal` |
 | **File editing** | Direct read/write/edit tools | Inline editor suggestions |
 | **Multi-file refactors** | Native (reads full tree) | Manual or via Copilot Edits |

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json.schemastore.org/schema",
+  "schemaVersion": 1,
+  "updatedAt": "2026-06-08",
+  "strategy": {
+    "goal": "Keep .github, .claude, and .agents independently usable while structurally aligned.",
+    "independenceRules": [
+      ".github remains the VS Code/Copilot workspace convention",
+      ".claude remains the Claude Code workspace convention",
+      ".agents is the neutral cross-agent topology and parity contract"
+    ]
+  },
+  "parity": {
+    "skills": {
+      "copilot": ".github/skills",
+      "claude": ".claude/skills",
+      "neutral": ".agents/skills",
+      "requiredDomains": [
+        "clean-architecture",
+        "ddd",
+        "dry-refactoring",
+        "gitnexus",
+        "jscpd",
+        "openspec",
+        "python-conventions",
+        "quality-gate",
+        "sdd",
+        "tdd",
+        "testing-conventions"
+      ]
+    },
+    "prompts": {
+      "copilot": ".github/prompts",
+      "neutral": ".agents/prompts",
+      "domains": ["openspec", "gitnexus"]
+    },
+    "commands": {
+      "claude": ".claude/commands",
+      "neutral": ".agents/commands",
+      "domains": ["openspec", "gitnexus"]
+    },
+    "agents": {
+      "copilot": ".github/agents",
+      "claude": ".claude/agents",
+      "neutral": ".agents/agents"
+    },
+    "instructions": {
+      "copilot": ".github/instructions",
+      "claude": ".claude/rules"
+    }
+  },
+  "mcp": {
+    "vscode": ".vscode/mcp.json",
+    "claude": ".mcp.json",
+    "neutral": ".agents/mcp.servers.json",
+    "requiredServers": ["context7", "gitnexus", "shadcn", "playwright"]
+  },
+  "tooling": {
+    "lint": "ruff",
+    "typeCheck": "ty",
+    "forbiddenTypeCheckers": ["pyright"]
+  }
+}

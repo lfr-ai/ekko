@@ -6,13 +6,11 @@ Re-exports the canonical settings API so callers can write::
 """
 
 from ekko.config.settings import (
-    SETTINGS,
     BaseAppConfig,
     get_settings,
 )
 
 __all__ = [
-    "SETTINGS",
     "BaseAppConfig",
     "get_settings",
 ]

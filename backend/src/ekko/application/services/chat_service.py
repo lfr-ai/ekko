@@ -5,20 +5,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ekko.core.enums import ChatModel
+from ekko.config.enums import ChatModel
 
 if TYPE_CHECKING:
-    from ekko.core.interfaces import OpenAIGateway
+    from ekko.core.interfaces import ChatPort
 
 
 @dataclass(slots=True)
 class ChatService:
     """Application service for chat-related use-cases.
 
-    Depends only on the OpenAIGateway protocol (in `core`).
+    Depends only on the ChatPort protocol (in `core`).
     """
 
-    gateway: OpenAIGateway
+    gateway: ChatPort
 
     def chat(
         self,

@@ -32,11 +32,7 @@ def build_backtest_run_name(
     now_utc: datetime | None = None,
 ) -> str:
     """Build a deterministic, prompt-version-aware backtest run name."""
-    active_prompt_versions = (
-        get_active_prompt_versions()
-        if prompt_versions is None
-        else prompt_versions
-    )
+    active_prompt_versions = get_active_prompt_versions() if prompt_versions is None else prompt_versions
     timestamp = (now_utc or datetime.now(tz=UTC)).strftime("%Y%m%d-%H%M%S")
 
     segments = [

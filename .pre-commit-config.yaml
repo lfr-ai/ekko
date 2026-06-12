@@ -5,6 +5,8 @@
 
 minimum_pre_commit_version: '4.0'
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_language_version:
+  python: python3.12
 
 repos:
   # ---------------------------------------------------------------
@@ -120,10 +122,9 @@ repos:
   - repo: https://github.com/hadolint/hadolint
     rev: v2.14.0
     hooks:
-      - id: hadolint
+      - id: hadolint-docker
         args: [-c, .hadolint.yaml]
         exclude: \.dockerignore$
-        types: [dockerfile]
 
   # ---------------------------------------------------------------
   # Spelling and Quality
@@ -139,9 +140,19 @@ repos:
     rev: v0.9.3
     hooks:
       - id: xenon
-        args: [--max-absolute=C, --max-modules=B, --max-average=A, backend/src]
+        args: [--max-absolute=B, --max-modules=B, --max-average=A, backend/src]
         always_run: false
         pass_filenames: false
+
+  # ---------------------------------------------------------------
+  # Link Checking
+  # ---------------------------------------------------------------
+  - repo: https://github.com/lycheeverse/lychee.git
+    rev: lychee-v0.24.2
+    hooks:
+      - id: lychee-docker
+        args: [--no-progress, -c, .lychee.toml]
+        types_or: [markdown, html, rst, text]
 
   # ---------------------------------------------------------------
   # GitHub Actions Validation
@@ -191,17 +202,17 @@ repos:
 
       - id: dependency-audit
         name: dependency vulnerability audit
-        entry: uv run --project backend pip-audit --strict
+        entry: python scripts/security/dependency_audit.py
         language: system
         pass_filenames: false
-        stages: [manual]
+        always_run: true
 
       - id: jscpd
-        name: copy-paste detection
-        entry: npx jscpd --config .jscpd.json
-        language: node
-        types_or: [python, javascript, ts, tsx]
-        stages: [manual]
+        name: jscpd copy-paste detection
+        entry: npx jscpd -c jscpd.json .
+        language: system
+        pass_filenames: false
+        always_run: true
 
       - id: lychee
         name: link checker

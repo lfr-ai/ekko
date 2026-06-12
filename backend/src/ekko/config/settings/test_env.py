@@ -1,9 +1,12 @@
 """Test environment configuration."""
 
+from typing import final
+
 from ekko.config.enums import DatabaseBackend, Environment
 from ekko.config.settings.base import BaseAppConfig
 
 
+@final
 class TestingConfig(BaseAppConfig):
     """Settings for automated test runs."""
 

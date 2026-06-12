@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "hooks/scripts/guard-tool.sh",
+        "windows": "powershell -ExecutionPolicy Bypass -File hooks\\scripts\\guard-tool.ps1",
+        "timeout": 10,
+        "env": {
+          "GUARD_MODE": "block",
+          "TOOL_GUARD_LOG_DIR": "logs/copilot/tool-guardian"
+        }
+      }
+    ]
+  }
+}

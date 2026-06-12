@@ -13,8 +13,6 @@ from logging.config import dictConfig
 
 from ekko.config.settings import get_settings
 
-SETTINGS = get_settings()
-
 
 def configure_logging(level: str | None = None) -> None:
     """Configure structured logging for the application.
@@ -26,7 +24,8 @@ def configure_logging(level: str | None = None) -> None:
     if logging.getLogger().handlers:
         return
 
-    level = level or os.getenv("EKKO_LOG_LEVEL") or logging.getLevelName(SETTINGS.log_level)
+    settings = get_settings()
+    level = level or os.getenv("EKKO_LOG_LEVEL") or logging.getLevelName(settings.log_level)
 
     config = {
         "version": 1,
@@ -44,10 +43,10 @@ def configure_logging(level: str | None = None) -> None:
     dictConfig(config)
 
     # Optional: initialize Sentry if configured
-    if getattr(SETTINGS, "sentry_dsn", None):
+    if getattr(settings, "sentry_dsn", None):
         try:
             import sentry_sdk
 
-            sentry_sdk.init(dsn=SETTINGS.sentry_dsn)
+            sentry_sdk.init(dsn=settings.sentry_dsn)
         except Exception:
             logging.getLogger(__name__).warning("Failed to initialize Sentry SDK")

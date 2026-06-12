@@ -1,5 +1,6 @@
-"""Allow ``python -m ekko`` to launch the application."""
+"""Entry point for direct execution via ``python -m ekko``."""
 
 from ekko.cli.run_app import main
 
-main()
+if __name__ == "__main__":
+    main()

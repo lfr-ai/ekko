@@ -13,9 +13,15 @@ exclude = [
   "^https?://0\\.0\\.0\\.0",
   "^https?://\\[::1\\]",
   "^https?://example\\.com",
+  "^https?://example\\.org",
+  "^https?://your-domain\\.com",
+  "^https?://your-",
+  "^https?://mcp\\.context7\\.com/mcp$",
+  "^https?://schemas\\.anthropic\\.com/mcp/servers\\.json$",
   "\\{\\{",
-  "\\{\\%",
+  "\\{%",
   "\\$\\{",
+  "%7B.*%7D",
 ]
 
 exclude_path = [
@@ -28,9 +34,13 @@ exclude_path = [
   ".tox",
   ".*.egg-info",
   "uv.lock",
+  "pyproject.toml",
+  ".pre-commit-config.yaml",
   ".env.*",
+  ".gsd",
+  "docs",
+  "storybook-static",
 ]
 
 skip_missing = true
-include_verbatim = true
 no_progress = true

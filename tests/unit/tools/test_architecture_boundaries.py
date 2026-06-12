@@ -230,7 +230,7 @@ class TestInfrastructureLayerChecks:
         """infrastructure/ importing from ekko.presentation is detected as violation."""
         infra_file = tmp_path / "infrastructure" / "adapters" / "audio.py"
         infra_file.parent.mkdir(parents=True)
-        infra_file.write_text("from ekko.presentation.api.dependencies import get_db\n")
+        infra_file.write_text("from ekko.presentation.api.dependency_registry import get_db\n")
 
         violations = _check_infrastructure([infra_file])
 

@@ -131,10 +131,9 @@ class TestRegistryConstantsFormatPatterns:
     ) -> None:
         """Constants should use one of the supported naming suffix/prefix conventions."""
         for name in all_constants:
-            assert (
-                name.endswith("_LABEL")
-                or name.startswith(("FIELD_", "ROUTE_", "ERROR_", "STATUS_"))
-            ), f"Constant {name} does not match expected naming convention"
+            assert name.endswith("_LABEL") or name.startswith(("FIELD_", "ROUTE_", "ERROR_", "STATUS_")), (
+                f"Constant {name} does not match expected naming convention"
+            )
 
     def test_labels_are_non_empty_strings(
         self,

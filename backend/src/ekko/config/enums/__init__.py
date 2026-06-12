@@ -41,10 +41,11 @@ class LLMProvider(ParseableEnum):
 class ChatModel(ParseableEnum):
     """Chat model options."""
 
-    GPT_3_5_TURBO = "gpt-3.5-turbo"
-    GPT_4 = "gpt-4"
     GPT_4O = "gpt-4o"
+    GPT_4O_MINI = "gpt-4o-mini"
     GPT_5 = "gpt-5"
+    GPT_5_4_MINI = "gpt-5.4-mini"
+    GPT_5_5 = "gpt-5.5"
 
 
 __all__ = ["ChatModel", "DatabaseBackend", "Environment", "LLMProvider"]

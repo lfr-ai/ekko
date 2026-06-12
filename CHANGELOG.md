@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Docker production setup with multi-stage Containerfile.
 - Caddy reverse proxy configuration with snippet architecture.
-- Standalone config files (pytest.ini, tox.ini, ty.toml, bandit.toml, .coveragerc).
+- Standalone config files (pytest.ini, tox.ini, ty.toml, .coveragerc).
+- Backend-scoped bandit.toml for security scanning.
 - Claude Code CLI instructions (CLAUDE.md).
 - Local CI quality gate via `task ci:local`.
 - Hadolint configuration for Dockerfile linting.

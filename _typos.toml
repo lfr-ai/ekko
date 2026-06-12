@@ -1,6 +1,0 @@
-[default.extend-words]
-# Danish language words used in test fixtures and regex patterns
-"tre" = "tre"
-"alle" = "alle"
-# Regex fragment `(ba)?sh` meaning bash — not a typo
-"ba" = "ba"

@@ -52,6 +52,14 @@ def _execute_sync_compat(*args: object, **kwargs: object) -> object:
 
 schema.execute_sync = _execute_sync_compat  # type: ignore[method-assign]
 
+
+def _make_context() -> dict:
+    """Build a minimal GraphQL context for tests."""
+    from ekko.ai.pii.anonymizer import PIIAnonymizer
+
+    return {"pii_anonymizer": PIIAnonymizer()}
+
+
 # ── Schema Structure Tests ───────────────────────────────────
 
 
@@ -76,10 +84,15 @@ class TestGraphQLSchemaStructure:
 
     def test_schema_has_required_extensions(self) -> None:
         """Schema includes security and performance extensions."""
-        extension_names = {
-            ext.__name__ if isinstance(ext, type) else type(ext).__name__
-            for ext in schema.extensions
-        }
+        extension_names: set[str] = set()
+        for ext in schema.extensions:
+            if isinstance(ext, type):
+                extension_names.add(ext.__name__)
+            elif callable(ext):
+                instance = ext()
+                extension_names.add(type(instance).__name__)
+            else:
+                extension_names.add(type(ext).__name__)
 
         assert ParserCache.__name__ in extension_names
         assert ValidationCache.__name__ in extension_names
@@ -222,7 +235,9 @@ class TestGraphQLQueryExecution:
     def test_check_pii_query_with_pii(self) -> None:
         """Check PII query detects PII in text."""
         variables = {"text": "My email is john.doe@example.com"}
-        result = schema.execute_sync(CHECK_PII_QUERY, variable_values=variables)
+        result = schema.execute_sync(
+            CHECK_PII_QUERY, variable_values=variables, context_value=_make_context()
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -238,7 +253,9 @@ class TestGraphQLQueryExecution:
     def test_check_pii_query_without_pii(self) -> None:
         """Check PII query handles clean text."""
         variables = {"text": "The weather is nice today."}
-        result = schema.execute_sync(CHECK_PII_QUERY, variable_values=variables)
+        result = schema.execute_sync(
+            CHECK_PII_QUERY, variable_values=variables, context_value=_make_context()
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -356,7 +373,11 @@ class TestGraphQLMutationExecution:
                 "text": "My SSN is 123-45-6789 and email is test@example.com",
             }
         }
-        result = schema.execute_sync(ANONYMIZE_TEXT_MUTATION, variable_values=variables)
+        result = schema.execute_sync(
+            ANONYMIZE_TEXT_MUTATION,
+            variable_values=variables,
+            context_value=_make_context(),
+        )
 
         assert result.errors is None
         assert result.data is not None
@@ -376,7 +397,11 @@ class TestGraphQLMutationExecution:
                 "enabledTypes": ["email"],
             }
         }
-        result = schema.execute_sync(ANONYMIZE_TEXT_MUTATION, variable_values=variables)
+        result = schema.execute_sync(
+            ANONYMIZE_TEXT_MUTATION,
+            variable_values=variables,
+            context_value=_make_context(),
+        )
 
         assert result.errors is None
         assert result.data is not None

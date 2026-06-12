@@ -1,6 +1,7 @@
 """Integration tests for stream routes and GraphQL mutation flows."""
 
 import pytest
+
 pytestmark = pytest.mark.integration
 
 

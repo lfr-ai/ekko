@@ -8,19 +8,19 @@
 
 ### In scope
 
-- 
+-
 
 ### Out of scope
 
-- 
+-
 
 ## Success Criteria
 
-- 
+-
 
 ## Risks and Constraints
 
-- 
+-
 
 ## Affected Areas
 

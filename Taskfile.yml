@@ -36,15 +36,21 @@ tasks:
 
   # ── Testing ──────────────────────────────────────────────────
   test:
-    desc: "Run default tests (backend unit + frontend unit)"
+    desc: "Run default tests (backend unit + frontend unit + tools)"
     cmds:
       - task: backend:test
+      - task: test:tools
       - task: frontend:test:unit
 
   test:unit:
     desc: "Run unit tests only"
     cmds:
       - task: backend:test:unit
+
+  test:tools:
+    desc: "Run root-level tool/convention tests"
+    cmds:
+      - cd backend && uv run python -m pytest ../tests/ -v --tb=short
 
   test:integration:
     desc: "Run integration tests"
@@ -127,7 +133,7 @@ tasks:
   lint:duplicates:
     desc: "Detect copy-paste code with jscpd"
     cmds:
-      - bunx jscpd --config .jscpd.json . 2>/dev/null || true
+      - npx jscpd -c jscpd.json . 2>/dev/null || true
 
   lint:secrets:
     desc: "Scan for leaked secrets"
@@ -186,7 +192,7 @@ tasks:
   architecture:
     desc: "Validate Clean Architecture import boundaries"
     cmds:
-      - uv run python scripts/check_architecture_boundaries.py
+      - uv run python tools/security/check_architecture_boundaries.py
 
   # ── Pre-commit ───────────────────────────────────────────────
   pre-commit:
@@ -414,6 +420,23 @@ tasks:
     cmds:
       - npx --yes @fission-ai/openspec@latest update .
 
+  # ── OpenSpec Shortcuts ───────────────────────────────────────
+  spec:validate:
+    desc: "Validate all OpenSpec specs and changes"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest validate --all
+
+  spec:list:
+    desc: "List active OpenSpec changes and specs"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest list
+      - npx --yes @fission-ai/openspec@latest list --specs
+
+  spec:status:
+    desc: "Show status of active changes"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest list --json
+
   tools:actionlint:validate:
     desc: "Validate GitHub Actions workflows"
     cmds:
@@ -503,3 +526,9 @@ tasks:
     cmds:
       - cmd: pwsh -NoProfile -File scripts/verify-fullstack.ps1
         platforms: [windows]
+
+  # ── Agentic Topology ─────────────────────────────────────────
+  sync:agentic:
+    desc: "Synchronize agentic assets across .github, .claude, and .agents"
+    cmds:
+      - uv run --project backend python .agents/sync_agentic_setup.py
