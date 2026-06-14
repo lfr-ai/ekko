@@ -1,7 +1,14 @@
 {
   "threshold": 3,
-  "reporters": ["console"],
-  "format": ["python", "typescript", "tsx", "javascript"],
+  "reporters": [
+    "console"
+  ],
+  "format": [
+    "python",
+    "typescript",
+    "tsx",
+    "javascript"
+  ],
   "skipBlocks": [
     {
       "open": "\"\"\"",

@@ -26,6 +26,16 @@ _ensure_src_on_path()
 os.environ.setdefault("EKKO_ENVIRONMENT", "test")
 
 
+@pytest.fixture(autouse=True)
+def _clear_settings_cache():
+    """Clear settings cache between tests for deterministic behavior."""
+    from ekko.config.settings import get_settings
+
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
 @pytest.fixture
 def settings():
     """Provide a fresh test settings instance."""
