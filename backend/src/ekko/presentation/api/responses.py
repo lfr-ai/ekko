@@ -1,6 +1,6 @@
 """Shared API response models and constants."""
 
-from typing import Annotated, Final, TypeAlias
+from typing import Annotated, Final
 
 from fastapi import status
 from pydantic import BaseModel, ConfigDict, Field
@@ -139,7 +139,7 @@ INTERNAL_SERVER_ERROR_RESPONSE: Final[JSONDict] = {
 }
 
 
-_StatusResponseMap: TypeAlias = dict[int, BaseDict]
+type _StatusResponseMap = dict[int, BaseDict]
 
 STANDARD_ERROR_RESPONSES: Final[_StatusResponseMap] = {
     status.HTTP_422_UNPROCESSABLE_CONTENT: UNPROCESSABLE_CONTENT_RESPONSE,

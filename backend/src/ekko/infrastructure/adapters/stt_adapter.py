@@ -141,7 +141,3 @@ def create_azure_speech_stt(
         logger.exception("failed_to_create_azure_stt")
         logger.warning("falling_back_to_stub_stt")
         return _StubSTT(settings=settings, **kwargs)
-
-
-# Backward compatibility alias
-create_faster_whisper_stt = create_azure_speech_stt

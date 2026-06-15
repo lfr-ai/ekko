@@ -1,5 +1,6 @@
 """Prompt templates for LLM interactions."""
 
+from ekko.ai.prompts.provider import RegistryPromptProvider
 from ekko.ai.prompts.registry import (
     PROMPT_KEY_CONVERSATIONAL_SYSTEM,
     PROMPT_KEY_SUMMARY_CHUNKS,
@@ -19,6 +20,7 @@ __all__ = [
     "PROMPT_KEY_SUMMARY_CHUNKS",
     "PromptRegistryError",
     "PromptVersionInfo",
+    "RegistryPromptProvider",
     "get_active_prompt_version",
     "get_active_prompt_versions",
     "get_prompt_text",

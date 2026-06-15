@@ -1,10 +1,10 @@
-"""Infrastructure adapter implementing PromptProvider via the AI prompt registry."""
+"""Prompt provider adapter implementing the core PromptProvider protocol."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ekko.ai.prompts import PromptRegistryError, get_prompt_text
+from ekko.ai.prompts.registry import PromptRegistryError, get_prompt_text
 from ekko.core.interfaces.services.prompts import PromptProviderError
 
 if TYPE_CHECKING:

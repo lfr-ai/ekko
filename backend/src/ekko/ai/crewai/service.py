@@ -182,7 +182,3 @@ class CrewAIService:
     def knowledge(self) -> KnowledgeProvider:
         """Access the knowledge provider for indexing/search."""
         return self._knowledge
-
-
-# Keep backward-compatible alias
-AgentService = CrewAIService

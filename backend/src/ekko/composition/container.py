@@ -128,8 +128,8 @@ class Container:
     @cached_property
     def summarizer_service(self) -> SummarizerService:
         """Lazily build the summarizer service."""
+        from ekko.ai.prompts.provider import RegistryPromptProvider
         from ekko.application.services.summarizer_service import SummarizerService as _SummarizerService
-        from ekko.infrastructure.adapters.prompt_adapter import RegistryPromptProvider
 
         return _SummarizerService(
             gateway=self.chat_adapter,

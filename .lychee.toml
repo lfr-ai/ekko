@@ -16,6 +16,8 @@ exclude = [
   "^https?://example\\.org",
   "^https?://your-domain\\.com",
   "^https?://your-",
+  "^https?://[a-z0-9-]+\\.services\\.ai\\.azure\\.com",
+  "^https?://[a-z0-9-]+\\.cognitiveservices\\.azure\\.com",
   "^https?://mcp\\.context7\\.com/mcp$",
   "^https?://schemas\\.anthropic\\.com/mcp/servers\\.json$",
   "\\{\\{",

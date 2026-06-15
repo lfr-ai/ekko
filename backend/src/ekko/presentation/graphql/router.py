@@ -5,7 +5,6 @@ from __future__ import annotations
 from fastapi import Request
 from strawberry.fastapi import GraphQLRouter
 
-from ekko.core.registry_constants import ROUTE_GRAPHQL
 from ekko.presentation.graphql.dataloaders import create_dataloaders
 from ekko.presentation.graphql.schema import schema
 
@@ -37,6 +36,6 @@ async def get_context(request: Request) -> dict:
 
 graphql_router = GraphQLRouter(
     schema,
-    path=ROUTE_GRAPHQL,
+    path="/",
     context_getter=get_context,
 )

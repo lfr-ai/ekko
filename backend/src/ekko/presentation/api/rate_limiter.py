@@ -6,6 +6,5 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 RATE_LIMIT_DEFAULT: Final[str] = "30/second"
-RATE_LIMIT_HEAVY: Final[str] = "5/second"
 
 limiter = Limiter(key_func=get_remote_address)

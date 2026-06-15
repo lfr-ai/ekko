@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from ekko.config.enums import ChatModel
 
@@ -11,7 +11,8 @@ if TYPE_CHECKING:
     from ekko.core.interfaces import ChatPort
 
 
-@dataclass(slots=True)
+@final
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ChatService:
     """Application service for chat-related use-cases.
 
