@@ -60,11 +60,12 @@ COPY --chown=ekko:ekko backend/src/ src/
 ENV PATH="/app/.venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH="/app/src"
+    PYTHONPATH="/app/src" \
+    EKKO_PORT=8000
 
 USER ekko
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=15s \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+    CMD ["python", "-c", "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"EKKO_PORT\", \"8000\")}/api/health', timeout=3)"]
 
 CMD ["python", "-m", "ekko"]
