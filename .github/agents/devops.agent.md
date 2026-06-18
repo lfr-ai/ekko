@@ -40,7 +40,7 @@ task check                # Full quality gate
 task build:exe            # Build PyInstaller EXE
 task docker:up:caddy      # Start Docker stack
 task pre-commit           # Run all pre-commit hooks
-uv run pip-audit          # Dependency vulnerability scan
+uv run python scripts/security/dependency_audit.py  # Dependency vulnerability scan
 ```
 
 ## Security

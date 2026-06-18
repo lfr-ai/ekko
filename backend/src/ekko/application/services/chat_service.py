@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, final
 from ekko.config.enums import ChatModel
 
 if TYPE_CHECKING:
-    from ekko.core.interfaces import ChatPort
+    from ekko.core.ports import ChatPort
 
 
 @final

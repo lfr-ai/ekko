@@ -21,6 +21,7 @@ _LOCAL_ORIGINS = [
 
 def setup_cors(app: FastAPI, *, settings: BaseAppConfig) -> None:
     """Add CORS middleware allowing localhost origins (local-only app)."""
+    _ = settings
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_LOCAL_ORIGINS,

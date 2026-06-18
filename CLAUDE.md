@@ -193,7 +193,7 @@ the reverse. The `core/` layer has zero framework imports.
 
 - `composition/Container` wires all dependencies using `@cached_property`.
 - `presentation/api/dependencies.py` exposes FastAPI `Depends()` callables.
-- Concrete classes implement protocols declared in `core/interfaces/`.
+- Concrete classes implement protocols declared in `core/ports/`.
 
 ---
 
@@ -303,7 +303,7 @@ task check               # lint + test:unit + typecheck + xenon
 | Env selector | `EKKO_ENVIRONMENT` env var (defaults to `local`) |
 | Dotenv loading | `.env` -> `.env.{stage}` -> `.env.local` (last wins) |
 | Naming registry | `registry/naming_registry.json` -> `core/registry_constants.py` |
-| Ruff config | `backend/ruff.toml` |
+| Ruff config | `ruff.toml` |
 | Auth | Auto-authenticates as `dev-user` (local-only, no JWT) |
 
 ---
@@ -322,7 +322,7 @@ task check               # lint + test:unit + typecheck + xenon
 
 ### AI Dependencies
 
-- `core/interfaces/` defines port protocols for all AI components.
+- `core/ports/` defines port protocols for all AI components.
 - `ai/` may import from `core/`, `config/`, `utils/` only.
 - `ai/` must NOT import from `application/`, `infrastructure/`, or `presentation/`.
 

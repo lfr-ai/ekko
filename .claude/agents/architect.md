@@ -42,7 +42,7 @@ utils → config → core → infrastructure/ai → application → composition 
 ### Module Design
 
 - Design new modules with proper port/adapter separation
-- Define protocols in `core/interfaces/` for new capabilities
+- Define protocols in `core/ports/` for new capabilities
 - Plan service decomposition in `application/services/`
 - Design DTO structures in `application/dtos/`
 

@@ -1,16 +1,11 @@
-"""Core domain interfaces (protocols / abstract ports).
+"""Core domain ports (protocols / abstract interfaces).
 
 Organized into:
-- ``services/`` — external service port protocols (LLM, audio, PII, prompts)
+- ``external/`` — external service port protocols (LLM, audio, PII, prompts)
 - ``repositories/`` — persistence port protocols (conversations, messages, transcripts)
 """
 
-from ekko.core.interfaces.repositories import (
-    ConversationRepositoryPort,
-    MessageRepositoryPort,
-    TranscriptRepositoryPort,
-)
-from ekko.core.interfaces.services import (
+from ekko.core.ports.external import (
     AudioStreamerControllerProtocol,
     ChatPort,
     PIIAnonymizerPort,
@@ -18,6 +13,11 @@ from ekko.core.interfaces.services import (
     PromptProviderError,
     STTService,
     TranscriptProtocol,
+)
+from ekko.core.ports.repositories import (
+    ConversationRepositoryPort,
+    MessageRepositoryPort,
+    TranscriptRepositoryPort,
 )
 
 __all__ = [

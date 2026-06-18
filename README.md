@@ -170,16 +170,16 @@ Mirrors the complete GitHub Actions pipeline:
 task security:scan
 
 # Or run individually:
-task security:audit    # Dependency audit only (pip-audit)
+task security:audit    # Dependency audit only (pip-audit via export script)
 task lint:secrets      # detect-secrets baseline scan
 cd backend && uv run python -m bandit -c bandit.toml -r src/ekko   # Python security
-cd backend && uv run pip-audit                                      # Dependency audit
+uv run python scripts/security/dependency_audit.py                  # Dependency audit
 ```
 
 **Baselines**:
 
 - Secret scanning: `.secrets.baseline`
-- Bandit security: `backend/bandit.toml`
+- Bandit security: `bandit.toml`
 
 **Update baselines** after reviewing and confirming false positives:
 

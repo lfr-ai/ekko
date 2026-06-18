@@ -192,7 +192,7 @@ fakes over `unittest.mock.MagicMock`:
 
 ```python
 # tests/mocks/fake_stt_service.py
-from ekko.core.interfaces import STTService
+from ekko.core.ports import STTService
 
 class FakeSTTService(STTService):
     """In-memory STT service for testing."""

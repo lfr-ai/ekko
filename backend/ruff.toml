@@ -1,55 +1,8 @@
-line-length = 120
-target-version = "py312"
-src = ["src", "tests", "scripts"]
-exclude = [".venv", ".tox", "dist", "build"]
+# Extend the root ruff.toml configuration.
+# This file exists for when ruff is invoked directly from backend/.
+extend = "../ruff.toml"
 
-[lint]
-select = [
-    "F",    # pyflakes
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "C90",  # mccabe complexity
-    "I",    # isort
-    "N",    # pep8-naming
-    "UP",   # pyupgrade
-    "S",    # flake8-bandit (security)
-    "B",    # flake8-bugbear
-    "A",    # flake8-builtins
-    "C4",   # flake8-comprehensions
-    "DTZ",  # flake8-datetimez
-    "T10",  # flake8-debugger
-    "T20",  # flake8-print
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "PIE",  # flake8-pie
-    "PT",   # flake8-pytest-style
-    "Q",    # flake8-quotes
-    "RSE",  # flake8-raise
-    "RET",  # flake8-return
-    "SLF",  # flake8-self
-    "SIM",  # flake8-simplify
-    "TID",  # flake8-tidy-imports
-    "TCH",  # flake8-type-checking
-    "ARG",  # flake8-unused-arguments
-    "PTH",  # flake8-use-pathlib
-    "ERA",  # eradicate
-    "PL",   # pylint
-    "TRY",  # tryceratops
-    "FLY",  # flynt
-    "PERF", # perflint
-    "FURB", # refurb
-    "LOG",  # flake8-logging
-    "RUF",  # ruff-specific
-]
-ignore = [
-    "E203",    # whitespace before ':'
-    "S101",    # assert in production code (OK in tests via per-file-ignores)
-    "TRY003",  # long exception messages
-    "PLR0913", # too many arguments
-    "PLR2004", # magic values
-    "ISC001",  # conflicts with ruff format
-]
-
+# Override per-file-ignores with paths relative to this directory.
 [lint.per-file-ignores]
 "tests/**/*.py" = [
     "S101",    # assert allowed in tests
@@ -106,17 +59,3 @@ ignore = [
 "src/ekko/ai/**/*.py" = [
     "PLC0415", # lazy imports for optional AI deps
 ]
-
-[lint.isort]
-known-first-party = ["ekko"]
-
-[lint.pydocstyle]
-convention = "google"
-
-[lint.mccabe]
-max-complexity = 12
-
-[format]
-quote-style = "double"
-indent-style = "space"
-line-ending = "lf"

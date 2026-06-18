@@ -119,18 +119,18 @@ def test_transcription_rejects_unsorted_entries() -> None:
 
 ## Contract Testing for Ports
 
-Every protocol in `core/interfaces/` must have a **contract test suite** in
-`tests/unit/core/interfaces/`. Any adapter that implements the protocol must
+Every protocol in `core/ports/` must have a **contract test suite** in
+`tests/unit/core/ports/`. Any adapter that implements the protocol must
 pass the contract tests.
 
 ```python
-# tests/unit/core/interfaces/test_transcription_repository_contract.py
+# tests/unit/core/ports/test_transcription_repository_contract.py
 """Contract tests for the TranscriptionRepository port.
 
 Run these against every concrete implementation by parametrizing the fixture.
 """
 import pytest
-from ekko.core.interfaces import TranscriptionRepository
+from ekko.core.ports import TranscriptionRepository
 from tests.factories import TranscriptionFactory
 
 
@@ -253,7 +253,7 @@ Fakes are readable, type-safe, and catch interface changes at import time.
 ```python
 # tests/mocks/fake_transcription_repo.py
 from ekko.core.entities.transcription import Transcription
-from ekko.core.interfaces import TranscriptionRepository
+from ekko.core.ports import TranscriptionRepository
 
 
 class FakeTranscriptionRepository:
@@ -322,7 +322,7 @@ task test && task lint && task typecheck
 - [ ] Each test describes a single behavior (one assertion per test is ideal)
 - [ ] Test names follow `test_{method}_{scenario}_{expected}`
 - [ ] Unit tests have zero I/O and run in < 10 ms
-- [ ] Ports have contract test suites in `tests/unit/core/interfaces/`
+- [ ] Ports have contract test suites in `tests/unit/core/ports/`
 - [ ] Every bug fix starts with a failing regression test
 - [ ] Fakes in `tests/mocks/` implement protocols (no `MagicMock` on core interfaces)
 - [ ] The full test suite is green before every commit

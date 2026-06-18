@@ -1,6 +1,6 @@
 ---
-description: Shell and PowerShell conventions for scripts and hooks
-applyTo: "**/*.{sh,ps1}"
+description: Shell, zsh, and PowerShell conventions for scripts and hooks
+applyTo: "**/*.{sh,zsh,ps1}"
 ---
 
 # Shell Conventions

@@ -136,7 +136,7 @@ backend/src/ekko/
 
 ### Adding a New Repository
 
-1. Define protocol in `core/interfaces/`
+1. Define protocol in `core/ports/`
 2. Implement repository in `infrastructure/db/repositories/`
 3. Add SQLAlchemy model in `infrastructure/db/models/`
 4. Register in `composition/Container`

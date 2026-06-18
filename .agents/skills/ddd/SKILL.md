@@ -237,12 +237,12 @@ class RecordingStarted:
 ## Repository Protocol
 
 Repositories abstract persistence behind a **domain-facing protocol**.
-The protocol lives in `core/interfaces/`; the implementation in `infrastructure/db/repositories/`.
+The protocol lives in `core/ports/`; the implementation in `infrastructure/db/repositories/`.
 
 ### Protocol (Port)
 
 ```python
-# core/interfaces/transcription_repository.py
+# core/ports/transcription_repository.py
 from typing import Protocol
 from ekko.core.entities.transcription import Transcription
 
@@ -297,7 +297,7 @@ natural home in any single aggregate root.
 ```python
 # core/services/pii_domain_service.py
 from ekko.core.entities.transcription import Transcription
-from ekko.core.interfaces.pii import PIIDetector
+from ekko.core.ports.external.pii import PIIDetector
 
 
 class PIIDomainService:
@@ -328,7 +328,7 @@ This protects the domain from leaking foreign abstractions.
 
 ```python
 # infrastructure/adapters/openai_acl.py
-from ekko.core.interfaces.llm import LLMGateway
+from ekko.core.ports.external.llm import LLMGateway
 from ekko.core.value_objects.pii_safe_text import PIISafeText
 
 
@@ -369,7 +369,7 @@ AI Pipeline      ──► Conversation    (ConversationService.append_summary(s
 - [ ] Aggregate roots are frozen dataclasses with invariant checks in `__post_init__`
 - [ ] Value objects are `frozen=True, slots=True` with validated fields
 - [ ] Domain events are past-tense frozen dataclasses with primitive fields only
-- [ ] Repository protocols in `core/interfaces/` return domain objects (not ORM models)
+- [ ] Repository protocols in `core/ports/` return domain objects (not ORM models)
 - [ ] Implementations in `infrastructure/db/repositories/` use keyword-only args
 - [ ] Domain services handle cross-aggregate operations
 - [ ] Ubiquitous language used consistently — no "model", "row", "record" in domain

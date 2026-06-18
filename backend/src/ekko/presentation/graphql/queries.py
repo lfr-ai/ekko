@@ -8,8 +8,10 @@ from typing import Final
 
 import duckdb
 import strawberry
+from sqlalchemy import text
 from strawberry.types import Info
 
+from ekko.config.settings import get_settings
 from ekko.core.enums import ServiceStatus
 from ekko.presentation.graphql.types import (
     ConversationType,
@@ -47,10 +49,8 @@ class Query:
     """Root query type."""
 
     @strawberry.field
-    async def health(self, info: Info) -> HealthType:
+    async def health(self, _info: Info) -> HealthType:
         """Basic health check."""
-        from ekko.config.settings import get_settings
-
         settings = get_settings()
         return HealthType(
             status=ServiceStatus.HEALTHY,
@@ -61,8 +61,6 @@ class Query:
     @strawberry.field
     async def health_ready(self, info: Info) -> HealthType:
         """Deep health check with dependency probes."""
-        from ekko.config.settings import get_settings
-
         settings = get_settings()
         deps: list[DependencyHealthType] = []
 
@@ -70,8 +68,6 @@ class Query:
         db_engine = info.context.get("db_engine")
         if db_engine is not None:
             try:
-                from sqlalchemy import text
-
                 async with db_engine.connect() as conn:
                     await conn.execute(text("SELECT 1"))
                 deps.append(DependencyHealthType(name="database", healthy=True))
@@ -98,11 +94,13 @@ class Query:
     @strawberry.field
     async def conversation(self, id: str) -> ConversationType | None:  # noqa: A002
         """Get a conversation by ID."""
+        _ = id
         return None
 
     @strawberry.field
     async def conversations(self, limit: int = 20, offset: int = 0) -> list[ConversationType]:
         """List conversations with pagination."""
+        _ = (limit, offset)
         return []
 
     @strawberry.field

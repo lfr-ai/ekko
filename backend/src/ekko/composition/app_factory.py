@@ -89,6 +89,9 @@ def _register_routers(app: FastAPI) -> None:
     # GraphQL router
     from ekko.presentation.graphql.router import graphql_router
 
+    # Normalized endpoint: /graphql
+    app.include_router(graphql_router)
+    # Backward-compatible endpoint: /graphql/graphql
     app.include_router(graphql_router, prefix=ROUTE_GRAPHQL)
 
 

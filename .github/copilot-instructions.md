@@ -10,7 +10,7 @@ applyTo: "**"
 - Follow Clean Architecture dependency direction: `presentation/infrastructure -> application -> core`.
 - `backend/src/ekko/core/` must remain framework-independent — no imports from infrastructure/presentation.
 - `backend/src/ekko/application/` can import from `core` and configuration, but not concrete adapters.
-- `backend/src/ekko/infrastructure/` implements protocols declared in `core/interfaces/`.
+- `backend/src/ekko/infrastructure/` implements protocols declared in `core/ports/`.
 - `backend/src/ekko/composition/` wires everything together via the `Container` DI pattern.
 - `backend/src/ekko/presentation/api/routes/` contains FastAPI routers (health, stream).
 - `backend/src/ekko/presentation/graphql/` contains Strawberry GraphQL schema, resolvers, subscriptions.
@@ -26,7 +26,7 @@ applyTo: "**"
 - PII: Regex-based anonymization in `backend/src/ekko/ai/pii/` — scrubs before LLM calls
 - Testing: pytest, hypothesis, factory-boy, pytest-asyncio, pytest-benchmark
 - Naming registry: `registry/naming_registry.json` -> generated constants
-- Linting: ruff (config in `backend/ruff.toml`), ty for type checking
+- Linting: ruff (config in `ruff.toml`), ty for type checking
 
 ## Frontend Stack
 

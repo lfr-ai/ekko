@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class StartConversationHandler:
     """Handle the start-conversation command."""
 
-    async def execute(self, dto: StartConversationDTO) -> ConversationDTO:  # noqa: ARG002
+    async def execute(self, _dto: StartConversationDTO) -> ConversationDTO:
         now = datetime.now(UTC)
         return ConversationDTO(
             id=str(uuid4()),

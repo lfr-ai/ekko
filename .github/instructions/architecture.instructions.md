@@ -25,7 +25,7 @@ utils -> config -> core -> infrastructure/ai -> application -> composition -> pr
 
 ## Port / Adapter Pattern
 
-- Ports (protocols) live in `core/interfaces/`
+- Ports (protocols) live in `core/ports/`
 - Adapters (concrete) live in `infrastructure/` or `ai/`
 - Application services depend on protocols, never concrete classes
 - DI via `composition/Container` with `@cached_property`

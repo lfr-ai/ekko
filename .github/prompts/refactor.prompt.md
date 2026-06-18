@@ -10,7 +10,7 @@ Refactor the selected code to comply with Ekko project standards.
 
 - Move code to the correct layer if it violates dependency direction.
 - Extract business logic from route handlers into `application/services/`.
-- Replace concrete adapter dependencies with protocols from `core/interfaces/`.
+- Replace concrete adapter dependencies with protocols from `core/ports/`.
 - Wire new services through `Container` using `@cached_property` with deferred imports.
 
 ### Type safety fixes

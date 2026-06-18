@@ -65,7 +65,7 @@ from ekko.config.settings import BaseAppConfig
 
 # GOOD — application imports from core (inner layer)
 # application/services/summarizer_service.py
-from ekko.core.interfaces import ChatPort
+from ekko.core.ports import ChatPort
 
 # GOOD — presentation imports from application
 # presentation/api/routes/transcription.py
@@ -106,7 +106,7 @@ The heart of the application. Pure business logic with no framework coupling.
 |-----------|---------|
 | `entities/` | Domain entities (identity + behavior) |
 | `value_objects/` | Immutable value objects (identity by value) |
-| `interfaces/` | Port protocols (abstract boundaries) |
+| `ports/` | Port protocols (abstract boundaries) |
 | `exceptions/` | Domain exception hierarchy |
 | `enums/` | Domain enumerations |
 | `protocols.py` | Shared protocols |
@@ -114,7 +114,7 @@ The heart of the application. Pure business logic with no framework coupling.
 
 ### `infrastructure/` -- Adapters (outbound)
 
-Concrete implementations of ports defined in `core/interfaces/`. Talks to
+Concrete implementations of ports defined in `core/ports/`. Talks to
 external systems: databases, APIs, file systems, audio hardware.
 
 | Directory | Purpose |
@@ -165,11 +165,11 @@ The outermost layer — nothing else imports from here.
 
 ## Port / Adapter Pattern
 
-Ports (interfaces) are defined in `core/interfaces/` as Python `Protocol`
+Ports (interfaces) are defined in `core/ports/` as Python `Protocol`
 classes. Adapters (concrete implementations) live in `infrastructure/` or `ai/`.
 
 ```python
-# PORT — core/interfaces/stt.py
+# PORT — core/ports/external/stt.py
 from typing import Protocol
 
 class STTService(Protocol):
@@ -177,7 +177,7 @@ class STTService(Protocol):
     async def transcribe(self, audio: bytes) -> str: ...
 
 # ADAPTER — infrastructure/adapters/stt_adapter.py
-from ekko.core.interfaces import STTService
+from ekko.core.ports import STTService
 
 class FasterWhisperSTT:
     """Concrete STT adapter using faster-whisper."""
@@ -190,7 +190,7 @@ Application code depends on the protocol, never the concrete class:
 
 ```python
 # application/services/transcription_service.py
-from ekko.core.interfaces import STTService
+from ekko.core.ports import STTService
 
 class TranscriptionService:
     def __init__(self, *, stt: STTService) -> None:
@@ -279,7 +279,7 @@ task typecheck   # Type checker validates protocol conformance
 task check       # Full gate: lint + test:unit + typecheck + xenon
 ```
 
-Ruff is configured (in `backend/ruff.toml`) with import ordering and
+Ruff is configured (in `ruff.toml`) with import ordering and
 banned-import rules that enforce layer boundaries at lint time.
 
 ---
@@ -292,6 +292,6 @@ banned-import rules that enforce layer boundaries at lint time.
 - [ ] `core/` has zero framework imports (no FastAPI, SQLAlchemy, etc.)
 - [ ] Application services depend on protocols, not concrete adapters
 - [ ] Business logic lives in `application/` or `core/`, not in routes
-- [ ] New adapters implement a protocol from `core/interfaces/`
+- [ ] New adapters implement a protocol from `core/ports/`
 - [ ] New services are wired through `Container` with `@cached_property`
 - [ ] No direct instantiation of infrastructure in application code

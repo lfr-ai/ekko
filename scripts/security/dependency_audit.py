@@ -10,7 +10,6 @@ try:
 except ModuleNotFoundError:
     from scripts.common import _constant as _shared_constants
 
-_AUDIT_GROUP = "audit"
 _PIP_AUDIT = "pip-audit"
 _IGNORED_VULNERABILITIES: tuple[str, ...] = ()
 
@@ -52,8 +51,6 @@ def _run_dependency_audit() -> int:
                 "--project",
                 "backend",
                 "--all-groups",
-                "--no-group",
-                _AUDIT_GROUP,
                 "--no-hashes",
                 "--frozen",
                 "-o",

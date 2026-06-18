@@ -15,7 +15,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from ekko.config.enums import LLMProvider
 from ekko.config.settings import BaseAppConfig, get_settings
-from ekko.core.interfaces import ChatPort
+from ekko.core.ports import ChatPort
 from ekko.infrastructure.helpers.retry import api_retry
 
 if TYPE_CHECKING:

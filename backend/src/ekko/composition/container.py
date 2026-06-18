@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ekko.ai.crewai.service import CrewAIService
     from ekko.ai.pii.anonymizer import PIIAnonymizer
     from ekko.application.services.summarizer_service import SummarizerService
-    from ekko.core.interfaces import (
+    from ekko.core.ports import (
         AudioStreamerControllerProtocol,
         ChatPort,
         STTService,

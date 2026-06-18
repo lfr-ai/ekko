@@ -12,7 +12,7 @@ paths:
 - `@dataclass(frozen=True, slots=True)` — always immutable
 - Enforce invariants in `__post_init__` — aggregate is always valid
 - Mutations return new instances, never modify in-place
-- One repository protocol per aggregate root in `core/interfaces/`
+- One repository protocol per aggregate root in `core/ports/`
 
 ## Value Objects
 
@@ -28,7 +28,7 @@ paths:
 
 ## Repositories
 
-- Protocol in `core/interfaces/` — returns domain objects, never ORM models
+- Protocol in `core/ports/` — returns domain objects, never ORM models
 - Implementation in `infrastructure/db/repositories/`
 - Keyword-only arguments (`*`) on all methods
 
@@ -40,7 +40,7 @@ Use domain terms: entity, aggregate, entry, event, command, result.
 ## No Framework Imports
 
 `core/` must have zero `fastapi`, `sqlalchemy`, or `httpx` imports.
-Use protocols in `core/interfaces/` for abstraction.
+Use protocols in `core/ports/` for abstraction.
 
 ## Context Boundaries
 

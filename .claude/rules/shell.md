@@ -1,6 +1,6 @@
 ---
 paths:
-  - "**/*.{sh,ps1}"
+  - "**/*.{sh,zsh,ps1}"
 ---
 
 # Shell Script Conventions

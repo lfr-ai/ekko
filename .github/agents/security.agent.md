@@ -263,7 +263,7 @@ cd backend && uv run bandit -r src/
 cd backend && uv run detect-secrets scan
 
 # pip-audit
-cd backend && uv run pip-audit
+uv run python scripts/security/dependency_audit.py
 
 # Safety (alternative)
 cd backend && uv run safety check

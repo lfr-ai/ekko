@@ -22,7 +22,7 @@ Dependencies always point inward. Never import from outer layers.
 
 ## Port / Adapter Pattern
 
-- Ports (protocols) live in `core/interfaces/`
+- Ports (protocols) live in `core/ports/`
 - Adapters (concrete) live in `infrastructure/` or `ai/`
 - Application services depend on protocols, never concrete classes
 - DI via `composition/Container` with `@cached_property`
@@ -32,7 +32,7 @@ Dependencies always point inward. Never import from outer layers.
 
 - `@dataclass(frozen=True, slots=True)` for all domain entities (except `Container`)
 - `Final[type]` for module-level constants; `@final` for sealed classes
-- Protocols in `core/interfaces/` for all ports
+- Protocols in `core/ports/` for all ports
 - `fastapi.status` constants, never raw HTTP integers
 - Enums in `core/enums/` (split by domain)
 - Domain logic in `application/services/` or `core/`, never in route handlers

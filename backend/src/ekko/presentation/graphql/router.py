@@ -36,6 +36,6 @@ async def get_context(request: Request) -> dict:
 
 graphql_router = GraphQLRouter(
     schema,
-    path="/",
+    path="/graphql",
     context_getter=get_context,
 )

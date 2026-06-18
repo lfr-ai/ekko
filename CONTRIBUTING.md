@@ -308,7 +308,7 @@ Review `.secrets.baseline` before committing to ensure no real secrets were adde
 ### Security Baselines
 
 - **detect-secrets**: `.secrets.baseline`
-- **bandit**: `backend/bandit.toml`
+- **bandit**: `bandit.toml`
 
 Update baselines only after confirming false positives.
 

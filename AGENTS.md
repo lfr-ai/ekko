@@ -255,7 +255,7 @@ registry/                # Naming registry (JSON -> generated constants)
 - **FastAPI** + Uvicorn for HTTP
 - **SQLAlchemy 2.0+** async ORM with dual backends: aiosqlite (local/test) and asyncpg/psycopg (dev/prod PostgreSQL)
 - **Pydantic v2** for validation with `Annotated` + `Field`
-- **ruff** for linting/formatting (config in `backend/ruff.toml`), **ty** for type checking
+- **ruff** for linting/formatting (config in `ruff.toml`), **ty** for type checking
 - **structlog** for structured logging (never `print()`)
 - Full type hints on all functions, methods, class attributes
 - Google-style docstrings on all public APIs

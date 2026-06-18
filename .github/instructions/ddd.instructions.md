@@ -12,7 +12,7 @@ Apply these patterns to all code in `backend/src/ekko/core/`.
 - `@dataclass(frozen=True, slots=True)` on all aggregate roots.
 - All invariants enforced in `__post_init__` — the aggregate is always valid after construction.
 - Mutations return **new instances** — never modify state in-place.
-- One repository per aggregate root (protocol in `core/interfaces/`).
+- One repository per aggregate root (protocol in `core/ports/`).
 
 ## Value Objects
 
@@ -29,7 +29,7 @@ Apply these patterns to all code in `backend/src/ekko/core/`.
 
 ## Repository Protocols
 
-- Protocols in `core/interfaces/` — use domain language, return domain objects.
+- Protocols in `core/ports/` — use domain language, return domain objects.
 - Use keyword-only arguments (`*`) for all parameters.
 - Never return ORM models from protocol methods.
 
@@ -44,7 +44,7 @@ Use domain terms consistently. Forbidden inside `core/`:
 ## No Framework Imports
 
 `core/` must have zero imports of `fastapi`, `sqlalchemy`, `httpx`, or any
-other infrastructure framework. Use `core/interfaces/` protocols for abstraction.
+other infrastructure framework. Use `core/ports/` protocols for abstraction.
 
 ## Ekko Bounded Contexts
 

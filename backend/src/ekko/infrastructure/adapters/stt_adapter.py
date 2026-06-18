@@ -7,11 +7,12 @@ stub for testing without credentials.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import asyncio
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ekko.config.settings import BaseAppConfig
-    from ekko.core.interfaces import STTService
+    from ekko.core.ports import STTService
 
 import structlog
 
@@ -27,7 +28,7 @@ class _StubSTT:
     Only accepts and buffers audio bytes — does not perform actual transcription.
     """
 
-    def __init__(self, settings: BaseAppConfig, **kwargs) -> None:  # noqa: ARG002
+    def __init__(self, settings: BaseAppConfig, **_kwargs) -> None:
         """Initialize stub STT service.
 
         Args:
@@ -35,7 +36,6 @@ class _StubSTT:
             **kwargs: Ignored (for API compatibility).
         """
         self.settings = settings
-        from typing import Any  # noqa: PLC0415
 
         # Map queue name -> asyncio.Queue (used for stub testing)
         self._queues: dict[str, Any] = {}
@@ -59,8 +59,6 @@ class _StubSTT:
             queue_name: Audio source identifier.
         """
         if queue_name not in self._queues:
-            import asyncio  # noqa: PLC0415
-
             self._queues[queue_name] = asyncio.Queue()
             logger.debug("stub_stt_queue_created", queue_name=queue_name)
 

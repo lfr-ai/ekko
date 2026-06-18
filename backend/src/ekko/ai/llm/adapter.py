@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from ekko.config.settings import BaseAppConfig, get_settings
 
 if TYPE_CHECKING:
-    from ekko.core.interfaces import ChatPort
+    from ekko.core.ports import ChatPort
 
 
 class LLMAdapter:

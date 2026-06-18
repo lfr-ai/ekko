@@ -34,7 +34,7 @@ Test + fix committed together in the same commit.
 
 ## Contract Tests
 
-Every `core/interfaces/` protocol has a contract test in `tests/unit/core/interfaces/`.
+Every `core/ports/` protocol has a contract test in `tests/unit/core/ports/`.
 
 ## Arrange-Act-Assert
 

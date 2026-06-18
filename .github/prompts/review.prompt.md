@@ -11,7 +11,7 @@ Review the selected code (or the current diff) against the Ekko project standard
 - Verify imports follow the dependency direction: `utils -> config -> core -> infrastructure/ai -> application -> composition -> presentation`.
 - Flag any outward dependency (e.g., `core/` importing from `application/`).
 - Confirm `core/` has zero framework imports (no FastAPI, SQLAlchemy, etc.).
-- Ensure application services depend on protocols from `core/interfaces/`, not concrete adapters.
+- Ensure application services depend on protocols from `core/ports/`, not concrete adapters.
 
 ### 2. Type safety
 

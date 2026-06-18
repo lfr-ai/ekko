@@ -193,7 +193,7 @@ class CrewAIHMASSupervisor:
                     sg.error = "Dependency deadlock"
                 break
 
-            tasks = [self._execute_sub_goal(sg, inputs=inputs, depth=depth) for sg in ready]
+            tasks = [self._execute_sub_goal(sg, inputs=inputs, _depth=depth) for sg in ready]
             await asyncio.gather(*tasks, return_exceptions=True)
 
             for sg in ready:
@@ -206,7 +206,7 @@ class CrewAIHMASSupervisor:
         sub_goal: SubGoal,
         *,
         inputs: dict[str, object] | None = None,
-        depth: int = 0,  # noqa: ARG002 — reserved for nested HMAS delegation
+        _depth: int = 0,
     ) -> None:
         """Execute a single sub-goal by delegating to the appropriate target."""
         sub_goal.state = SubGoalState.IN_PROGRESS

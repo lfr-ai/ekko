@@ -6,12 +6,12 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, final
 
-from ekko.core.interfaces.services.prompts import PromptProviderError
+from ekko.core.ports.external.prompts import PromptProviderError
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from ekko.core.interfaces import ChatPort, PromptProvider
+    from ekko.core.ports import ChatPort, PromptProvider
 
 
 logger = logging.getLogger(__name__)

@@ -73,7 +73,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     """
 
     @app.exception_handler(RequestValidationError)
-    async def _request_validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def _request_validation_error(request: Request, _exc: RequestValidationError) -> JSONResponse:
         logger.warning(
             "Request validation error",
             extra=_request_log_extra(request),
@@ -84,7 +84,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RateLimitExceeded)
-    async def _rate_limit_exceeded(request: Request, exc: RateLimitExceeded) -> JSONResponse:
+    async def _rate_limit_exceeded(request: Request, _exc: RateLimitExceeded) -> JSONResponse:
         logger.warning(
             "Rate limit exceeded",
             extra=_request_log_extra(request),
@@ -95,14 +95,14 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(PromptNotFoundError)
-    async def _prompt_not_found(request: Request, exc: PromptNotFoundError) -> JSONResponse:
+    async def _prompt_not_found(_request: Request, exc: PromptNotFoundError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=_error_detail(str(exc)),
         )
 
     @app.exception_handler(ConfigurationError)
-    async def _configuration_error(request: Request, exc: ConfigurationError) -> JSONResponse:
+    async def _configuration_error(request: Request, _exc: ConfigurationError) -> JSONResponse:
         logger.error(
             "Configuration error",
             extra=_request_log_extra(request),
@@ -113,35 +113,35 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(AudioDeviceError)
-    async def _audio_error(request: Request, exc: AudioDeviceError) -> JSONResponse:
+    async def _audio_error(_request: Request, exc: AudioDeviceError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=_error_detail(str(exc)),
         )
 
     @app.exception_handler(STTError)
-    async def _stt_error(request: Request, exc: STTError) -> JSONResponse:
+    async def _stt_error(_request: Request, _exc: STTError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=_error_detail("Speech-to-text service error"),
         )
 
     @app.exception_handler(LLMError)
-    async def _llm_error(request: Request, exc: LLMError) -> JSONResponse:
+    async def _llm_error(_request: Request, _exc: LLMError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=_error_detail("LLM service error"),
         )
 
     @app.exception_handler(EkkoError)
-    async def _domain_error(request: Request, exc: EkkoError) -> JSONResponse:
+    async def _domain_error(_request: Request, exc: EkkoError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content=_error_detail(str(exc)),
         )
 
     @app.exception_handler(Exception)
-    async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
+    async def _unhandled(request: Request, _exc: Exception) -> JSONResponse:
         logger.exception(
             "Unhandled exception on %s %s",
             request.method,

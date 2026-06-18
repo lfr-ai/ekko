@@ -15,7 +15,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from ekko.config.enums import DatabaseBackend
 from ekko.config.settings import get_settings
-from ekko.infrastructure.db import models as _  # noqa: F401
 from ekko.infrastructure.db.base import Base
 
 _DEFAULT_CHUNK_SIZE: Final[int] = 500

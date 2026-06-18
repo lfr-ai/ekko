@@ -36,6 +36,7 @@ class Mutation:
     @strawberry.mutation
     async def start_conversation(self, input: StartConversationInput | None = None) -> ConversationType:  # noqa: A002
         """Start a new conversation session."""
+        _ = input
         now = datetime.now(UTC)
         return ConversationType(
             id=str(uuid4()),

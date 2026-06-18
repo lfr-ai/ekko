@@ -11,9 +11,12 @@
     {
       "label": "Backend: Install Dependencies",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv sync",
+      "command": "uv sync",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "build",
       "problemMatcher": []
@@ -21,9 +24,12 @@
     {
       "label": "Backend: Run Dev Server",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv run uvicorn ekko.composition.app_factory:app --reload --host 127.0.0.1 --port 8000",
+      "command": "uv run uvicorn ekko.composition.app_factory:app --reload --host 127.0.0.1 --port 8000",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "test",
       "isBackground": true,
@@ -44,9 +50,12 @@
     {
       "label": "Backend: Run Tests",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv run python -m pytest tests/ -v",
+      "command": "uv run python -m pytest tests/ -v",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "test",
       "problemMatcher": []
@@ -54,9 +63,12 @@
     {
       "label": "Backend: Lint",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv run python -m ruff check src",
+      "command": "uv run python -m ruff check src",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "test",
       "problemMatcher": []
@@ -64,9 +76,12 @@
     {
       "label": "Backend: Format",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv run python -m ruff format src",
+      "command": "uv run python -m ruff format src",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "build",
       "problemMatcher": []
@@ -74,9 +89,12 @@
     {
       "label": "Backend: Type Check",
       "type": "shell",
-      "command": "UV_LINK_MODE=copy uv run python -m ty check src",
+      "command": "uv run python -m ty check src",
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy"
+        }
       },
       "group": "test",
       "problemMatcher": []

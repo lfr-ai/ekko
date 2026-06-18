@@ -352,7 +352,7 @@ class TestAILayerChecks:
         """ai/ importing from ekko.core is allowed."""
         ai_file = tmp_path / "ai" / "embeddings" / "service.py"
         ai_file.parent.mkdir(parents=True)
-        ai_file.write_text("from ekko.core.interfaces import EmbeddingPort\n")
+        ai_file.write_text("from ekko.core.ports import EmbeddingPort\n")
 
         violations = _check_ai([ai_file])
 

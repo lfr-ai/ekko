@@ -19,7 +19,7 @@ You are an expert in database operations using SQLAlchemy 2.0+ with async suppor
    - Relationship management
 
 2. **Repository Pattern**
-   - Protocol definitions in `core/interfaces/`
+   - Protocol definitions in `core/ports/`
    - Implementations in `infrastructure/db/repositories/`
    - Clean separation from business logic
 
@@ -52,7 +52,7 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 ### Repository Pattern
 
 ```python
-# core/interfaces/repositories.py
+# core/ports/repositories.py
 from typing import Protocol
 from ekko.core.entities import User
 
@@ -195,7 +195,7 @@ async def test_user_repository_save(db_session: AsyncSession):
 ### Add New Entity
 
 1. Create entity in `core/entities/`
-2. Define repository protocol in `core/interfaces/`
+2. Define repository protocol in `core/ports/`
 3. Create SQLAlchemy model in `infrastructure/db/models/`
 4. Implement repository in `infrastructure/db/repositories/`
 5. Create migration: `alembic revision --autogenerate`

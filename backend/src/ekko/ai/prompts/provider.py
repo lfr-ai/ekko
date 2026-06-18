@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ekko.ai.prompts.registry import PromptRegistryError, get_prompt_text
-from ekko.core.interfaces.services.prompts import PromptProviderError
+from ekko.core.ports.external.prompts import PromptProviderError
 
 if TYPE_CHECKING:
     from ekko.config.settings import BaseAppConfig

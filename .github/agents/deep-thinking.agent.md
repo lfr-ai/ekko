@@ -31,7 +31,7 @@ SQLAlchemy 2.0, React 19, and TypeScript.
 
 - Dependencies always flow inward: `utils → config → core → infrastructure/ai → application → composition → presentation`
 - `core/` must remain framework-free
-- All new ports defined as protocols in `core/interfaces/`
+- All new ports defined as protocols in `core/ports/`
 - DI wiring in `composition/Container` only
 
 ## Output Format

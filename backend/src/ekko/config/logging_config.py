@@ -65,7 +65,8 @@ def configure_logging(level: str | None = None) -> None:
     numeric_level = getattr(logging, level.upper(), logging.INFO) if isinstance(level, str) else level
 
     # Ensure logs directory exists
-    logs_dir = Path(settings.root_dir) / "logs" if hasattr(settings, "root_dir") else Path("logs")
+    root_dir_value = getattr(settings, "root_dir", None)
+    logs_dir = Path(str(root_dir_value)) / "logs" if root_dir_value is not None else Path("logs")
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     # Reset root logger
@@ -101,7 +102,7 @@ def configure_logging(level: str | None = None) -> None:
     # Optional: initialize Sentry if configured
     if getattr(settings, "sentry_dsn", None):
         try:
-            import sentry_sdk  # noqa: PLC0415
+            import sentry_sdk
 
             sentry_sdk.init(dsn=settings.sentry_dsn)
         except Exception:

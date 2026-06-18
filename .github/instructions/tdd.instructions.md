@@ -64,8 +64,8 @@ Every bug fix requires a **failing regression test first**:
 
 ## Contract Tests
 
-Every protocol in `core/interfaces/` must have a contract test suite in
-`tests/unit/core/interfaces/`. Wire it against all concrete implementations.
+Every protocol in `core/ports/` must have a contract test suite in
+`tests/unit/core/ports/`. Wire it against all concrete implementations.
 
 ## Arrange-Act-Assert
 

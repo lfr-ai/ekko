@@ -32,7 +32,7 @@ Named in past tense: `TranscriptionCompleted`, `SessionStarted`.
 
 ### 4. Repository Protocols
 
-Define in `core/interfaces/`. Implementation in `infrastructure/`.
+Define in `core/ports/`. Implementation in `infrastructure/`.
 Always `Protocol`-based. No SQLAlchemy or framework imports in core.
 
 ### 5. Domain Services

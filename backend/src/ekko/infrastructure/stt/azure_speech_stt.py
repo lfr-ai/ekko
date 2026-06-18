@@ -48,7 +48,7 @@ class AzureSpeechSTT:
     with dedicated push audio input stream.
 
     **Architecture:**
-    - Implements 'STTService' protocol from core.interfaces.audio
+    - Implements 'STTService' protocol from core.ports.external.audio
     - Zero outward dependencies (infrastructure layer)
     - Uses asyncio for concurrency, azure.cognitiveservices.speech for recognition
 
@@ -311,7 +311,7 @@ class AzureSpeechSTT:
                 error_details=getattr(evt, "error_details", None),
             )
 
-        def _on_session_stopped(evt: Any) -> None:  # noqa: ARG001
+        def _on_session_stopped(_evt: Any) -> None:
             """Handle session stopped."""
             logger.info("recognition_session_stopped", queue_name=queue_name)
 

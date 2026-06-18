@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ekko.application.dtos import AgentResultDTO, ConversationDTO, MessageDTO, TranscriptDTO
-from ekko.core.entities import AgentResult, Conversation, Message, Transcript  # noqa: TC001
+
+if TYPE_CHECKING:
+    from ekko.core.entities import AgentResult, Conversation, Message, Transcript
 
 
 def conversation_to_dto(entity: Conversation) -> ConversationDTO:

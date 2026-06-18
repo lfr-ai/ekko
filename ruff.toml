@@ -1,0 +1,122 @@
+target-version = "py312"
+line-length = 120
+src = ["backend/src", "tests", "scripts"]
+exclude = [".venv", "backend/.venv", ".tox", "dist", "build", "node_modules"]
+
+[lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "C90",  # mccabe complexity
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit (security)
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
+    "T10",  # flake8-debugger
+    "T20",  # flake8-print
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "PT",   # flake8-pytest-style
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "SLF",  # flake8-self
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "TCH",  # flake8-type-checking
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate
+    "PL",   # pylint
+    "TRY",  # tryceratops
+    "FLY",  # flynt
+    "PERF", # perflint
+    "FURB", # refurb
+    "LOG",  # flake8-logging
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E203",    # whitespace before ':'
+    "S101",    # assert in production code (OK in tests via per-file-ignores)
+    "TRY003",  # long exception messages
+    "PLR0913", # too many arguments
+    "PLR2004", # magic values
+    "ISC001",  # conflicts with ruff format
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert allowed in tests
+    "S106",    # hardcoded test secrets
+    "ARG",     # unused args (fixtures)
+    "PLR2004", # magic values
+    "SLF001",  # private access in tests
+    "T20",     # print in tests
+    "PLC0415", # lazy imports in test fixtures
+]
+"backend/alembic/**/*.py" = [
+    "ERA001", # commented-out code in migrations
+    "I001",   # isort — alembic has its own convention
+    "UP",     # pyupgrade — alembic templates need compat
+    "INP001", # namespace package
+    "T20",    # print
+]
+"backend/src/ekko/infrastructure/audio_streamer/**/*.py" = [
+    "T20", # print allowed in subprocess code
+]
+"backend/src/ekko/config/**/*.py" = [
+    "PLC0415", # lazy imports for optional dependencies
+    "TC002",   # SecretStr used at runtime
+]
+"backend/src/ekko/composition/**/*.py" = [
+    "PLC0415", # lazy DI imports in container + app factory
+    "C901",    # lifespan inherently complex
+    "PLR0915", # lifespan has many statements
+    "SLF001",  # private state attributes on app.state
+]
+"backend/src/ekko/presentation/api/middleware/**/*.py" = [
+    "ARG001", # FastAPI exception handlers require request/exc params
+    "ARG002", # middleware call signatures
+]
+"backend/src/ekko/presentation/api/exception_handlers.py" = [
+    "ARG001", # FastAPI exception handlers require request/exc params
+]
+"backend/src/ekko/presentation/api/responses.py" = [
+    "UP040", # TypeAlias kept for Python 3.12 compat until min version is 3.13
+]
+"backend/src/ekko/presentation/api/routes/**/*.py" = [
+    "PLC0415", # lazy DI imports in route handlers
+    "S105",    # "bearer" token_type is not a password
+    "S106",    # "bearer" token_type is not a password
+]
+"backend/src/ekko/presentation/api/schemas/**/*.py" = [
+    "S105", # "bearer" token_type default is not a password
+]
+"backend/src/ekko/presentation/graphql/**/*.py" = [
+    "PLC0415", # lazy imports in resolvers (DI pattern)
+    "ARG002",  # strawberry permission interface requires source/kwargs
+    "TC002",   # strawberry types used at runtime
+]
+"backend/src/ekko/ai/**/*.py" = [
+    "PLC0415", # lazy imports for optional AI deps
+]
+
+[lint.isort]
+known-first-party = ["ekko"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.mccabe]
+max-complexity = 12
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

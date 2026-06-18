@@ -90,7 +90,7 @@ class TranscriptionCompleted:
 
 ### 4. Repository Protocols
 
-- Protocols in `core/interfaces/` — domain language, returns domain objects.
+- Protocols in `core/ports/` — domain language, returns domain objects.
 - Implementations in `infrastructure/db/repositories/` — ORM-specific.
 - One repository per aggregate root.
 
@@ -126,7 +126,7 @@ Never use these terms inside `core/`:
 | Anemic domain | No behavior on entities | Add domain methods with invariants |
 | Blob aggregate | Aggregate spans multiple bounded contexts | Split by invariant boundary |
 | Repository returns ORM | `get_by_id` returns `TranscriptionModel` | Return `Transcription` domain object |
-| Framework in core | `core/` imports `fastapi` or `sqlalchemy` | Use protocols in `core/interfaces/` |
+| Framework in core | `core/` imports `fastapi` or `sqlalchemy` | Use protocols in `core/ports/` |
 | Direct context import | Transcription imports from Conversation | Communicate via application service |
 
 ## Review Output Format
