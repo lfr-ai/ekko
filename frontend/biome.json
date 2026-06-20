@@ -44,9 +44,7 @@
       },
       "nursery": {
         "useSortedClasses": {
-          "level": "warn",
-          "fix": "safe",
-          "options": {}
+          "level": "off"
         }
       }
     }

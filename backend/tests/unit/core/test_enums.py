@@ -95,36 +95,36 @@ class TestParseableEnumFromStr:
 
     def test_from_str_valid_value(self):
         # Arrange / Act
-        result = Environment.from_str("local")
+        result = STTProvider.from_str("azure_speech")
 
         # Assert
-        assert result == Environment.LOCAL
+        assert result == STTProvider.AZURE_SPEECH
 
     def test_from_str_case_insensitive(self):
         # Arrange / Act
-        result_upper = Environment.from_str("LOCAL")
-        result_mixed = Environment.from_str("TeSt")
+        result_upper = STTProvider.from_str("AZURE_SPEECH")
+        result_mixed = QueueName.from_str("TrAnScRiPtS")
 
         # Assert
-        assert result_upper == Environment.LOCAL
-        assert result_mixed == Environment.TEST
+        assert result_upper == STTProvider.AZURE_SPEECH
+        assert result_mixed == QueueName.TRANSCRIPTS
 
     def test_from_str_with_whitespace(self):
         # Arrange / Act
-        result = Environment.from_str("  local  ")
+        result = STTProvider.from_str("  azure_speech  ")
 
         # Assert
-        assert result == Environment.LOCAL
+        assert result == STTProvider.AZURE_SPEECH
 
     def test_from_str_invalid_value_raises_value_error(self):
         # Arrange / Act / Assert
-        with pytest.raises(ValueError, match="'invalid' is not a valid Environment"):
-            Environment.from_str("invalid")
+        with pytest.raises(ValueError, match="'invalid' is not a valid STTProvider"):
+            STTProvider.from_str("invalid")
 
     def test_from_str_empty_string_raises_value_error(self):
         # Arrange / Act / Assert
-        with pytest.raises(ValueError, match="'' is not a valid Environment"):
-            Environment.from_str("")
+        with pytest.raises(ValueError, match="'' is not a valid STTProvider"):
+            STTProvider.from_str("")
 
 
 @pytest.mark.unit

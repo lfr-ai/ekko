@@ -25,6 +25,8 @@ import snippets/*.caddy
 
 {
 	import global_base
+	import global_servers
+	import global_logging_json
 }
 
 localhost, 127.0.0.1, ::1 {

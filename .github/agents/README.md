@@ -6,10 +6,14 @@ Custom agents for VS Code GitHub Copilot, stored as `.agent.md` files with YAML 
 
 | Agent | File | Purpose |
 |-------|------|---------|
-| Backend Python | `backend-python.agent.md` | Clean Architecture, FastAPI, SQLAlchemy |
+| Backend Python | `backend-python.agent.md` | Typed backend architecture and API service design |
 | Frontend React | `frontend-react.agent.md` | React 19, TypeScript, shadcn/ui, Tailwind v4 |
+| UI UX | `ui-ux.agent.md` | UX consistency and accessibility-first design |
+| Storybook | `storybook.agent.md` | Story-driven component docs and interaction tests |
+| Playwright | `playwright.agent.md` | End-to-end automation and trace-first debugging |
+| shadcn | `shadcn.agent.md` | shadcn/ui CLI and component composition workflows |
 | Testing | `testing.agent.md` | pytest, Vitest, Playwright, Hypothesis |
-| Database | `database.agent.md` | SQLAlchemy, Alembic, repository pattern |
+| Database | `database.agent.md` | Schema design, migrations, and data integrity |
 | Security | `security.agent.md` | OWASP, auth, vulnerability prevention |
 | Debug | `debug.agent.md` | Systematic bug investigation |
 | Deep Thinking | `deep-thinking.agent.md` | Cross-cutting architectural analysis |
@@ -28,7 +32,7 @@ VS Code Copilot agents use `.agent.md` with YAML frontmatter:
 ---
 name: My Agent
 description: What this agent does
-model: Claude Sonnet 4.5
+model: claude-sonnet-4-6
 tools: ['edit', 'search/codebase', 'myMcpServer/*']
 agents: ['*']
 handoffs:
@@ -70,7 +74,7 @@ Both tools share skills from `.github/skills/` and path-scoped rules/instruction
 
 ## Related
 
-- **Claude Code agents**: `.claude/agents/` (7 agents: architect, code-reviewer, devops, frontend-reviewer, refactorer, researcher, test-writer)
+- **Claude Code agents**: `.claude/agents/` (9 agents: architect, code-reviewer, devops, frontend-reviewer, refactorer, researcher, sdd, tdd, test-writer)
 - **Skills**: `.github/skills/` (shared between Claude Code and VS Code Copilot)
 - **Instructions**: `.github/instructions/` (auto-loaded by `applyTo:` patterns)
 - **Claude Code docs**: <https://code.claude.com/docs/en/sub-agents>

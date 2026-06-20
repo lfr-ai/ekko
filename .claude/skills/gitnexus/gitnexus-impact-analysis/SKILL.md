@@ -51,7 +51,7 @@ description: "Use when the user wants to know what will break if they change som
 | <5 symbols, few processes      | LOW      |
 | 5-15 symbols, 2-5 processes    | MEDIUM   |
 | >15 symbols or many processes  | HIGH     |
-| Critical path (auth, AI pipe)  | CRITICAL |
+| Critical path (auth, payments) | CRITICAL |
 
 ## Tools
 
@@ -59,18 +59,18 @@ description: "Use when the user wants to know what will break if they change som
 
 ```
 gitnexus_impact({
-  target: "ChatService",
+  target: "validateUser",
   direction: "upstream",
   minConfidence: 0.8,
   maxDepth: 3
 })
 
 → d=1 (WILL BREAK):
-  - stream_handler (src/ekko/presentation/api/routes/stream.py:42) [CALLS, 100%]
-  - graphql_chat_mutation (src/ekko/presentation/graphql/mutations.py:15) [CALLS, 100%]
+  - loginHandler (src/auth/login.ts:42) [CALLS, 100%]
+  - apiMiddleware (src/api/middleware.ts:15) [CALLS, 100%]
 
 → d=2 (LIKELY AFFECTED):
-  - Container.chat_service (src/ekko/composition/container.py:22) [CALLS, 95%]
+  - authRouter (src/routes/auth.ts:22) [CALLS, 95%]
 ```
 
 **gitnexus_detect_changes** — git-diff based impact analysis:
@@ -79,30 +79,19 @@ gitnexus_impact({
 gitnexus_detect_changes({scope: "staged"})
 
 → Changed: 5 symbols in 3 files
-→ Affected: ChatFlow, SummarizationPipeline, AudioCapture
+→ Affected: LoginFlow, TokenRefresh, APIMiddlewarePipeline
 → Risk: MEDIUM
 ```
 
-## Example: "What breaks if I change ChatService?"
+## Example: "What breaks if I change validateUser?"
 
 ```
-1. gitnexus_impact({target: "ChatService", direction: "upstream"})
-   → d=1: stream_handler, graphql_mutation (WILL BREAK)
-   → d=2: Container, app_factory (LIKELY AFFECTED)
+1. gitnexus_impact({target: "validateUser", direction: "upstream"})
+   → d=1: loginHandler, apiMiddleware (WILL BREAK)
+   → d=2: authRouter, sessionManager (LIKELY AFFECTED)
 
-2. READ gitnexus://repo/ekko/processes
-   → ChatFlow and SummarizationPipeline touch ChatService
+2. READ gitnexus://repo/my-app/processes
+   → LoginFlow and TokenRefresh touch validateUser
 
 3. Risk: 2 direct callers, 2 processes = MEDIUM
 ```
-
-## OpenSpec Integration
-
-When impact analysis reveals a significant blast radius, use OpenSpec to
-formalize the change:
-
-1. **Assess impact** → `gitnexus_impact({target, direction: "upstream"})`
-2. **Check affected specs** → `openspec list --specs` and review relevant domain
-3. **Propose change** → `/opsx:propose <change-name>` with impact context
-4. **Design includes blast radius** → Reference GitNexus output in design.md
-5. **Verify after implementation** → `/opsx:verify` + `gitnexus_detect_changes()`

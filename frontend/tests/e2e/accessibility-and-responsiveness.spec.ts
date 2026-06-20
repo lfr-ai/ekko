@@ -6,7 +6,7 @@ test.describe("Accessibility and responsiveness", () => {
     await page.goto("/");
 
     await page.keyboard.press("Tab");
-    await expect(page.getByRole("button", { name: "Start listening" })).toBeFocused();
+    await expect(page.getByLabel("CPR")).toBeFocused();
   });
 
   test("has no critical accessibility violations in app shell", async ({ page }) => {
@@ -41,17 +41,19 @@ test.describe("Accessibility and responsiveness", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { level: 1, name: "Ekko" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Transcript" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Start listening" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Insurance claim intake" }),
+    ).toBeVisible();
+    await expect(page.getByLabel("CPR")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit claim intake" })).toBeVisible();
   });
 
-  test("keeps sidebar controls visible on desktop viewport", async ({ page }) => {
+  test("keeps upload and submit controls visible on desktop viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/");
 
-    await expect(page.getByRole("button", { name: "Start listening" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Audio output" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Settings", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Select files" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add URL" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit claim intake" })).toBeVisible();
   });
 });

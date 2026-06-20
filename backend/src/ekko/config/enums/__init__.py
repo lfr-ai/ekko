@@ -1,15 +1,18 @@
-"""Configuration enums."""
+"""Configuration and deployment enumerations."""
 
-from __future__ import annotations
-
-from enum import auto, unique
-
-from ekko.utils.enums import ParseableEnum
+from enum import StrEnum, auto, unique
 
 
 @unique
-class Environment(ParseableEnum):
-    """Application environment."""
+class Environment(StrEnum):
+    """Deployment environments.
+
+    Members:
+        LOCAL (str): Local environment on developer machines.
+        TEST (str): Testing environment for CI and test suites.
+        DEV (str): Shared development environment.
+        PROD (str): Production environment serving end users.
+    """
 
     LOCAL = auto()
     TEST = auto()
@@ -18,7 +21,7 @@ class Environment(ParseableEnum):
 
 
 @unique
-class DatabaseBackend(ParseableEnum):
+class DatabaseBackend(StrEnum):
     """Supported runtime database backends."""
 
     SQLITE = auto()
@@ -26,7 +29,7 @@ class DatabaseBackend(ParseableEnum):
 
 
 @unique
-class LLMProvider(ParseableEnum):
+class LLMProvider(StrEnum):
     """LLM provider options."""
 
     OPENAI = auto()
@@ -38,8 +41,8 @@ class LLMProvider(ParseableEnum):
 
 
 @unique
-class ChatModel(ParseableEnum):
-    """Chat model options."""
+class ChatModel(StrEnum):
+    """LLM deployment model identifiers."""
 
     GPT_4O = "gpt-4o"
     GPT_4O_MINI = "gpt-4o-mini"

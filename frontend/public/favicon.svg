@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Claim intake app favicon">
+  <defs>
+    <linearGradient id="shield-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0f172a" />
+  <path
+    d="M32 10L50 16V29c0 12-8.1 21.2-18 25C22.1 50.2 14 41 14 29V16l18-6z"
+    fill="url(#shield-gradient)"
+  />
+  <path d="M23.5 32.5l5.6 5.6L41 26.2" fill="none" stroke="#ecfeff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+</svg>

@@ -1,0 +1,7 @@
+# Legacy fallback dockerignore for engines without BuildKit per-Dockerfile ignore support.
+# Primary source remains docker/Containerfile.dockerignore.
+
+*
+!backend/src/
+!backend/pyproject.toml
+!backend/uv.lock

@@ -6,8 +6,8 @@ test.describe("App shell", () => {
   });
 
   test("renders core layout and metadata", async ({ page }) => {
-    await expect(page).toHaveTitle("Ekko");
-    await expect(page.getByTestId("app-shell")).toBeVisible();
+    await expect(page).toHaveTitle("Koda Claim Intake");
+    await expect(page).toHaveURL(/\/claims\/intake$/);
 
     const lang = await page.locator("html").getAttribute("lang");
     expect(lang).toBe("en");
@@ -18,21 +18,15 @@ test.describe("App shell", () => {
     );
   });
 
-  test("renders primary cards and footer details", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1, name: "Ekko" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Transcript" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Audio Input" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "System Status" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Quick Actions" })).toBeVisible();
-
-    await expect(page.getByText("Ekko v0.1.0")).toBeVisible();
-    await expect(page.getByText("React 19")).toBeVisible();
-  });
-
-  test("starts in idle state with standby audio", async ({ page }) => {
-    await expect(page.getByTestId("assistant-status-badge")).toContainText("Idle");
-    await expect(page.getByRole("button", { name: "Start listening" })).toBeVisible();
-    await expect(page.getByText("Audio Input").locator("..").getByText("Standby")).toBeVisible();
+  test("renders intake sections and submit call-to-action", async ({ page }) => {
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Insurance claim intake" }),
+    ).toBeVisible();
+    await expect(page.getByText("Claims automation frontend")).toBeVisible();
+    await expect(page.getByLabel("CPR")).toBeVisible();
+    await expect(page.getByLabel("Coverage period start")).toBeVisible();
+    await expect(page.getByLabel("Coverage period end")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit claim intake" })).toBeVisible();
   });
 
   test("has no top-level JavaScript runtime errors on load", async ({ page }) => {

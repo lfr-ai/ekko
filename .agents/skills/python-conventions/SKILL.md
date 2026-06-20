@@ -285,7 +285,7 @@ def parse_audio_format(
 Use project type aliases instead of bare `dict[str, ...]`:
 
 ```python
-from ekko.utils.types_ import BaseDict, JSONDict
+from ekko.core.types import BaseDict, JSONDict
 
 # BaseDict = dict[str, object]  — generic string-keyed dict
 # JSONDict = dict[str, Any]     — JSON-compatible dict (only where serialization requires it)

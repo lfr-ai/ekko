@@ -15,13 +15,13 @@ reviews:
     - path: "backend/src/ekko/core/**"
       instructions: |
         Core domain: zero framework imports. No FastAPI, SQLAlchemy, or Pydantic models.
-        Only stdlib + ekko.utils/ekko.config. Flag imports from application/, infrastructure/,
+        Only stdlib + ekko.config. Flag imports from application/, infrastructure/,
         or presentation/ as CRITICAL violations. Dataclasses need frozen=True, slots=True.
 
     - path: "backend/src/ekko/application/**"
       instructions: |
         Application layer: orchestrates use cases. May import core, infrastructure (via
-        protocols), ai, config, utils. Must NOT import presentation. Business logic belongs
+        protocols), ai, config. Must NOT import presentation. Business logic belongs
         here, not in route handlers. Services depend on protocols, not concrete adapters.
 
     - path: "backend/src/ekko/infrastructure/**"

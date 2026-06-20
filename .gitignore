@@ -146,6 +146,7 @@ backend/logs/*
 .env.dev
 .env.prod
 !.env.example
+!.secrets.baseline
 *.pem
 *.key
 *.crt

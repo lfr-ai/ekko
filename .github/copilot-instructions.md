@@ -1,127 +1,70 @@
 ---
-description: Repository development conventions for Ekko
+description: Repository-wide development conventions (project-agnostic)
 applyTo: "**"
 ---
 
-# Ekko — Development Instructions
+# Development Instructions
 
-## Architecture and Boundaries
+Use this file as the global Copilot baseline.
 
-- Follow Clean Architecture dependency direction: `presentation/infrastructure -> application -> core`.
-- `backend/src/ekko/core/` must remain framework-independent — no imports from infrastructure/presentation.
-- `backend/src/ekko/application/` can import from `core` and configuration, but not concrete adapters.
-- `backend/src/ekko/infrastructure/` implements protocols declared in `core/ports/`.
-- `backend/src/ekko/composition/` wires everything together via the `Container` DI pattern.
-- `backend/src/ekko/presentation/api/routes/` contains FastAPI routers (health, stream).
-- `backend/src/ekko/presentation/graphql/` contains Strawberry GraphQL schema, resolvers, subscriptions.
-- `backend/src/ekko/ai/` contains CrewAI agents, PII anonymization, chains, embeddings, prompts.
+## Scope and precedence
 
-## Backend Stack
+1. This file (global baseline)
+2. `.github/instructions/*.instructions.md` (path-scoped rules)
+3. `.github/skills/**/SKILL.md` (task-specific playbooks)
 
-- Python 3.12+, FastAPI, Pydantic, SQLAlchemy, Alembic, Strawberry GraphQL
-- Settings: `ekko.config.settings.get_settings()` — env-specific subclasses of `BaseAppConfig`
-- Enums: `ParseableEnum(StrEnum)` + `@unique` + `auto()` in `ekko.core.enums/` (split by domain)
-- DI Container: `ekko.composition.Container` with `@cached_property`
-- CrewAI: YAML-based agent/task config in `backend/src/ekko/ai/crewai/config/`
-- PII: Regex-based anonymization in `backend/src/ekko/ai/pii/` — scrubs before LLM calls
-- Testing: pytest, hypothesis, factory-boy, pytest-asyncio, pytest-benchmark
-- Naming registry: `registry/naming_registry.json` -> generated constants
-- Linting: ruff (config in `ruff.toml`), ty for type checking
+Prefer the most specific applicable rule.
 
-## Frontend Stack
+## Architecture
 
-- React 19, TypeScript, Vite 6 + SWC, Bun
-- UI: shadcn/ui (Radix + Tailwind CSS v4) — use CLI, never copy-paste
-- Storybook: component stories with interaction testing
-- State: Zustand, TanStack React Query
-- Linting: Biome (not Prettier/ESLint)
-- Testing: Vitest + React Testing Library + fast-check, Playwright for E2E
-- See `.github/skills/frontend-react-stack/SKILL.md` for full conventions
+- Follow Clean Architecture dependency direction (outer layers depend inward).
+- Keep domain/core framework-agnostic.
+- Keep adapters/integrations in infrastructure.
+- Keep orchestration in application.
+- Keep controllers/routes thin.
 
-## Project Layout
+## Frontend-first baseline
 
-- `tasks/` — Split Taskfile includes (backend.yml, frontend.yml)
-- `tools/` — Convention checkers and security audits
-- `registry/` — Naming registry JSON + code generator
+- React + TypeScript strict mode.
+- Vite-based build pipeline.
+- shadcn/ui components via CLI (never copy-paste component source from docs).
+- Storybook for component docs and interaction coverage.
+- Playwright for end-to-end flows.
+- Accessibility checks (role/label selectors first).
 
-## Tooling and Commands
+## Agentic + MCP baseline
 
-- Use `uv` for Python dependency and command execution.
-- Use `bun` for frontend package management and scripts.
-- Root `Taskfile.yml` orchestrates via includes from `tasks/`.
-- Run `task check` (lint + tests + typecheck) before finalizing changes.
+- Maintain parity for these MCP servers in `.vscode/mcp.json` and `.mcp.json`:
+  - `context7`
+  - `gitnexus`
+  - `playwright`
+  - `shadcn` (frontend workspaces)
+- Keep VS Code settings aligned:
+  - `"chat.mcp.discovery.enabled": false`
+  - `"chat.mcp.autoStart": true`
 
-## OpenSpec-First Planning
+## OpenSpec workflow
 
-- For non-trivial feature changes and refactors, use OpenSpec planning before code.
-- Store specs and change artifacts under `openspec/` in this repository.
-- Prefer behavior-first requirements with Given/When/Then scenarios.
-- Use spec deltas (ADDED/MODIFIED/REMOVED) to describe changes.
-- Keep implementation details in task/design artifacts, not in behavior specs.
-
-Default OpenSpec flow:
-
-- `/opsx:propose <change>`
-- `/opsx:apply <change>`
-- `/opsx:sync <change>`
-- `/opsx:archive <change>`
-
-Expanded flow (all commands available):
-
-- `/opsx:new <change>` — create a new change container
-- `/opsx:continue <change>` — create next artifact incrementally
-- `/opsx:ff <change>` — fast-forward all artifacts in one go
-- `/opsx:verify <change>` — verify implementation matches artifacts
-- `/opsx:bulk-archive` — batch-archive multiple changes
-- `/opsx:onboard` — guided first-time workflow walkthrough
-
-For GitHub Copilot prompt-file commands in this repository, use the hyphen form:
+Use OpenSpec for non-trivial features/refactors:
 
 - `/opsx-propose <change>`
 - `/opsx-apply <change>`
-- `/opsx-archive <change>`
-- `/opsx-new <change>`
-- `/opsx-continue <change>`
-- `/opsx-ff <change>`
 - `/opsx-sync <change>`
 - `/opsx-verify <change>`
-- `/opsx-bulk-archive`
-- `/opsx-onboard`
+- `/opsx-archive <change>`
 
-## MCP and Agent Tooling
+Behavior specs should stay implementation-agnostic; put implementation detail in tasks/design docs.
 
-- MCP runtime config for VS Code lives in `.vscode/mcp.json`.
-- Keep `context7`, `gitnexus`, and `shadcn` configured for this repository.
-- Root-level `.mcp.json` provides Claude Code fallback; `.vscode/mcp.json` is authoritative for VS Code.
-- Keep `.vscode/settings.json` aligned with MCP best practices:
-	- `"chat.mcp.discovery.enabled": false`
-	- `"chat.mcp.autoStart": true`
-- Agent profiles in `.github/agents/*.agent.md` should expose:
-	- `'context7/*'` for documentation retrieval
-	- `'gitnexus/*'` for graph-aware code exploration
-	- `'shadcn/*'` for frontend component workflows where relevant
+## Quality rules
 
-## Quality Rules
+- Keep changes minimal, reversible, and well-scoped.
+- Update docs when behavior/configuration changes.
+- No hardcoded secrets.
+- Keep `.env.example` current when new variables are introduced.
+- Keep `.secrets.baseline` tracked.
 
-- Keep changes minimal and scoped.
-- Update docs in the same change when behavior or setup changes.
-- Use typed Python signatures and avoid `Any` unless truly unavoidable.
-- Use `Final[type]` for module-level constants.
-- Use `@dataclass(frozen=True, slots=True)` for all dataclasses (except `Container`).
-- Docstring `Raises:` sections must only document exceptions directly raised in that function body.
-- Use `cn()` for Tailwind class merging, semantic color tokens only.
+## Validation before completion
 
-## Cognitive Load
-
-- Write code for human brains (~4 chunks of working memory).
-- Prefer deep modules over shallow: simple interfaces hiding complex implementations.
-- Keep related code together (locality of behavior).
-- Extract complex conditionals into named intermediates.
-- Use early returns to reduce nesting depth.
-- Balanced DRY: a little duplication is better than a wrong abstraction.
-
-## Security Rules
-
-- Never commit secrets.
-- Keep `.env.example` updated when new environment variables are introduced.
-- Use `detect-secrets` via pre-commit hooks.
+- Run test suite(s).
+- Run lint/format/typecheck.
+- Run configured quality/pre-commit hooks where available.

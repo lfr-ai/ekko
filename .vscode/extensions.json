@@ -1,6 +1,6 @@
 {
   // ═══════════════════════════════════════════════════════════
-  // Recommended Extensions for Ekko Development
+  // Recommended Extensions for Frontend-First Development
   // ═══════════════════════════════════════════════════════════
 
   "recommendations": [
@@ -32,6 +32,10 @@
     // ──────────────────────────────────────────────────────────
     "ms-playwright.playwright",
     "vitest.explorer",
+    "upstash.context7-mcp",
+    "ms-azuretools.vscode-azure-mcp-server",
+    "ms-azuretools.vscode-bicep",
+    "ms-azuretools.vscode-azureresourcegroups",
 
     // ──────────────────────────────────────────────────────────
     // Task Runner

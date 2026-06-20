@@ -51,39 +51,39 @@ description: "Use when the user is debugging a bug, tracing an error, or asking 
 **gitnexus_query** — find code related to error:
 
 ```
-gitnexus_query({query: "audio transcription error"})
-→ Processes: AudioPipeline, TranscriptionFlow
-→ Symbols: transcribe_audio, handle_stt_error, STTException
+gitnexus_query({query: "payment validation error"})
+→ Processes: CheckoutFlow, ErrorHandling
+→ Symbols: validatePayment, handlePaymentError, PaymentException
 ```
 
 **gitnexus_context** — full context for a suspect:
 
 ```
-gitnexus_context({name: "transcribe_audio"})
-→ Incoming calls: audio_handler, stream_processor
-→ Outgoing calls: faster_whisper_transcribe, normalize_text
-→ Processes: AudioPipeline (step 3/7)
+gitnexus_context({name: "validatePayment"})
+→ Incoming calls: processCheckout, webhookHandler
+→ Outgoing calls: verifyCard, fetchRates (external API!)
+→ Processes: CheckoutFlow (step 3/7)
 ```
 
 **gitnexus_cypher** — custom call chain traces:
 
 ```cypher
-MATCH path = (a)-[:CodeRelation {type: 'CALLS'}*1..2]->(b:Function {name: "transcribe_audio"})
+MATCH path = (a)-[:CodeRelation {type: 'CALLS'}*1..2]->(b:Function {name: "validatePayment"})
 RETURN [n IN nodes(path) | n.name] AS chain
 ```
 
-## Example: "STT endpoint returns empty transcript intermittently"
+## Example: "Payment endpoint returns 500 intermittently"
 
 ```
-1. gitnexus_query({query: "transcription error handling"})
-   → Processes: AudioPipeline, ErrorHandling
-   → Symbols: transcribe_audio, handle_stt_error
+1. gitnexus_query({query: "payment error handling"})
+   → Processes: CheckoutFlow, ErrorHandling
+   → Symbols: validatePayment, handlePaymentError
 
-2. gitnexus_context({name: "transcribe_audio"})
-   → Outgoing calls: faster_whisper_transcribe, audio_buffer.read()
+2. gitnexus_context({name: "validatePayment"})
+   → Outgoing calls: verifyCard, fetchRates (external API!)
 
-3. READ gitnexus://repo/ekko/process/AudioPipeline
-   → Step 3: transcribe_audio → calls audio_buffer.read()
+3. READ gitnexus://repo/my-app/process/CheckoutFlow
+   → Step 3: validatePayment → calls fetchRates (external)
 
-4. Root cause: audio_buffer.read() can return empty when queue drains
+4. Root cause: fetchRates calls external API without proper timeout
 ```

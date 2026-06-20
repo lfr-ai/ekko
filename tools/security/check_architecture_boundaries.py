@@ -1,7 +1,6 @@
 """Validate Clean Architecture import boundaries for the ekko package.
 
 Enforces dependency rules:
-  - utils/ must only import stdlib (no ekko.* imports)
   - config/ must not import from core/, application/, presentation/
   - core/ must not import from application/, infrastructure/, presentation/
   - ai/ must not import from infrastructure/, application/, presentation/
@@ -51,38 +50,6 @@ class Violation:
 
 def _collect_python_files(root: Path) -> list[Path]:
     return sorted(p for p in root.rglob("*.py") if p.is_file())
-
-
-def _check_utils(files: list[Path]) -> list[Violation]:
-    """Check that utils/ only imports from stdlib (no ekko.* imports).
-
-    Args:
-        files: List of Python source files to check.
-
-    Returns:
-        List of violations found.
-    """
-    violations: list[Violation] = []
-    for fp in files:
-        if "/utils/" not in fp.as_posix() and "\\utils\\" not in str(fp):
-            continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
-            m = _IMPORT_PATTERN.search(line)
-            if m:
-                imported_layer = m.group("layer")
-                violations.append(
-                    Violation(
-                        fp,
-                        idx,
-                        line.strip(),
-                        "utils",
-                        imported_layer,
-                        "utils/ must only import stdlib (no ekko.* imports)",
-                    )
-                )
-    return violations
 
 
 def _check_config(files: list[Path]) -> list[Violation]:
@@ -273,7 +240,6 @@ def main() -> int:
 
     files = _collect_python_files(SRC)
     violations = [
-        *_check_utils(files),
         *_check_config(files),
         *_check_core(files),
         *_check_infrastructure(files),

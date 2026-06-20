@@ -3,7 +3,6 @@
 """Architecture boundary checker tests.
 
 Tests the Clean Architecture boundary enforcement tool including:
-- utils/ layer violation detection (no ekko.* imports)
 - config/ layer violation detection (no core/application/presentation imports)
 - core/ layer violation detection (no outer layer imports)
 - infrastructure/ layer violation detection (no application/presentation imports)
@@ -29,7 +28,6 @@ from tools.security.check_architecture_boundaries import (
     _check_config,
     _check_core,
     _check_infrastructure,
-    _check_utils,
 )
 
 ARCHITECTURE_CHECK_SCRIPT = (
@@ -38,56 +36,6 @@ ARCHITECTURE_CHECK_SCRIPT = (
     / "security"
     / "check_architecture_boundaries.py"
 )
-
-
-@pytest.mark.unit
-class TestUtilsLayerChecks:
-    """Test utils/ layer boundary enforcement."""
-
-    def test_utils_importing_ekko_core_detected(self, tmp_path: Path) -> None:
-        """utils/ importing from ekko.core is detected as violation."""
-        utils_file = tmp_path / "utils" / "helper.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text("from ekko.core.entities import User\n")
-
-        violations = _check_utils([utils_file])
-
-        assert len(violations) == 1
-        assert violations[0].layer == "utils"
-        assert violations[0].imported_layer == "core"
-        assert "stdlib" in violations[0].reason.lower()
-
-    def test_utils_importing_ekko_config_detected(self, tmp_path: Path) -> None:
-        """utils/ importing from ekko.config is detected as violation."""
-        utils_file = tmp_path / "utils" / "logger.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text("from ekko.config.settings import Settings\n")
-
-        violations = _check_utils([utils_file])
-
-        assert len(violations) == 1
-        assert violations[0].layer == "utils"
-        assert violations[0].imported_layer == "config"
-
-    def test_utils_importing_stdlib_allowed(self, tmp_path: Path) -> None:
-        """utils/ importing from stdlib is allowed."""
-        utils_file = tmp_path / "utils" / "types.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text("from typing import Protocol\nimport json\nimport sys\n")
-
-        violations = _check_utils([utils_file])
-
-        assert len(violations) == 0
-
-    def test_utils_importing_third_party_not_flagged(self, tmp_path: Path) -> None:
-        """utils/ importing third-party libs is not flagged by this check."""
-        utils_file = tmp_path / "utils" / "helpers.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text("import structlog\nfrom pydantic import BaseModel\n")
-
-        violations = _check_utils([utils_file])
-
-        assert len(violations) == 0
 
 
 @pytest.mark.unit
@@ -130,16 +78,6 @@ class TestConfigLayerChecks:
         assert len(violations) == 1
         assert violations[0].layer == "config"
         assert violations[0].imported_layer == "presentation"
-
-    def test_config_importing_utils_allowed(self, tmp_path: Path) -> None:
-        """config/ importing from ekko.utils is allowed."""
-        config_file = tmp_path / "config" / "logger.py"
-        config_file.parent.mkdir(parents=True)
-        config_file.write_text("from ekko.utils.logger import get_logger\n")
-
-        violations = _check_config([config_file])
-
-        assert len(violations) == 0
 
 
 @pytest.mark.unit
@@ -184,16 +122,6 @@ class TestCoreLayerChecks:
         assert len(violations) == 1
         assert violations[0].layer == "core"
         assert violations[0].imported_layer == "presentation"
-
-    def test_core_importing_utils_allowed(self, tmp_path: Path) -> None:
-        """core/ importing from ekko.utils is allowed."""
-        core_file = tmp_path / "core" / "entities" / "base.py"
-        core_file.parent.mkdir(parents=True)
-        core_file.write_text("from ekko.utils.types import ID\n")
-
-        violations = _check_core([core_file])
-
-        assert len(violations) == 0
 
     def test_core_importing_config_allowed(self, tmp_path: Path) -> None:
         """core/ importing from ekko.config is allowed."""
@@ -243,16 +171,6 @@ class TestInfrastructureLayerChecks:
         infra_file = tmp_path / "infrastructure" / "db" / "repositories.py"
         infra_file.parent.mkdir(parents=True)
         infra_file.write_text("from ekko.core.entities import User\n")
-
-        violations = _check_infrastructure([infra_file])
-
-        assert len(violations) == 0
-
-    def test_infrastructure_importing_utils_allowed(self, tmp_path: Path) -> None:
-        """infrastructure/ importing from ekko.utils is allowed."""
-        infra_file = tmp_path / "infrastructure" / "stt" / "transcriber.py"
-        infra_file.parent.mkdir(parents=True)
-        infra_file.write_text("from ekko.utils.logger import get_logger\n")
 
         violations = _check_infrastructure([infra_file])
 
@@ -392,13 +310,13 @@ class TestViolationDataStructure:
 
     def test_violation_layer_field_correct(self, tmp_path: Path) -> None:
         """Violation.layer correctly identifies source layer."""
-        test_file = tmp_path / "utils" / "helper.py"
+        test_file = tmp_path / "config" / "helper.py"
         test_file.parent.mkdir(parents=True)
         test_file.write_text("from ekko.core import Entity\n")
 
-        violations = _check_utils([test_file])
+        violations = _check_config([test_file])
 
-        assert violations[0].layer == "utils"
+        assert violations[0].layer == "config"
 
     def test_violation_imported_layer_field_correct(self, tmp_path: Path) -> None:
         """Violation.imported_layer correctly identifies target layer."""
@@ -431,13 +349,13 @@ class TestEdgeCases:
 
     def test_multiline_import_detected(self, tmp_path: Path) -> None:
         """Multiline from imports are detected."""
-        utils_file = tmp_path / "utils" / "types.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text(
-            "from ekko.core.entities import (\n    User,\n    Message,\n)\n"
+        core_file = tmp_path / "core" / "types.py"
+        core_file.parent.mkdir(parents=True)
+        core_file.write_text(
+            "from ekko.application.services import (\n    ChatService,\n    UserService,\n)\n"
         )
 
-        violations = _check_utils([utils_file])
+        violations = _check_core([core_file])
 
         assert len(violations) == 1
 
@@ -467,11 +385,11 @@ class TestEdgeCases:
 
     def test_string_containing_import_not_detected(self, tmp_path: Path) -> None:
         """String literals containing import statements are not detected."""
-        utils_file = tmp_path / "utils" / "docs.py"
-        utils_file.parent.mkdir(parents=True)
-        utils_file.write_text('DOC = "from ekko.core import Entity"\n')
+        core_file = tmp_path / "core" / "docs.py"
+        core_file.parent.mkdir(parents=True)
+        core_file.write_text('DOC = "from ekko.application import Service"\n')
 
-        violations = _check_utils([utils_file])
+        violations = _check_core([core_file])
 
         assert len(violations) == 0
 
