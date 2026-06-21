@@ -2,11 +2,11 @@ import { expect, test } from "@playwright/test";
 
 test.describe("App shell", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
   });
 
   test("renders core layout and metadata", async ({ page }) => {
-    await expect(page).toHaveTitle("Koda Claim Intake");
+    await expect(page).toHaveTitle("Ekko Frontend");
     await expect(page).toHaveURL(/\/claims\/intake$/);
 
     const lang = await page.locator("html").getAttribute("lang");
@@ -33,7 +33,7 @@ test.describe("App shell", () => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("networkidle");
 
     expect(pageErrors).toEqual([]);

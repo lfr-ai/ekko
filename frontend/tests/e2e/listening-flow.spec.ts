@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Claim intake interactions", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
   });
 
   test("accepts URL attachment and lists it", async ({ page }) => {
@@ -10,8 +10,8 @@ test.describe("Claim intake interactions", () => {
     await urlInput.fill("https://example.com/documents/claim.pdf");
     await page.getByRole("button", { name: "Add URL" }).click();
 
-    await expect(page.getByText("claim.pdf")).toBeVisible();
-    await expect(page.getByText("URL")).toBeVisible();
+    await expect(page.getByText("claim.pdf", { exact: true })).toBeVisible();
+    await expect(page.getByText("URL", { exact: true })).toBeVisible();
   });
 
   test("shows validation if submit is attempted without required fields", async ({ page }) => {

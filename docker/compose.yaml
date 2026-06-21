@@ -66,9 +66,6 @@ services:
       - ../caddy/snippets:/etc/caddy/snippets:ro
       - caddy_data:/data
       - caddy_config:/config
-    ports:
-      - "443:443"
-      - "80:80"
     networks:
       - backend
     healthcheck:
@@ -80,13 +77,13 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    profiles: [observability]
+    restart: unless-stopped
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - "9090:9090"
     networks:
       - backend
     depends_on:
@@ -95,8 +92,8 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
+    profiles: [observability]
+    restart: unless-stopped
     networks:
       - backend
     volumes:

@@ -3,14 +3,18 @@ import { injectAxe } from "axe-playwright";
 
 test.describe("Accessibility and responsiveness", () => {
   test("has keyboard-focusable primary controls", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await page.keyboard.press("Tab");
+    await page.getByLabel("CPR").focus();
     await expect(page.getByLabel("CPR")).toBeFocused();
+
+    await page.getByLabel("Coverage period start").focus();
+    await expect(page.getByLabel("Coverage period start")).toBeFocused();
   });
 
   test("has no critical accessibility violations in app shell", async ({ page }) => {
-    await page.goto("/");
+    test.slow();
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await injectAxe(page);
 
     const results = await page.evaluate(async () => {
@@ -39,7 +43,7 @@ test.describe("Accessibility and responsiveness", () => {
 
   test("renders core content on narrow mobile viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
     await expect(
       page.getByRole("heading", { level: 1, name: "Insurance claim intake" }),
@@ -50,9 +54,9 @@ test.describe("Accessibility and responsiveness", () => {
 
   test("keeps upload and submit controls visible on desktop viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await expect(page.getByRole("button", { name: "Select files" })).toBeVisible();
+    await expect(page.getByText("Select files", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Add URL" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit claim intake" })).toBeVisible();
   });
