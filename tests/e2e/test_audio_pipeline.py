@@ -379,10 +379,10 @@ class TestPipelineLifecycle:
 
         # Act
         await stt_adapter.start()
-        assert stt_adapter._running is True  # noqa: SLF001
+        assert stt_adapter._running is True
 
         await stt_adapter.stop()
-        assert stt_adapter._running is False  # noqa: SLF001
+        assert stt_adapter._running is False
 
     async def test_multiple_start_stop_cycles(self) -> None:
         """STT adapter handles multiple start/stop cycles."""
@@ -392,9 +392,9 @@ class TestPipelineLifecycle:
         # Act & Assert
         for _ in range(3):
             await stt_adapter.start()
-            assert stt_adapter._running is True  # noqa: SLF001
+            assert stt_adapter._running is True
             await stt_adapter.stop()
-            assert stt_adapter._running is False  # noqa: SLF001
+            assert stt_adapter._running is False
 
     async def test_ensure_queue_creates_queue(self) -> None:
         """Ensure queue creates queue for stream."""
@@ -405,8 +405,8 @@ class TestPipelineLifecycle:
         await stt_adapter.ensure_queue("new_stream")
 
         # Assert
-        assert "new_stream" in stt_adapter._queues  # noqa: SLF001
-        assert isinstance(stt_adapter._queues["new_stream"], asyncio.Queue)  # noqa: SLF001
+        assert "new_stream" in stt_adapter._queues
+        assert isinstance(stt_adapter._queues["new_stream"], asyncio.Queue)
 
     async def test_ensure_queue_idempotent(self) -> None:
         """Ensure queue is idempotent."""
@@ -415,10 +415,10 @@ class TestPipelineLifecycle:
 
         # Act
         await stt_adapter.ensure_queue("stream")
-        first_queue = stt_adapter._queues["stream"]  # noqa: SLF001
+        first_queue = stt_adapter._queues["stream"]
 
         await stt_adapter.ensure_queue("stream")
-        second_queue = stt_adapter._queues["stream"]  # noqa: SLF001
+        second_queue = stt_adapter._queues["stream"]
 
         # Assert
         assert first_queue is second_queue

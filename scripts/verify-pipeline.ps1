@@ -117,7 +117,7 @@ if ($Full) {
     Invoke-Step -Name "Security: pip-audit" -Action {
         Push-Location backend
         try {
-            uv run pip-audit
+            uv run python ../scripts/security/dependency_audit.py
         }
         finally {
             Pop-Location
@@ -139,7 +139,7 @@ if ($Full) {
     }
 
     Invoke-Step -Name "Architecture boundary check" -Action {
-        uv run python scripts/check_architecture_boundaries.py
+        uv run python tools/security/check_architecture_boundaries.py
     }
 }
 

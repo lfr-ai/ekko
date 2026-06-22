@@ -221,9 +221,7 @@ class TestGraphQLQueryExecution:
     def test_conversations_list_query(self) -> None:
         """Conversations list query handles pagination."""
         variables = {"limit": 10, "offset": 0}
-        result = schema.execute_sync(
-            CONVERSATIONS_LIST_QUERY, variable_values=variables
-        )
+        result = schema.execute_sync(CONVERSATIONS_LIST_QUERY, variable_values=variables)
 
         assert result.errors is None
         assert result.data is not None
@@ -235,9 +233,7 @@ class TestGraphQLQueryExecution:
     def test_check_pii_query_with_pii(self) -> None:
         """Check PII query detects PII in text."""
         variables = {"text": "My email is john.doe@example.com"}
-        result = schema.execute_sync(
-            CHECK_PII_QUERY, variable_values=variables, context_value=_make_context()
-        )
+        result = schema.execute_sync(CHECK_PII_QUERY, variable_values=variables, context_value=_make_context())
 
         assert result.errors is None
         assert result.data is not None
@@ -253,9 +249,7 @@ class TestGraphQLQueryExecution:
     def test_check_pii_query_without_pii(self) -> None:
         """Check PII query handles clean text."""
         variables = {"text": "The weather is nice today."}
-        result = schema.execute_sync(
-            CHECK_PII_QUERY, variable_values=variables, context_value=_make_context()
-        )
+        result = schema.execute_sync(CHECK_PII_QUERY, variable_values=variables, context_value=_make_context())
 
         assert result.errors is None
         assert result.data is not None
@@ -326,9 +320,7 @@ class TestGraphQLMutationExecution:
     def test_start_conversation_mutation_with_metadata(self) -> None:
         """Start conversation mutation accepts optional metadata."""
         variables = {"input": {"metadata": "test metadata"}}
-        result = schema.execute_sync(
-            START_CONVERSATION_MUTATION, variable_values=variables
-        )
+        result = schema.execute_sync(START_CONVERSATION_MUTATION, variable_values=variables)
 
         assert result.errors is None
         assert result.data is not None
@@ -337,9 +329,7 @@ class TestGraphQLMutationExecution:
     def test_end_conversation_mutation(self) -> None:
         """End conversation mutation marks conversation as ended."""
         variables = {"conversationId": "test-conv-123"}
-        result = schema.execute_sync(
-            END_CONVERSATION_MUTATION, variable_values=variables
-        )
+        result = schema.execute_sync(END_CONVERSATION_MUTATION, variable_values=variables)
 
         assert result.errors is None
         assert result.data is not None

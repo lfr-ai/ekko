@@ -1,0 +1,40 @@
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pr:
+  branches:
+    include:
+      - main
+      - master
+
+variables:
+  - template: /.azuredevops/variables/ci.yml
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: ci
+    displayName: Frontend quality gates
+    jobs:
+      - job: frontend
+        displayName: Lint, typecheck, test, build
+        steps:
+          - checkout: self
+
+          - template: /.azuredevops/templates/steps/setup-node.yml
+            parameters:
+              nodeVersion: $(NODE_VERSION)
+
+          - template: /.azuredevops/templates/steps/install-frontend.yml
+            parameters:
+              frontendDir: $(FRONTEND_DIR)
+
+          - template: /.azuredevops/templates/steps/frontend-quality.yml
+            parameters:
+              frontendDir: $(FRONTEND_DIR)
+              runStorybookTests: $(RUN_STORYBOOK_TESTS)
+              runE2E: $(RUN_E2E)

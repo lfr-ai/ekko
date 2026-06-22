@@ -1,6 +1,6 @@
 # Neutral Agentic Topology (`.agents`)
 
-This folder is the **neutral, cross-agent canonical topology** for this repository.
+This folder is the **neutral, cross-agent canonical topology** for a modern codebase.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ This folder is the **neutral, cross-agent canonical topology** for this reposito
 
 Run the sync utility after updating `.github` prompts/skills or `.claude` commands/agents:
 
-- `scripts/sync_agentic_setup.py`
+- `.agents/sync_agentic_setup.py`
 
 This script is idempotent and currently synchronizes:
 

@@ -7,19 +7,30 @@
     "gitnexus": {
       "type": "stdio",
       "command": "gitnexus",
-      "args": ["mcp"],
+      "args": [
+        "mcp"
+      ],
       "cwd": "${workspaceFolder}"
     },
     "shadcn": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@latest", "mcp"],
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ],
       "cwd": "${workspaceFolder}/frontend"
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--isolated", "--headless"]
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated",
+        "--headless"
+      ]
     },
     "storybook": {
       "type": "http",

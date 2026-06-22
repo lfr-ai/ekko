@@ -188,7 +188,6 @@ data/*
 .claude/memory/
 .claude/todos/
 .claude/statsig/
-.claude/settings.local.json
 CLAUDE.local.md
 
 # Other AI agents

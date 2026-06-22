@@ -8,6 +8,7 @@ Distributed as a standalone Windows EXE.
 - **[Complete Setup Guide](docs/TOOLS_SETUP_GUIDE.md)** - Full development environment setup
 - **[Claude + GitHub Copilot](docs/CLAUDE_COPILOT_GUIDE.md)** - Use Claude AI for development
 - **[Agent Customization](.github/agents/README.md)** - Custom AI development agents
+- **[Azure DevOps CI Baseline](.azuredevops/README.md)** - Pipeline/policy scaffold for quality gates
 - **[Contributing](CONTRIBUTING.md)** - Contribution guidelines
 - **[Security Policy](SECURITY.md)** - Security and vulnerability reporting
 
@@ -124,7 +125,7 @@ task check
 
 # Individual checks:
 task lint          # Linting (ruff, biome)
-task typecheck     # Type checking (mypy, tsc)
+task typecheck     # Type checking (ty, tsc)
 task test          # Run tests
 task format        # Format code
 ```
@@ -286,17 +287,17 @@ Clean Architecture with strict dependency direction:
 **Quality**:
 
 - ruff (Python linting/formatting)
-- mypy (type checking)
+- ty (type checking)
 - Biome (frontend linting/formatting)
 - pre-commit hooks
 
 **AI Development Tools**:
 
-- GitHub Copilot with Claude 3.5 Sonnet
+- GitHub Copilot (latest available model in your environment)
 - CodeRabbit (AI code review)
 - Custom VS Code agents
 - OpenSpec (spec-driven planning)
-- MCP servers (Context7, GitNexus, shadcn)
+- MCP servers (Context7, GitNexus, shadcn, Playwright, Storybook)
 
 ## 📚 Documentation
 
@@ -462,7 +463,7 @@ task format            # Format all code
 ### Type Checking
 
 ```bash
-task typecheck         # Python (mypy) + Frontend (tsc)
+task typecheck         # Python (ty) + Frontend (tsc)
 ```
 
 ### Complexity
@@ -545,7 +546,6 @@ task security:audit
 Automatic security checks:
 
 - detect-secrets
-- gitleaks
 - bandit (Python security)
 
 ## 🐳 Devcontainer
@@ -569,6 +569,18 @@ docker compose -f docker/compose.yaml -f docker/compose.override.yaml up --build
 
 # Backend + local HTTPS reverse proxy (Caddy)
 docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up --build
+
+# Backend + observability (OTel Collector + Prometheus + Grafana)
+docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile observability up --build
+
+# Backend + Caddy + observability
+docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile caddy --profile observability up --build
+
+# Backend + analytics (Matomo + MariaDB)
+docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.analytics.yaml --profile analytics up --build
+
+# Backend + Caddy + observability + analytics
+docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml -f docker/compose.analytics.yaml --profile caddy --profile observability --profile analytics up --build
 ```
 
 Key files:
@@ -576,6 +588,8 @@ Key files:
 - `docker/Containerfile`
 - `docker/compose.yaml`
 - `docker/compose.override.yaml`
+- `docker/compose.observability.yaml`
+- `docker/compose.analytics.yaml`
 - `caddy/Caddyfile`
 
 ## 🤝 Contributing

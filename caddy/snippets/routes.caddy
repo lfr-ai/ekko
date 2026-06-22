@@ -16,7 +16,7 @@
 	redir @root /docs 308
 
 	reverse_proxy {args[0]} {
-		health_uri /api/health
+		health_uri /health
 		fail_duration 30s
 	}
 }

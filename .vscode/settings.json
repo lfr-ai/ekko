@@ -1,4 +1,9 @@
 {
+  "yaml.schemas": {
+    "https://json.schemastore.org/grafana-datasource.json": "docker/observability/grafana/provisioning/datasources/*.yaml",
+    "https://json.schemastore.org/grafana-dashboard-provider.json": "docker/observability/grafana/provisioning/dashboards/*.yaml"
+  },
+
   // ═══════════════════════════════════════════════════════════
   // Workspace Settings — Optimized for AI-Assisted Development
   // ═══════════════════════════════════════════════════════════

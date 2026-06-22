@@ -1,13 +1,13 @@
 ---
 name: gitnexus-exploring
-description: "Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: \"How does X work?\", \"What calls this function?\", \"Show me the auth flow\""
+description: "Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: \"How does X work?\", \"What calls this function?\", \"Show me the audio flow\""
 ---
 
 # Exploring Codebases with GitNexus
 
 ## When to Use
 
-- "How does authentication work?"
+- "How does audio processing work?"
 - "What's the project structure?"
 - "Show me the main components"
 - "Where is the database logic?"
@@ -50,29 +50,42 @@ description: "Use when the user asks how code works, wants to understand archite
 **gitnexus_query** — find execution flows related to a concept:
 
 ```
-gitnexus_query({query: "payment processing"})
-→ Processes: CheckoutFlow, RefundFlow, WebhookHandler
+gitnexus_query({query: "audio pipeline processing"})
+→ Processes: AudioCapture, TranscriptionFlow, SummarizationPipeline
 → Symbols grouped by flow with file locations
 ```
 
 **gitnexus_context** — 360-degree view of a symbol:
 
 ```
-gitnexus_context({name: "validateUser"})
-→ Incoming calls: loginHandler, apiMiddleware
-→ Outgoing calls: checkToken, getUserById
-→ Processes: LoginFlow (step 2/5), TokenRefresh (step 1/3)
+gitnexus_context({name: "ChatService"})
+→ Incoming calls: stream_handler, graphql_mutation
+→ Outgoing calls: llm_adapter.generate, pii_scrubber.anonymize
+→ Processes: ChatFlow (step 2/5), SummarizationPipeline (step 1/3)
 ```
 
-## Example: "How does payment processing work?"
+## Example: "How does the AI pipeline work?"
 
 ```
-1. READ gitnexus://repo/my-app/context       → 918 symbols, 45 processes
-2. gitnexus_query({query: "payment processing"})
-   → CheckoutFlow: processPayment → validateCard → chargeStripe
-   → RefundFlow: initiateRefund → calculateRefund → processRefund
-3. gitnexus_context({name: "processPayment"})
-   → Incoming: checkoutHandler, webhookHandler
-   → Outgoing: validateCard, chargeStripe, saveTransaction
-4. Read src/payments/processor.ts for implementation details
+1. READ gitnexus://repo/ekko/context       → 500+ symbols, 30+ processes
+2. gitnexus_query({query: "AI pipeline summarization"})
+   → SummarizationPipeline: capture_audio → transcribe → scrub_pii → summarize
+   → ChatFlow: receive_message → generate_response → stream_result
+3. gitnexus_context({name: "SummarizationService"})
+   → Incoming: api_handler, graphql_mutation
+   → Outgoing: pii_scrubber, llm_chain, embedding_service
+4. Read backend/src/ekko/application/services/ for implementation details
 ```
+
+## OpenSpec Spec Awareness
+
+When exploring this codebase, also consult the OpenSpec specs for behavioral
+context:
+
+```
+openspec/specs/
+└── platform/spec.md  → Core platform behavior
+```
+
+Use `openspec list --specs` to discover all specs and `openspec show <domain>`
+to view spec content programmatically.

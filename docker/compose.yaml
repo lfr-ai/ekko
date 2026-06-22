@@ -1,24 +1,8 @@
 # Base compose -- shared service definitions.
+# Keep this file minimal (app + optional reverse proxy).
 #
-# GOLDEN STANDARD ALIGNMENT
-# -------------------------
-# This compose.yaml follows the koda_automation golden standard pattern for service orchestration:
-# - Minimal base service definitions (app and reverse proxy)
-# - x-anchor pattern for shared env_file configuration (ekko_env_files)
-# - Named volumes for persistent data (caddy_data, caddy_config)
-# - Custom networks for service isolation (backend)
-# - Healthchecks for service readiness and dependency ordering
-# - Profiles for optional services (caddy profile for reverse proxy)
-# - compose.override.yaml pattern for local developer customization (ports, mounts, hot reload)
-#
-# Reference:
-# C:/Users/LFR/OneDrive - AP Pension/Documents/projects/koda_automation/
-#
-# INTENTIONAL DEVIATIONS
-# ----------------------
-# 1. No PostgreSQL in base compose (koda includes postgresql service)
-#    Reason: Ekko uses SQLite as default database for simplicity and local-first architecture.
-#    PostgreSQL can be added via compose.override.yaml if needed for specific deployments.
+# Optional observability stack is defined in:
+#   docker/compose.observability.yaml
 
 name: ekko
 
@@ -75,40 +59,11 @@ services:
       retries: 3
       start_period: 10s
 
-  prometheus:
-    image: prom/prometheus:latest
-    profiles: [observability]
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    networks:
-      - backend
-    depends_on:
-      app:
-        condition: service_healthy
-
-  grafana:
-    image: grafana/grafana:latest
-    profiles: [observability]
-    restart: unless-stopped
-    networks:
-      - backend
-    volumes:
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - prometheus
-
 volumes:
   caddy_data:
     name: ekko_caddy_data
   caddy_config:
     name: ekko_caddy_config
-
-  prometheus_data:
-  grafana_data:
 
 networks:
   backend:

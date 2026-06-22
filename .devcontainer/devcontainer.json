@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
   // Follows koda_automation golden standard with intentional timing optimization:
   // postCreateCommand (heavy install) runs ONCE on create, postStartCommand (light config) runs on every start.
   // This is more efficient than koda's postStartCommand-only approach which re-installs on every start.
@@ -9,6 +10,33 @@
   "workspaceFolder": "/workspace",
   "overrideCommand": false,
   "waitFor": "postCreateCommand",
+  "forwardPorts": [8000, 5173, 6006, 9090, 3000, 4317, 4318, 9464],
+  "portsAttributes": {
+    "8000": {
+      "label": "Ekko Backend"
+    },
+    "5173": {
+      "label": "Ekko Frontend"
+    },
+    "6006": {
+      "label": "Storybook"
+    },
+    "9090": {
+      "label": "Prometheus"
+    },
+    "3000": {
+      "label": "Grafana"
+    },
+    "4317": {
+      "label": "OTLP gRPC"
+    },
+    "4318": {
+      "label": "OTLP HTTP"
+    },
+    "9464": {
+      "label": "OTel Collector Prometheus Export"
+    }
+  },
   "mounts": [
     "source=ekko-uv-cache,target=/home/vscode/.cache/uv,type=volume",
     "source=ekko-precommit-cache,target=/home/vscode/.cache/pre-commit,type=volume",
@@ -48,8 +76,13 @@
         "chat.agent.maxRequests": 250,
         "chat.detectParticipant.enabled": false,
         "chat.useAgentSkills": true,
+        "chat.mcp.discovery.enabled": false,
+        "chat.mcp.autoStart": true,
         "chat.instructionsFilesLocations": {
-          ".github/instructions": true
+          ".github/instructions": true,
+          ".claude/rules": true,
+          "~/.copilot/instructions": false,
+          "~/.claude/rules": false
         },
         "github.copilot.chat.codesearch.enabled": true,
         "github.copilot.chat.alternateGptPrompt.enabled": true,
@@ -93,7 +126,7 @@
       }
     }
   },
-  "postCreateCommand": "task install",
+  "postCreateCommand": "task install && cd frontend && bunx playwright install --with-deps chromium && npm install -g @fission-ai/openspec@latest",
   "postStartCommand": "zsh .devcontainer/post-start.zsh",
   "updateRemoteUserUID": true,
   "remoteUser": "vscode",

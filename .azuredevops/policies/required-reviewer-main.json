@@ -1,0 +1,23 @@
+{
+  "isBlocking": true,
+  "isEnabled": true,
+  "settings": {
+    "requiredReviewerIds": [
+      "__REPLACE_WITH_REQUIRED_REVIEWER_ID__"
+    ],
+    "filenamePatterns": [
+      "*"
+    ],
+    "addedFilesOnly": false,
+    "scope": [
+      {
+        "matchKind": "Exact",
+        "refName": "refs/heads/main",
+        "repositoryId": "__REPLACE_WITH_REPOSITORY_ID__"
+      }
+    ]
+  },
+  "type": {
+    "id": "fd2167ab-b0be-447a-8ec8-39368250530e"
+  }
+}

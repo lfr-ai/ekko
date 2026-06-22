@@ -64,7 +64,7 @@ description: "Use when the user wants to rename, extract, split, move, or restru
 **gitnexus_rename** — automated multi-file rename:
 
 ```
-gitnexus_rename({symbol_name: "validateUser", new_name: "authenticateUser", dry_run: true})
+gitnexus_rename({symbol_name: "ChatService", new_name: "ConversationService", dry_run: true})
 → 12 edits across 8 files
 → 10 graph edits (high confidence), 2 ast_search edits (review)
 → Changes: [{file_path, edits: [{line, old_text, new_text, confidence}]}]
@@ -73,9 +73,9 @@ gitnexus_rename({symbol_name: "validateUser", new_name: "authenticateUser", dry_
 **gitnexus_impact** — map all dependents first:
 
 ```
-gitnexus_impact({target: "validateUser", direction: "upstream"})
-→ d=1: loginHandler, apiMiddleware, testUtils
-→ Affected Processes: LoginFlow, TokenRefresh
+gitnexus_impact({target: "ChatService", direction: "upstream"})
+→ d=1: stream_handler, graphql_mutation, Container
+→ Affected Processes: ChatFlow, SummarizationPipeline
 ```
 
 **gitnexus_detect_changes** — verify your changes after refactoring:
@@ -83,14 +83,14 @@ gitnexus_impact({target: "validateUser", direction: "upstream"})
 ```
 gitnexus_detect_changes({scope: "all"})
 → Changed: 8 files, 12 symbols
-→ Affected processes: LoginFlow, TokenRefresh
+→ Affected processes: ChatFlow, SummarizationPipeline
 → Risk: MEDIUM
 ```
 
 **gitnexus_cypher** — custom reference queries:
 
 ```cypher
-MATCH (caller)-[:CodeRelation {type: 'CALLS'}]->(f:Function {name: "validateUser"})
+MATCH (caller)-[:CodeRelation {type: 'CALLS'}]->(f:Function {name: "ChatService"})
 RETURN caller.name, caller.filePath ORDER BY caller.filePath
 ```
 
@@ -103,19 +103,19 @@ RETURN caller.name, caller.filePath ORDER BY caller.filePath
 | String/dynamic refs | gitnexus_query to find them               |
 | External/public API | Version and deprecate properly            |
 
-## Example: Rename `validateUser` to `authenticateUser`
+## Example: Rename `ChatService` to `ConversationService`
 
 ```
-1. gitnexus_rename({symbol_name: "validateUser", new_name: "authenticateUser", dry_run: true})
+1. gitnexus_rename({symbol_name: "ChatService", new_name: "ConversationService", dry_run: true})
    → 12 edits: 10 graph (safe), 2 ast_search (review)
-   → Files: validator.ts, login.ts, middleware.ts, config.json...
+   → Files: chat_service.py, container.py, dependencies.py, tests...
 
-2. Review ast_search edits (config.json: dynamic reference!)
+2. Review ast_search edits (config files, dynamic references)
 
-3. gitnexus_rename({symbol_name: "validateUser", new_name: "authenticateUser", dry_run: false})
+3. gitnexus_rename({..., dry_run: false})
    → Applied 12 edits across 8 files
 
 4. gitnexus_detect_changes({scope: "all"})
-   → Affected: LoginFlow, TokenRefresh
+   → Affected: ChatFlow, SummarizationPipeline
    → Risk: MEDIUM — run tests for these flows
 ```

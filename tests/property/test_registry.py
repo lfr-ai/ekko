@@ -22,9 +22,7 @@ import pytest
 
 # ── Constants ───────────────────────────────────────────────────
 
-REGISTRY_PATH = (
-    Path(__file__).parent.parent.parent / "registry" / "naming_registry.json"
-)
+REGISTRY_PATH = Path(__file__).parent.parent.parent / "registry" / "naming_registry.json"
 VALID_KEY_PATTERN = re.compile(r"^[a-z0-9_]+$")
 
 # ── Fixtures ────────────────────────────────────────────────────
@@ -56,9 +54,7 @@ def test_label_uniqueness_within_sections(registry: dict) -> None:
     """
     for section_name, entries in registry.items():
         labels = [meta.get("label") for meta in entries.values() if "label" in meta]
-        assert len(labels) == len(set(labels)), (
-            f"Duplicate labels found in section '{section_name}': {labels}"
-        )
+        assert len(labels) == len(set(labels)), f"Duplicate labels found in section '{section_name}': {labels}"
 
 
 def test_value_uniqueness_within_sections(registry: dict) -> None:
@@ -68,9 +64,7 @@ def test_value_uniqueness_within_sections(registry: dict) -> None:
     """
     for section_name, entries in registry.items():
         values = [meta.get("value") for meta in entries.values() if "value" in meta]
-        assert len(values) == len(set(values)), (
-            f"Duplicate values found in section '{section_name}': {values}"
-        )
+        assert len(values) == len(set(values)), f"Duplicate values found in section '{section_name}': {values}"
 
 
 def test_no_duplicate_keys_within_sections(registry: dict) -> None:
@@ -83,9 +77,7 @@ def test_no_duplicate_keys_within_sections(registry: dict) -> None:
     for section_name, entries in registry.items():
         keys = list(entries.keys())
         duplicates = [k for k in keys if keys.count(k) > 1]
-        assert len(keys) == len(set(keys)), (
-            f"Duplicate keys found in section '{section_name}': {set(duplicates)}"
-        )
+        assert len(keys) == len(set(keys)), f"Duplicate keys found in section '{section_name}': {set(duplicates)}"
 
 
 def test_valid_key_format(registry: dict) -> None:
@@ -96,13 +88,9 @@ def test_valid_key_format(registry: dict) -> None:
     """
     invalid_keys: list[tuple[str, str]] = []
     for section_name, entries in registry.items():
-        invalid_keys.extend(
-            (section_name, key) for key in entries if not VALID_KEY_PATTERN.match(key)
-        )
+        invalid_keys.extend((section_name, key) for key in entries if not VALID_KEY_PATTERN.match(key))
 
-    assert not invalid_keys, (
-        f"Invalid key format (must match [a-z0-9_]+): {invalid_keys}"
-    )
+    assert not invalid_keys, f"Invalid key format (must match [a-z0-9_]+): {invalid_keys}"
 
 
 def test_required_fields_present(registry: dict) -> None:
@@ -124,18 +112,14 @@ def test_required_fields_present(registry: dict) -> None:
 
 def test_section_names_valid(registry: dict) -> None:
     """Section names match the pattern [a-z0-9_]+."""
-    invalid_sections = [
-        section for section in registry if not VALID_KEY_PATTERN.match(section)
-    ]
+    invalid_sections = [section for section in registry if not VALID_KEY_PATTERN.match(section)]
     assert not invalid_sections, f"Invalid section names: {invalid_sections}"
 
 
 # ── Hypothesis Property Tests ───────────────────────────────────
 
 
-@given(
-    st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789_", min_size=1, max_size=20)
-)
+@given(st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789_", min_size=1, max_size=20))
 def test_hypothetical_key_format(key: str) -> None:
     """Any key matching [a-z0-9_]+ is valid.
 
@@ -182,9 +166,7 @@ def test_enum_registry_correspondence(registry: dict) -> None:
         # Verify each entry has a label for display
         entries = registry[section]
         for key, meta in entries.items():
-            assert "label" in meta, (
-                f"Enum entry '{key}' in section '{section}' missing 'label' field"
-            )
+            assert "label" in meta, f"Enum entry '{key}' in section '{section}' missing 'label' field"
 
 
 def test_field_names_section_structure(registry: dict) -> None:
@@ -194,9 +176,7 @@ def test_field_names_section_structure(registry: dict) -> None:
 
     for key, meta in registry["field_names"].items():
         assert "value" in meta, f"Field name '{key}' missing 'value' field"
-        assert isinstance(meta["value"], str), (
-            f"Field name '{key}' value must be string"
-        )
+        assert isinstance(meta["value"], str), f"Field name '{key}' value must be string"
 
 
 def test_api_routes_section_structure(registry: dict) -> None:
@@ -207,9 +187,7 @@ def test_api_routes_section_structure(registry: dict) -> None:
     for key, meta in registry["api_routes"].items():
         assert "value" in meta, f"Route '{key}' missing 'value' field"
         value = meta["value"]
-        assert value.startswith("/"), (
-            f"Route '{key}' value must start with '/': {value}"
-        )
+        assert value.startswith("/"), f"Route '{key}' value must start with '/': {value}"
 
 
 def test_error_codes_section_structure(registry: dict) -> None:
@@ -219,6 +197,4 @@ def test_error_codes_section_structure(registry: dict) -> None:
 
     for key, meta in registry["error_codes"].items():
         assert "value" in meta, f"Error code '{key}' missing 'value' field"
-        assert isinstance(meta["value"], str), (
-            f"Error code '{key}' value must be string"
-        )
+        assert isinstance(meta["value"], str), f"Error code '{key}' value must be string"

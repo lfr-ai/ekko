@@ -24,13 +24,15 @@ _DEFAULT_BACKUP_COUNT = 10
 _CONSOLE_FORMAT = "%(asctime)s %(levelname)-8s %(name)s | %(message)s"
 _CONSOLE_DATE_FORMAT = "%H:%M:%S"
 
-_SUPPRESSED_LOGGERS = frozenset({
-    "httpcore",
-    "httpx",
-    "hpack",
-    "websockets",
-    "watchfiles",
-})
+_SUPPRESSED_LOGGERS = frozenset(
+    {
+        "httpcore",
+        "httpx",
+        "hpack",
+        "websockets",
+        "watchfiles",
+    }
+)
 
 
 class _JSONFormatter(logging.Formatter):
@@ -90,9 +92,7 @@ def configure_logging(level: str | None = None) -> None:
     # Console handler: human-readable
     console_handler = logging.StreamHandler()
     console_handler.setLevel(numeric_level)
-    console_handler.setFormatter(
-        logging.Formatter(fmt=_CONSOLE_FORMAT, datefmt=_CONSOLE_DATE_FORMAT)
-    )
+    console_handler.setFormatter(logging.Formatter(fmt=_CONSOLE_FORMAT, datefmt=_CONSOLE_DATE_FORMAT))
     root.addHandler(console_handler)
 
     # Suppress noisy third-party loggers

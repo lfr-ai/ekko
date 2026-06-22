@@ -32,10 +32,14 @@
     // ──────────────────────────────────────────────────────────
     "ms-playwright.playwright",
     "vitest.explorer",
+    "storybookjs.storybook-vscode",
+    "codecov.codecov",
     "upstash.context7-mcp",
+    "angdrew.openspec-vscode",
     "ms-azuretools.vscode-azure-mcp-server",
     "ms-azuretools.vscode-bicep",
     "ms-azuretools.vscode-azureresourcegroups",
+    "ms-azuretools.vscode-azureappservice",
 
     // ──────────────────────────────────────────────────────────
     // Task Runner

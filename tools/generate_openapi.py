@@ -90,9 +90,7 @@ def write_yaml_spec(spec: dict) -> None:
         spec: OpenAPI specification dictionary.
     """
     with OPENAPI_YAML.open("w", encoding="utf-8") as f:
-        yaml.dump(
-            spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False
-        )
+        yaml.dump(spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
     print(f"✓ Generated OpenAPI YAML: {OPENAPI_YAML}")
 
 

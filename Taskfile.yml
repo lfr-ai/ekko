@@ -313,10 +313,30 @@ tasks:
     cmds:
       - docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up --build
 
+  docker:up:observability:
+    desc: "Run backend + observability stack (OTel Collector, Prometheus, Grafana)"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile observability up --build
+
+  docker:up:caddy:observability:
+    desc: "Run backend + Caddy + observability stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile caddy --profile observability up --build
+
+  docker:up:analytics:
+    desc: "Run backend + Matomo analytics stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.analytics.yaml --profile analytics up --build
+
+  docker:up:full:
+    desc: "Run backend + Caddy + observability + analytics stacks"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml -f docker/compose.analytics.yaml --profile caddy --profile observability --profile analytics up --build
+
   docker:down:
     desc: "Stop local container stack"
     cmds:
-      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml down
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml -f docker/compose.analytics.yaml down
 
   # ── Security ─────────────────────────────────────────────────
   security:audit:

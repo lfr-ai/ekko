@@ -40,11 +40,7 @@ def test_anonymize_when_called_then_match_count_is_never_negative(
     assert len(result.pii_matches) >= 0
 
 
-@given(
-    st.text(
-        alphabet=st.characters(blacklist_categories=("Cs",)), min_size=0, max_size=200
-    )
-)
+@given(st.text(alphabet=st.characters(blacklist_categories=("Cs",)), min_size=0, max_size=200))
 def test_anonymize_when_applied_twice_then_output_is_idempotent(
     input_text: str,
 ) -> None:

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/schema",
   "schemaVersion": 1,
-  "updatedAt": "2026-06-08",
+  "updatedAt": "2026-06-20",
   "strategy": {
     "goal": "Keep .github, .claude, and .agents independently usable while structurally aligned.",
     "independenceRules": [
@@ -22,6 +22,10 @@
         "gitnexus",
         "jscpd",
         "openspec",
+        "frontend-react-stack",
+        "shadcn-ui",
+        "playwright",
+        "accessibility",
         "python-conventions",
         "quality-gate",
         "sdd",
@@ -53,7 +57,7 @@
     "vscode": ".vscode/mcp.json",
     "claude": ".mcp.json",
     "neutral": ".agents/mcp.servers.json",
-    "requiredServers": ["context7", "gitnexus", "shadcn", "playwright"]
+    "requiredServers": ["context7", "gitnexus", "shadcn", "playwright", "storybook"]
   },
   "tooling": {
     "lint": "ruff",

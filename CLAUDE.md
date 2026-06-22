@@ -76,6 +76,8 @@ task db:migrate:pg-to-sqlite   # Copy local PostgreSQL data into SQLite
 # Build & Deploy
 task build:exe            # Build standalone PyInstaller EXE
 task docker:up:caddy      # Start Docker stack with Caddy
+task docker:up:observability        # Start backend + OTel/Prometheus/Grafana
+task docker:up:caddy:observability  # Start backend + Caddy + observability
 
 # Registry
 task registry:generate    # Regenerate constants from naming_registry.json
@@ -527,7 +529,7 @@ the authoritative instruction set for Claude Code sessions.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **voice-bot** (4237 symbols, 6530 relationships, 65 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **voice-bot** (4221 symbols, 6507 relationships, 65 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

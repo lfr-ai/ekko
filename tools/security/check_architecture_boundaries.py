@@ -66,9 +66,7 @@ def _check_config(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/config/" not in fp.as_posix() and "\\config\\" not in str(fp):
             continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -98,9 +96,7 @@ def _check_core(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/core/" not in fp.as_posix() and "\\core\\" not in str(fp):
             continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in OUTER_LAYERS:
                 imported_layer = m.group("layer")
@@ -129,13 +125,9 @@ def _check_infrastructure(files: list[Path]) -> list[Violation]:
     violations: list[Violation] = []
     forbidden = {"application", "presentation"}
     for fp in files:
-        if "/infrastructure/" not in fp.as_posix() and "\\infrastructure\\" not in str(
-            fp
-        ):
+        if "/infrastructure/" not in fp.as_posix() and "\\infrastructure\\" not in str(fp):
             continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -165,9 +157,7 @@ def _check_application(files: list[Path]) -> list[Violation]:
     for fp in files:
         if "/application/" not in fp.as_posix() and "\\application\\" not in str(fp):
             continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") == "presentation":
                 violations.append(
@@ -198,9 +188,7 @@ def _check_ai(files: list[Path]) -> list[Violation]:
         posix = fp.as_posix()
         if "/ai/" not in posix and "\\ai\\" not in str(fp):
             continue
-        for idx, line in enumerate(
-            fp.read_text(encoding="utf-8").splitlines(), start=1
-        ):
+        for idx, line in enumerate(fp.read_text(encoding="utf-8").splitlines(), start=1):
             m = _IMPORT_PATTERN.search(line)
             if m and m.group("layer") in forbidden:
                 imported_layer = m.group("layer")
@@ -223,9 +211,7 @@ def main() -> int:
     Returns:
         Process exit code (0 for success, 1 for violations or errors).
     """
-    parser = argparse.ArgumentParser(
-        description="Validate Clean Architecture import boundaries for the ekko package."
-    )
+    parser = argparse.ArgumentParser(description="Validate Clean Architecture import boundaries for the ekko package.")
     parser.add_argument(
         "--verbose",
         "-v",

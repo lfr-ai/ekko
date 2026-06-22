@@ -70,15 +70,14 @@ def _make_constant_name(section: str, key: str, suffix: str = "LABEL") -> str:
     # Use semantic prefixes for new sections
     if section == "field_names":
         return f"FIELD_{key.upper()}"
-    elif section == "api_routes":
+    if section == "api_routes":
         return f"ROUTE_{key.upper()}"
-    elif section == "error_codes":
+    if section == "error_codes":
         return f"ERROR_{key.upper()}"
-    elif section == "status_values":
+    if section == "status_values":
         return f"STATUS_{key.upper()}"
-    else:
-        # Legacy format for existing sections
-        return f"{section.upper()}_{key.upper()}_{suffix}"
+    # Legacy format for existing sections
+    return f"{section.upper()}_{key.upper()}_{suffix}"
 
 
 def generate() -> str:

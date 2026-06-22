@@ -1,0 +1,33 @@
+trigger: none
+pr: none
+
+schedules:
+  - cron: "0 3 * * 1"
+    displayName: Weekly Renovate run (Monday 03:00 UTC)
+    branches:
+      include:
+        - main
+        - master
+    always: true
+
+variables:
+  - template: /.azuredevops/variables/renovate.yml
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+
+  - template: /.azuredevops/templates/steps/setup-node.yml
+    parameters:
+      nodeVersion: $(NODE_VERSION)
+
+  - script: npx --yes --package $(RENOVATE_NPM_PACKAGE) -- renovate
+    displayName: Run Renovate
+    env:
+      RENOVATE_PLATFORM: azure
+      RENOVATE_ENDPOINT: $(System.CollectionUri)
+      RENOVATE_TOKEN: $(System.AccessToken)
+      RENOVATE_REPOSITORIES: $(System.TeamProject)/$(Build.Repository.Name)
+      RENOVATE_CONFIG_FILE: $(Build.SourcesDirectory)/renovate.json

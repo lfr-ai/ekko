@@ -1,0 +1,20 @@
+{
+  "isBlocking": true,
+  "isEnabled": true,
+  "settings": {
+    "buildDefinitionId": "__REPLACE_WITH_BUILD_DEFINITION_ID__",
+    "displayName": "Required: frontend quality gates",
+    "queueOnSourceUpdateOnly": true,
+    "scope": [
+      {
+        "matchKind": "Exact",
+        "refName": "refs/heads/main",
+        "repositoryId": "__REPLACE_WITH_REPOSITORY_ID__"
+      }
+    ],
+    "validDuration": 0
+  },
+  "type": {
+    "id": "0609b952-1397-4640-95ec-e00a01b2c241"
+  }
+}

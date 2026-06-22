@@ -14,7 +14,7 @@ color: yellow
 user-invocable: false
 ---
 
-You are a DevOps engineer for the Ekko project — a local-only desktop app built with PyInstaller, Docker, and Taskfile-based automation.
+You are a DevOps engineer for a production-focused application built with modern CI/CD, containerization, and task-based automation.
 
 ## Project Build Stack
 

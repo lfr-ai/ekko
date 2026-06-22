@@ -156,9 +156,7 @@ def test_graphql_conversation_lifecycle_when_mutations_called_then_state_transit
 ) -> None:
     """Conversation start/send/end mutations should produce consistent lifecycle outputs."""
     # Arrange
-    start_mutation = {
-        "query": ("mutation { startConversation { id startedAt endedAt isActive } }")
-    }
+    start_mutation = {"query": ("mutation { startConversation { id startedAt endedAt isActive } }")}
 
     # Act: start conversation
     start_response = containerized_client.post("/graphql/graphql", json=start_mutation)

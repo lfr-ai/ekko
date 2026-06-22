@@ -1,0 +1,37 @@
+parameters:
+  - name: frontendDir
+    type: string
+    default: "frontend"
+  - name: runStorybookTests
+    type: string
+    default: "true"
+  - name: runE2E
+    type: string
+    default: "false"
+
+steps:
+  - script: bun run lint
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Lint frontend
+
+  - script: bun run typecheck
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Typecheck frontend
+
+  - script: bun run test
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Run frontend unit tests
+
+  - script: bun run build
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Build frontend
+
+  - script: bun run test:storybook
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Run Storybook tests
+    condition: and(succeeded(), eq('${{ parameters.runStorybookTests }}', 'true'))
+
+  - script: bun run test:e2e
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Run Playwright end-to-end tests
+    condition: and(succeeded(), eq('${{ parameters.runE2E }}', 'true'))

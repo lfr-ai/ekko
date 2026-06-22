@@ -48,7 +48,6 @@ export default defineConfig({
         manualChunks: {
           "react-vendor": ["react", "react-dom"],
           "query-vendor": ["@tanstack/react-query"],
-          "graphql-vendor": ["graphql", "graphql-request", "graphql-ws"],
           "ui-vendor": ["lucide-react", "@radix-ui/react-slot"],
           "router-vendor": ["react-router"],
           "state-vendor": ["zustand"],

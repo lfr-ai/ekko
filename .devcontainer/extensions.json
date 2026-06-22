@@ -1,9 +1,12 @@
 [
   "charliermarsh.ruff",
+  "astral-sh.ty",
   "ms-python.python",
   "ms-python.vscode-pylance",
   "github.copilot",
   "github.copilot-chat",
+  "upstash.context7-mcp",
+  "angdrew.openspec-vscode",
   "biomejs.biome",
   "bradlc.vscode-tailwindcss",
   "redhat.vscode-yaml",
@@ -18,5 +21,8 @@
   "usernamehw.errorlens",
   "ms-playwright.playwright",
   "vitest.explorer",
-  "samuelcolvin.jinjahtml"
+  "samuelcolvin.jinjahtml",
+  "storybookjs.storybook-vscode",
+  "codecov.codecov",
+  "ms-azuretools.vscode-azureappservice"
 ]

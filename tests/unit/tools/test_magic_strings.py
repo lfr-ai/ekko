@@ -179,9 +179,7 @@ class TestParseFileAst:
         violations = _parse_file_ast(test_file)
 
         # Should detect "id" and "name" as field name violations
-        field_violations = [
-            v for v in violations if v.category == ViolationCategory.FIELD_NAME
-        ]
+        field_violations = [v for v in violations if v.category == ViolationCategory.FIELD_NAME]
         assert len(field_violations) >= 2
         literals = {v.literal for v in field_violations}
         assert "id" in literals
@@ -202,9 +200,7 @@ class TestParseFileAst:
 
         violations = _parse_file_ast(test_file)
 
-        route_violations = [
-            v for v in violations if v.category == ViolationCategory.ROUTE_PATH
-        ]
+        route_violations = [v for v in violations if v.category == ViolationCategory.ROUTE_PATH]
         assert len(route_violations) >= 1
         assert any(v.literal == "/api/users" for v in route_violations)
 
@@ -225,9 +221,7 @@ class TestParseFileAst:
 
         violations = _parse_file_ast(test_file)
 
-        status_violations = [
-            v for v in violations if v.category == ViolationCategory.STATUS_VALUE
-        ]
+        status_violations = [v for v in violations if v.category == ViolationCategory.STATUS_VALUE]
         assert len(status_violations) >= 2
         literals = {v.literal for v in status_violations}
         assert "completed" in literals

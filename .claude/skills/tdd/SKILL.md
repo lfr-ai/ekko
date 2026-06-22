@@ -324,7 +324,7 @@ task test && task lint && task typecheck
 - [ ] Unit tests have zero I/O and run in < 10 ms
 - [ ] Ports have contract test suites in `tests/unit/core/ports/`
 - [ ] Every bug fix starts with a failing regression test
-- [ ] Fakes in `tests/mocks/` implement protocols (no `MagicMock` on core interfaces)
+- [ ] Fakes in `tests/mocks/` implement protocols (no `MagicMock` on core ports)
 - [ ] The full test suite is green before every commit
 - [ ] No `skip` markers without a GitHub issue reference
 - [ ] Coverage stays above 70% (`task test:coverage`)

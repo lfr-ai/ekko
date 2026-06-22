@@ -39,7 +39,7 @@ _ensure_backend_src_on_path()
 @pytest.fixture(scope="session", autouse=True)
 def _test_environment() -> Generator[None, None, None]:
     """Force deterministic environment for all root tests."""
-    from ekko.config.settings import get_settings  # noqa: PLC0415
+    from ekko.config.settings import get_settings
 
     previous_environment = os.environ.get("EKKO_ENVIRONMENT")
     previous_disable_audio = os.environ.get("EKKO_DISABLE_AUDIO")
@@ -66,7 +66,7 @@ def _test_environment() -> Generator[None, None, None]:
 def postgres_container() -> Generator[PostgresContainer, None, None]:
     """Run PostgreSQL in Docker for container-backed test flows."""
     try:
-        import docker  # noqa: PLC0415
+        import docker
 
         docker.from_env().ping()
     except Exception as exc:  # pragma: no cover - depends on local Docker runtime
@@ -95,8 +95,8 @@ async def postgres_async_engine(
     postgres_async_database_url: str,
 ) -> AsyncGenerator[AsyncEngine, None]:
     """Create a PostgreSQL async engine with test schema created."""
-    from ekko.infrastructure.db import models as _  # noqa: F401, PLC0415
-    from ekko.infrastructure.db.base import Base  # noqa: PLC0415
+    from ekko.infrastructure.db import models as _  # noqa: F401
+    from ekko.infrastructure.db.base import Base
 
     engine = create_async_engine(postgres_async_database_url, future=True, echo=False)
 
@@ -115,9 +115,7 @@ def postgres_session_factory(
     postgres_async_engine: AsyncEngine,
 ) -> async_sessionmaker[AsyncSession]:
     """Provide async SQLAlchemy session factory bound to Testcontainer DB."""
-    return async_sessionmaker(
-        postgres_async_engine, class_=AsyncSession, expire_on_commit=False
-    )
+    return async_sessionmaker(postgres_async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest.fixture
@@ -133,13 +131,11 @@ async def postgres_session(
 @pytest.fixture
 def app_with_postgres(postgres_async_database_url: str):
     """Create FastAPI app with a Testcontainers-backed DB engine injected."""
-    from ekko.composition import create_app  # noqa: PLC0415
+    from ekko.composition import create_app
 
     app = create_app()
 
-    db_engine = create_async_engine(
-        postgres_async_database_url, future=True, echo=False
-    )
+    db_engine = create_async_engine(postgres_async_database_url, future=True, echo=False)
     app.state.db_engine = db_engine
     app.state.session_factory = async_sessionmaker(
         db_engine,
@@ -155,7 +151,7 @@ def app_with_postgres(postgres_async_database_url: str):
 @pytest.fixture
 def containerized_client(app_with_postgres):
     """Provide in-process HTTP client for container-backed API tests."""
-    from fastapi.testclient import TestClient  # noqa: PLC0415
+    from fastapi.testclient import TestClient
 
     with TestClient(app_with_postgres, raise_server_exceptions=False) as client:
         yield client

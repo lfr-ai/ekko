@@ -39,6 +39,7 @@ Prefer the most specific applicable rule.
   - `gitnexus`
   - `playwright`
   - `shadcn` (frontend workspaces)
+  - `storybook` (frontend component review)
 - Keep VS Code settings aligned:
   - `"chat.mcp.discovery.enabled": false`
   - `"chat.mcp.autoStart": true`

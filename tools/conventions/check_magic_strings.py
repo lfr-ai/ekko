@@ -21,9 +21,7 @@ ROOT: Final = Path(__file__).resolve().parents[2]
 SRC: Final = ROOT / "backend" / "src" / "ekko"
 REGISTRY: Final = ROOT / "registry" / "naming_registry.json"
 TESTS: Final = ROOT / "tests"
-EXCEPTIONS_FILE: Final = (
-    ROOT / "tools" / "conventions" / "magic_strings_exceptions.json"
-)
+EXCEPTIONS_FILE: Final = ROOT / "tools" / "conventions" / "magic_strings_exceptions.json"
 
 
 @unique
@@ -434,9 +432,7 @@ def _filter_violations(
 
     if exclude_files:
         patterns = [re.compile(pattern) for pattern in exclude_files]
-        filtered = [
-            v for v in filtered if not any(p.search(str(v.file)) for p in patterns)
-        ]
+        filtered = [v for v in filtered if not any(p.search(str(v.file)) for p in patterns)]
 
     return filtered
 
@@ -478,9 +474,7 @@ def main() -> int:
     Returns:
         Process exit code (1 if violations found, 0 otherwise).
     """
-    parser = argparse.ArgumentParser(
-        description="Check for hardcoded magic strings that should be constants."
-    )
+    parser = argparse.ArgumentParser(description="Check for hardcoded magic strings that should be constants.")
     parser.add_argument(
         "--verbose",
         action="store_true",

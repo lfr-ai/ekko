@@ -7,7 +7,6 @@ import { useSubmitClaimIntake } from "@/application/hooks/use-submit-claim-intak
 import { type ClaimIntakeFormData, claimIntakeSchema } from "@/domain/schemas/claim-intake-schema";
 import type { ClaimAttachment, ClaimIntakeInput } from "@/domain/types/claim-intake";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/presentation/components/ui/card";
 import { Checkbox } from "@/presentation/components/ui/checkbox";
@@ -23,7 +22,7 @@ interface AttachmentListProps {
 
 function AttachmentList({ attachments, onRemove }: AttachmentListProps) {
   if (attachments.length === 0) {
-    return <p className="text-muted-foreground text-sm">No files or URLs added yet.</p>;
+    return <output className="text-muted-foreground text-sm">No files or URLs added yet.</output>;
   }
 
   return (
@@ -34,7 +33,9 @@ function AttachmentList({ attachments, onRemove }: AttachmentListProps) {
           className="flex items-center justify-between rounded-md border bg-card px-3 py-2"
         >
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{attachment.source.toUpperCase()}</Badge>
+            <span className="inline-flex items-center rounded-full border border-transparent bg-secondary px-2.5 py-0.5 font-semibold text-secondary-foreground text-xs">
+              {attachment.source.toUpperCase()}
+            </span>
             <div>
               <p className="font-medium text-sm">{attachment.name}</p>
               {attachment.url ? (
@@ -185,9 +186,17 @@ export function ClaimIntakeForm(): React.JSX.Element {
             <div className="space-y-2">
               <Label htmlFor="insurance-condition">Insurance condition P</Label>
               <select
+                aria-label="Insurance condition P"
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                 id="insurance-condition"
-                onChange={(event) => form.setValue("insuranceConditionId", event.target.value)}
+                name="insuranceConditionId"
+                onChange={(event) => {
+                  form.setValue("insuranceConditionId", event.target.value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
+                title="Insurance condition P"
                 value={form.watch("insuranceConditionId")}
               >
                 <option value="">Select condition</option>
@@ -308,11 +317,11 @@ export function ClaimIntakeForm(): React.JSX.Element {
             </div>
 
             <AttachmentList attachments={attachments} onRemove={removeAttachment} />
-            <p className="text-destructive text-sm">{form.formState.errors.attachments?.message}</p>
+            <output className="text-destructive text-sm">
+              {form.formState.errors.attachments?.message}
+            </output>
             {submitSuccessMessage ? (
-              <p className="text-primary text-sm" role="status">
-                {submitSuccessMessage}
-              </p>
+              <output className="text-primary text-sm">{submitSuccessMessage}</output>
             ) : null}
           </div>
 

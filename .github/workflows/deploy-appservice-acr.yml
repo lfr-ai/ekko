@@ -1,0 +1,48 @@
+name: Deploy App Service (ACR)
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: Container image tag to build and deploy
+        required: true
+        default: latest
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build, Push, Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+      IMAGE_TAG: ${{ inputs.imageTag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy IaC (App Service + ACR)
+        run: |
+          az deployment group create \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file azure/iac/appservice-acr.bicep \
+            --parameters @azure/iac/appservice-acr.parameters.json \
+            --parameters imageTag="$IMAGE_TAG"
+
+      - name: Build and push image to ACR
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --query loginServer -o tsv)
+          az acr login --name "$ACR_NAME"
+          docker build -f docker/Containerfile -t "$ACR_LOGIN_SERVER/ekko:$IMAGE_TAG" .
+          docker push "$ACR_LOGIN_SERVER/ekko:$IMAGE_TAG"
