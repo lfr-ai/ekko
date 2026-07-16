@@ -12,10 +12,12 @@
   "configMigration": true,
   "timezone": "Europe/Copenhagen",
   "schedule": [
-    "after 6am and before 10pm on monday to friday"
+    "* 6-21 * * 1-5"
   ],
   "prConcurrentLimit": 8,
+  "branchConcurrentLimit": 8,
   "prHourlyLimit": 2,
+  "dependencyDashboardAutoclose": true,
   "labels": [
     "dependencies"
   ],
@@ -59,6 +61,20 @@
     {
       "matchManagers": ["npm"],
       "groupName": "frontend dependencies"
+    },
+    {
+      "description": "Apply dependency cooldown to frontend ecosystem",
+      "matchManagers": ["npm"],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-required",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "Apply dependency cooldown to Python ecosystem",
+      "matchManagers": ["pep621", "pip_requirements"],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-required",
+      "internalChecksFilter": "strict"
     },
     {
       "description": "Group React ecosystem dependencies",

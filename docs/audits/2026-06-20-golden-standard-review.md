@@ -267,6 +267,20 @@ New local baseline now supports:
 - Grafana starter dashboard assumes common metric names; adapt to actual exported metric names once app instrumentation is enabled.
 - LiteLLM rollout should be feature-flagged to avoid regressions in existing prompt/agent pipelines.
 
+## 2026-06-22 parity delta (this pass)
+
+- Renovate hardening:
+  - switched schedule to explicit Cron syntax (`* 6-21 * * 1-5`)
+  - added `branchConcurrentLimit: 8` and `dependencyDashboardAutoclose: true`
+  - added `minimumReleaseAge` safeguards for npm and Python managers with
+    `minimumReleaseAgeBehaviour: timestamp-required` and `internalChecksFilter: strict`
+- Observability security:
+  - bound local observability ports to loopback (`127.0.0.1`) in
+    `docker/compose.observability.yaml`
+- Configuration/doc sync:
+  - removed legacy duplicate Grafana env vars from `.env.example`
+  - aligned `docker/README.md` with `EKKO_GRAFANA_*` variable names used by compose
+
 ## Recommended immediate next steps
 
 1. Enable and test observability profile locally.

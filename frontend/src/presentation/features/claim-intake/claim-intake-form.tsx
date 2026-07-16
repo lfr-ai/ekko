@@ -12,6 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/presentation/compone
 import { Checkbox } from "@/presentation/components/ui/checkbox";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/presentation/components/ui/select";
 import { Switch } from "@/presentation/components/ui/switch";
 import { Textarea } from "@/presentation/components/ui/textarea";
 
@@ -108,6 +115,7 @@ export function ClaimIntakeForm(): React.JSX.Element {
   });
 
   const optionItems = useMemo(() => optionsQuery.data ?? [], [optionsQuery.data]);
+  const selectedInsuranceConditionId = form.watch("insuranceConditionId");
 
   function syncAttachments(nextAttachments: ReadonlyArray<ClaimAttachment>): void {
     setAttachments(nextAttachments);
@@ -135,6 +143,12 @@ export function ClaimIntakeForm(): React.JSX.Element {
   function handleDrop(event: React.DragEvent<HTMLLabelElement>): void {
     event.preventDefault();
     setIsDragOver(false);
+    const containsFiles = Array.from(event.dataTransfer.items).some(
+      (item) => item.kind === "file",
+    );
+    if (event.dataTransfer.items.length > 0 && !containsFiles) {
+      return;
+    }
     appendFiles(event.dataTransfer.files);
   }
 
@@ -185,29 +199,39 @@ export function ClaimIntakeForm(): React.JSX.Element {
 
             <div className="space-y-2">
               <Label htmlFor="insurance-condition">Insurance condition P</Label>
-              <select
-                aria-label="Insurance condition P"
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                id="insurance-condition"
+              <Select
                 name="insuranceConditionId"
-                onChange={(event) => {
-                  form.setValue("insuranceConditionId", event.target.value, {
+                onValueChange={(value) => {
+                  form.setValue("insuranceConditionId", value, {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
                 }}
-                title="Insurance condition P"
-                value={form.watch("insuranceConditionId")}
+                value={selectedInsuranceConditionId}
               >
-                <option value="">Select condition</option>
-                {optionItems.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  aria-label="Insurance condition P"
+                  aria-invalid={Boolean(form.formState.errors.insuranceConditionId) || undefined}
+                  className="w-full"
+                  id="insurance-condition"
+                >
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  {optionItems.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {optionsQuery.isLoading ? (
                 <p className="text-muted-foreground text-sm">Loading options…</p>
+              ) : null}
+              {optionsQuery.isError ? (
+                <p className="text-destructive text-sm">
+                  Could not load insurance conditions. Please retry.
+                </p>
               ) : null}
               <p className="text-destructive text-sm">
                 {form.formState.errors.insuranceConditionId?.message}

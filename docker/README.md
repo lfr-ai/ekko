@@ -49,10 +49,13 @@ Matomo analytics is enabled via `--profile analytics` with
 
 Grafana credentials are configured through:
 
-- `GRAFANA_ADMIN_USER`
-- `GRAFANA_ADMIN_PASSWORD`
+- `EKKO_GRAFANA_ADMIN_USER`
+- `EKKO_GRAFANA_ADMIN_PASSWORD`
 
 in `.env.local` (do not commit real values).
+
+Observability ports are loopback-bound by default (`127.0.0.1`) to reduce local
+network exposure.
 
 Host ports are intentionally declared in `compose.override.yaml` so the base file
 stays safer for CI and non-local runtime scenarios.
