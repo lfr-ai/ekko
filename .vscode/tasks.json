@@ -1,0 +1,226 @@
+{
+  // ═══════════════════════════════════════════════════════════
+  // Tasks Configuration for Ekko
+  // ═══════════════════════════════════════════════════════════
+
+  "version": "2.0.0",
+  "tasks": [
+    // ──────────────────────────────────────────────────────────
+    // Backend Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Backend: Install Dependencies",
+      "type": "shell",
+      "command": "uv sync",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Run Dev Server",
+      "type": "shell",
+      "command": "uv run uvicorn ekko.composition.app_factory:create_app --factory --reload --host 127.0.0.1 --port 8000",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Started reloader process.*$",
+          "endsPattern": "^.*Application startup complete.*$"
+        }
+      }
+    },
+    {
+      "label": "Backend: Run Tests",
+      "type": "shell",
+      "command": "uv run python -m pytest tests/ -v",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Lint",
+      "type": "shell",
+      "command": "uv run python -m ruff check src",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Format",
+      "type": "shell",
+      "command": "uv run python -m ruff format src",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Type Check",
+      "type": "shell",
+      "command": "uv run python -m ty check src/ekko",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "UV_LINK_MODE": "copy",
+          "UV_NO_SYNC": "1"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    // ──────────────────────────────────────────────────────────
+    // Frontend Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Frontend: Install Dependencies",
+      "type": "shell",
+      "command": "bun install; $needsRepair = ($LASTEXITCODE -ne 0) -or -not (Test-Path \"node_modules/pathe/package.json\") -or -not (Test-Path \"node_modules/estree-walker/package.json\"); if ($needsRepair) { Write-Host \"Bun install incomplete in this environment. Running npm install fallback...\"; npm install; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "BUN_CONFIG_LINKER": "hoisted",
+          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
+          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Run Dev Server",
+      "type": "shell",
+      "command": "bun run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "BUN_CONFIG_LINKER": "hoisted",
+          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
+          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        }
+      },
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*VITE.*$",
+          "endsPattern": "^.*Local:.*$"
+        }
+      }
+    },
+    {
+      "label": "Frontend: Build",
+      "type": "shell",
+      "command": "bun run build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "BUN_CONFIG_LINKER": "hoisted",
+          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
+          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Test",
+      "type": "shell",
+      "command": "bun run test",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "BUN_CONFIG_LINKER": "hoisted",
+          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
+          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Lint",
+      "type": "shell",
+      "command": "bun run lint",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "BUN_CONFIG_LINKER": "hoisted",
+          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
+          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    // ──────────────────────────────────────────────────────────
+    // Compound Tasks
+    // ──────────────────────────────────────────────────────────
+    {
+      "label": "Dev: Start Full Stack",
+      "dependsOn": [
+        "Backend: Run Dev Server",
+        "Frontend: Run Dev Server"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Quality: Run All Checks",
+      "dependsOn": [
+        "Backend: Lint",
+        "Backend: Type Check",
+        "Backend: Run Tests",
+        "Frontend: Lint",
+        "Frontend: Test"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

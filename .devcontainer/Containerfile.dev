@@ -1,0 +1,60 @@
+# syntax=docker/dockerfile:1
+#
+# Development container for Ekko.
+# Used by VS Code Dev Containers via .devcontainer/compose.yml.
+#
+# DEVCONTAINER NOTES
+# ------------------
+# This Containerfile.dev follows a practical devcontainer setup:
+# - Microsoft's official devcontainers Python base image for VSCode integration
+# - uv for Python dependency management with link-mode copy
+# - task (Taskfile.dev) for unified task running
+# - hadolint for Dockerfile linting
+# - shellcheck for shell script linting
+# - zsh as default shell for vscode user
+# - Comprehensive tooling for development workflow
+#
+# INTENTIONAL DEVIATIONS
+# ----------------------
+# 1. Apt packages NOT version-pinned
+#    Reason: Dev container reproducibility vs maintenance overhead tradeoff favors convenience.
+#    Production Containerfile (docker/Containerfile) uses pinned base image tags for reproducibility.
+# 2. Bun installed for frontend package management
+#    Reason: Project-specific frontend tooling choice for performance and modern workflows.
+
+FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm
+
+ARG HADOLINT_VERSION=v2.14.0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    UV_LINK_MODE=copy
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# hadolint ignore=DL3008
+RUN rm -f /etc/apt/sources.list.d/yarn.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    jq \
+    unzip \
+    zsh \
+    shellcheck \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:0.7 /uv /uvx /usr/local/bin/
+
+RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin \
+    && curl -sSL -o /usr/local/bin/hadolint \
+    "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
+    && chmod +x /usr/local/bin/hadolint
+
+RUN curl -fsSL https://bun.sh/install | bash \
+    && ln -s /root/.bun/bin/bun /usr/local/bin/bun
+
+RUN chsh -s /usr/bin/zsh vscode
+
+WORKDIR /workspace

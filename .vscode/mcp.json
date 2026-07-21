@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/vscode-mcp.json",
+  "servers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "shadcn": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ],
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    "gitnexus": {
+      "type": "stdio",
+      "command": "gitnexus",
+      "args": [
+        "mcp"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated",
+        "--headless"
+      ]
+    },
+    "storybook": {
+      "type": "http",
+      "url": "http://localhost:6006/mcp"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+name: ekko-dev
+
+x-ekko-env-files: &ekko_env_files
+  - path: ../.env
+    required: false
+  - path: ../.env.local
+    required: false
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Containerfile.dev
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    init: true
+    env_file: *ekko_env_files
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+      - "6006:6006"

@@ -1,0 +1,240 @@
+# https://taskfile.dev
+---
+version: "3"
+
+vars:
+  BACKEND_PYTHONPATH: '{{if eq OS "windows"}}src;..{{else}}src:..{{end}}'
+
+tasks:
+  dev:
+    desc: "Run FastAPI app in reload mode"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+      EKKO_DISABLE_AUDIO: "{{.EKKO_DISABLE_AUDIO | default \"false\"}}"
+    cmds:
+      - uv run uvicorn ekko.composition.app_factory:create_app --factory --reload --host 127.0.0.1 --port 8000
+
+  install:
+    desc: "Install backend dependencies"
+    cmds:
+      - uv sync --all-extras
+
+  build:
+    desc: "Build backend package"
+    cmds:
+      - uv build
+
+  # ── Testing ──────────────────────────────────────────────────
+  test:
+    desc: "Run full backend test suite"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/ -v --tb=short {{.CLI_ARGS}}
+
+  test:unit:
+    desc: "Run unit tests only"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/unit/ -v --tb=short {{.CLI_ARGS}}
+
+  test:integration:
+    desc: "Run integration tests"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/integration/ -v --tb=short -m integration {{.CLI_ARGS}}
+
+  test:property:
+    desc: "Run property-based tests"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/property/ -v --tb=short {{.CLI_ARGS}}
+
+  test:performance:
+    desc: "Run performance benchmarks"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
+
+  test:e2e:
+    desc: "Run end-to-end tests"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/e2e/ -v --tb=short {{.CLI_ARGS}}
+
+  test:coverage:
+    desc: "Run tests with coverage report"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m pytest tests/ --cov=src/ekko --cov-report=term-missing --cov-report=html {{.CLI_ARGS}}
+
+  # ── Linting ──────────────────────────────────────────────────
+  lint:
+    desc: "Lint Python code (ruff check)"
+    cmds:
+      - uv run ruff check src tests
+
+  format:
+    desc: "Format Python code"
+    cmds:
+      - uv run ruff format src tests
+      - uv run ruff check --fix src tests
+
+  format:check:
+    desc: "Check formatting without modifying files"
+    cmds:
+      - uv run ruff format --check src tests
+
+  typecheck:
+    desc: "Run type checker"
+    cmds:
+      - uv run ty check src/ekko
+
+  xenon:
+    desc: "Cyclomatic complexity gate"
+    cmds:
+      - uv run python -m xenon --max-absolute=B --max-modules=B --max-average=A src
+
+  # ── Security ─────────────────────────────────────────────────
+  security:audit:
+    desc: "Audit dependencies for known vulnerabilities"
+    cmds:
+      - uv run python ../scripts/security/dependency_audit.py
+
+  security:secrets:
+    desc: "Scan for leaked secrets"
+    cmds:
+      - uv run detect-secrets scan --baseline ../.secrets.baseline
+
+  security:bandit:
+    desc: "Security scanning with Bandit"
+    cmds:
+      - uv run python -m bandit -c ../bandit.toml -r src/ekko
+
+  # ── Database ─────────────────────────────────────────────────
+  db:migrate:
+    desc: "Run Alembic migrations to head"
+    cmds:
+      - uv run alembic upgrade head
+
+  db:revision:
+    desc: "Create a new Alembic migration"
+    cmds:
+      - uv run alembic revision --autogenerate -m "{{.CLI_ARGS}}"
+
+  db:downgrade:
+    desc: "Rollback last migration"
+    cmds:
+      - uv run alembic downgrade -1
+
+  db:reset:
+    desc: "Downgrade all and re-migrate"
+    cmds:
+      - uv run alembic downgrade base
+      - uv run alembic upgrade head
+
+  db:migrate:pg-to-sqlite:
+    desc: "Copy data from PostgreSQL into local SQLite"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.postgres_to_sqlite {{.CLI_ARGS}}
+
+  # ── Prompt Registry ───────────────────────────────────────
+  prompts:provision:
+    desc: "Provision prompt registry versions from current prompt sources"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry provision
+
+  prompts:list:
+    desc: "List prompt registry versions"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry list
+
+  prompts:active:
+    desc: "Show active prompt versions"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry active {{.CLI_ARGS}}
+
+  prompts:resolve:
+    desc: "Resolve prompt version metadata"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.prompt_registry resolve {{.CLI_ARGS}}
+
+  eval:backtest:run-name:
+    desc: "Generate a prompt-version-aware backtest run name"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.evaluator run-name {{.CLI_ARGS}}
+
+  eval:backtest:metadata:
+    desc: "Generate backtest metadata (run name + prompt versions)"
+    env:
+      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
+    cmds:
+      - uv run python -m ekko.cli.evaluator metadata {{.CLI_ARGS}}
+
+  # ── Keploy Record/Replay ───────────────────────────────────
+  keploy:version:
+    desc: "Print Keploy CLI version"
+    cmds:
+      - keploy --version
+
+  keploy:record:
+    desc: "Record API traffic and generate Keploy test cases/mocks"
+    env:
+      EKKO_DISABLE_AUDIO: "true"
+      EKKO_ENVIRONMENT: "local"
+      EKKO_DATABASE_BACKEND: "sqlite"
+    cmds:
+      - >-
+        keploy record
+        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
+        --path .
+        --delay 10
+        {{.CLI_ARGS}}
+
+  keploy:test:
+    desc: "Replay Keploy test cases against the local backend"
+    env:
+      EKKO_DISABLE_AUDIO: "true"
+      EKKO_ENVIRONMENT: "local"
+      EKKO_DATABASE_BACKEND: "sqlite"
+    cmds:
+      - >-
+        keploy test
+        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
+        --path .
+        --delay 10
+        --api-timeout 15
+        --ignore-ordering
+        --remove-unused-mocks
+        --skip-coverage
+        {{.CLI_ARGS}}
+
+  keploy:report:
+    desc: "Show Keploy test run summary"
+    cmds:
+      - keploy report --path . --summary {{.CLI_ARGS}}
+
+  # ── Cleanup ──────────────────────────────────────────────────
+  clean:
+    desc: "Remove build artifacts and caches"
+    cmds:
+      - rm -rf dist build .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage .tox
+      - find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

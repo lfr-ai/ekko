@@ -1,0 +1,558 @@
+# https://taskfile.dev
+---
+version: "3"
+
+dotenv: [".env", ".env.local"]
+
+includes:
+  backend:
+    taskfile: ./tasks/backend.yml
+    dir: backend
+  frontend:
+    taskfile: ./tasks/frontend.yml
+    dir: frontend
+
+tasks:
+  default:
+    desc: "Show available tasks"
+    cmds: [task --list]
+    silent: true
+
+  dev:
+    desc: "Start backend + frontend in development mode"
+    deps:
+      - backend:dev
+      - frontend:dev
+
+  dev:backend:
+    desc: "Start backend only"
+    cmds:
+      - task: backend:dev
+
+  dev:frontend:
+    desc: "Start frontend only"
+    cmds:
+      - task: frontend:dev
+
+  # ── Testing ──────────────────────────────────────────────────
+  test:
+    desc: "Run default tests (backend unit + frontend unit + tools)"
+    cmds:
+      - task: backend:test
+      - task: test:tools
+      - task: frontend:test:unit
+
+  test:unit:
+    desc: "Run unit tests only"
+    cmds:
+      - task: backend:test:unit
+
+  test:tools:
+    desc: "Run root-level tool/convention tests"
+    cmds:
+      - cd backend && uv run python -m pytest ../tests/ -v --tb=short
+
+  test:integration:
+    desc: "Run integration tests"
+    cmds:
+      - task: backend:test:integration
+
+  test:coverage:
+    desc: "Run tests with coverage reports"
+    cmds:
+      - task: backend:test:coverage
+
+  test:property:
+    desc: "Run property-based tests"
+    cmds:
+      - task: backend:test:property
+
+  test:performance:
+    desc: "Run performance benchmarks"
+    cmds:
+      - task: backend:test:performance
+
+  test:e2e:
+    desc: "Run end-to-end tests"
+    cmds:
+      - task: backend:test:e2e
+
+  test:frontend:
+    desc: "Run frontend tests (Vitest)"
+    cmds:
+      - task: frontend:test:unit
+
+  test:e2e:frontend:
+    desc: "Run frontend end-to-end tests (Playwright)"
+    cmds:
+      - task: frontend:test:e2e
+
+  # ── Linting ──────────────────────────────────────────────────
+  lint:
+    desc: "Run all linters"
+    cmds:
+      - task: backend:lint
+      - task: frontend:lint
+      - task: lint:forbidden-references
+      - task: lint:shell
+      - task: lint:yaml
+      - task: lint:spelling
+      - task: lint:duplicates
+
+  lint:python:
+    desc: "Lint Python code (ruff check + format check)"
+    cmds:
+      - task: backend:lint
+      - task: backend:format:check
+
+  lint:types:
+    desc: "Type check Python code"
+    cmds:
+      - task: backend:typecheck
+
+  lint:frontend:
+    desc: "Lint and type check frontend"
+    cmds:
+      - task: frontend:lint
+      - task: frontend:typecheck
+
+  lint:shell:
+    desc: "Lint shell scripts with ShellCheck"
+    cmds:
+      - uvx pre-commit run shellcheck --all-files
+
+  lint:yaml:
+    desc: "Lint YAML files"
+    cmds:
+      - uvx yamllint -c .yamllint.yaml .github .vscode azure caddy docker hooks openspec postman tasks Taskfile.yml codecov.yml
+
+  lint:spelling:
+    desc: "Check spelling with typos"
+    cmds:
+      - uvx pre-commit run typos --all-files
+
+  lint:duplicates:
+    desc: "Detect copy-paste code with jscpd"
+    cmds:
+      - npx jscpd -c jscpd.json .
+
+  lint:secrets:
+    desc: "Scan for leaked secrets"
+    cmds:
+      - cd backend && uv run detect-secrets scan --baseline ../.secrets.baseline
+
+  lint:markdown:
+    desc: "Lint Markdown files"
+    cmds:
+      - bunx markdownlint-cli2 '**/*.md' '#node_modules'
+
+  lint:links:
+    desc: "Check for broken links with lychee"
+    cmds:
+      - lychee --config .lychee.toml .
+
+  lint:forbidden-references:
+    desc: "Fail if forbidden external reference tokens appear in repo text files"
+    cmds:
+      - uv run python tools/conventions/check_forbidden_references.py
+
+  # ── Formatting ───────────────────────────────────────────────
+  format:
+    desc: "Format all code"
+    cmds:
+      - task: backend:format
+      - task: frontend:format
+
+  # ── Type checking ────────────────────────────────────────────
+  typecheck:
+    desc: "Run type checkers"
+    cmds:
+      - task: backend:typecheck
+      - task: frontend:typecheck
+
+  # ── Code quality ─────────────────────────────────────────────
+  xenon:
+    desc: "Cyclomatic complexity gate"
+    cmds:
+      - task: backend:xenon
+
+  check:
+    desc: "Full local quality gate (lint + test:unit + typecheck + xenon)"
+    cmds:
+      - task: lint
+      - task: test:unit
+      - task: typecheck
+      - task: xenon
+
+  ci:local:
+    desc: "Pre-push CI validation (mirrors GitHub Actions pipeline)"
+    cmds:
+      - task: lint
+      - task: typecheck
+      - task: test
+      - task: xenon
+      - task: security:scan
+      - task: pre-commit
+
+  # ── Architecture ─────────────────────────────────────────────
+  architecture:
+    desc: "Validate Clean Architecture import boundaries"
+    cmds:
+      - uv run python tools/security/check_architecture_boundaries.py
+
+  parity:baseline:
+    desc: "Check critical structure/config parity against reference baseline"
+    cmds:
+      - uv run python tools/conventions/check_baseline_parity.py
+
+  # ── Pre-commit ───────────────────────────────────────────────
+  pre-commit:
+    desc: "Run pre-commit on all files"
+    env:
+      SKIP: no-commit-to-branch
+    cmds:
+      - uvx pre-commit run --all-files
+
+  # ── Database ─────────────────────────────────────────────────
+  db:migrate:
+    desc: "Run Alembic migrations"
+    cmds:
+      - task: backend:db:migrate
+
+  db:revision:
+    desc: "Create new Alembic migration"
+    cmds:
+      - task: backend:db:revision
+
+  db:downgrade:
+    desc: "Rollback last migration"
+    cmds:
+      - task: backend:db:downgrade
+
+  db:reset:
+    desc: "Delete SQLite DB and re-migrate"
+    cmds:
+      - cmd: rm -f backend/ekko.db
+      - task: backend:db:migrate
+
+  db:migrate:pg-to-sqlite:
+    desc: "Copy local PostgreSQL data into SQLite"
+    cmds:
+      - task: backend:db:migrate:pg-to-sqlite
+
+  # ── Registry ─────────────────────────────────────────────────
+  registry:generate:
+    desc: "Generate registry constants from naming_registry.json"
+    dir: registry
+    cmds:
+      - uv run python generate_registry.py
+
+  prompts:provision:
+    desc: "Provision prompt versions from current prompt sources"
+    cmds:
+      - task: backend:prompts:provision
+
+  prompts:list:
+    desc: "List prompt version history"
+    cmds:
+      - task: backend:prompts:list
+
+  eval:backtest:run-name:
+    desc: "Generate a prompt-version-aware backtest run name"
+    cmds:
+      - task: backend:eval:backtest:run-name
+
+  eval:backtest:metadata:
+    desc: "Generate backtest metadata (run name + prompt versions)"
+    cmds:
+      - task: backend:eval:backtest:metadata
+
+  keploy:version:
+    desc: "Print Keploy CLI version"
+    cmds:
+      - task: backend:keploy:version
+
+  keploy:record:
+    desc: "Record API traffic into Keploy test cases"
+    cmds:
+      - task: backend:keploy:record
+
+  keploy:test:
+    desc: "Replay Keploy test cases"
+    cmds:
+      - task: backend:keploy:test
+
+  keploy:report:
+    desc: "Show Keploy test run summary"
+    cmds:
+      - task: backend:keploy:report
+
+  # ── Installation ─────────────────────────────────────────────
+  install:
+    desc: "Install all project dependencies"
+    cmds:
+      - task: backend:install
+      - task: frontend:install
+
+  # ── Build ────────────────────────────────────────────────────
+  build:
+    desc: "Build frontend and backend for production"
+    cmds:
+      - task: frontend:build
+      - task: backend:build
+
+  build:exe:
+    desc: "Build standalone Windows EXE (frontend + PyInstaller)"
+    cmds:
+      - task: frontend:build
+      - cmd: cd backend && uv run pyinstaller --noconfirm ../ekko.spec
+
+  build:exe:debug:
+    desc: "Build standalone Windows EXE with debug logging"
+    cmds:
+      - task: frontend:build
+      - cmd: cd backend && uv run pyinstaller --noconfirm --log-level=DEBUG ../ekko.spec
+
+  # ── Containers ───────────────────────────────────────────────
+  docker:up:
+    desc: "Run local backend container stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml up --build
+
+  docker:up:caddy:
+    desc: "Run local backend + Caddy HTTPS stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up --build
+
+  docker:up:observability:
+    desc: "Run backend + observability stack (OTel Collector, Prometheus, Grafana)"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile observability up --build
+
+  docker:up:caddy:observability:
+    desc: "Run backend + Caddy + observability stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml --profile caddy --profile observability up --build
+
+  docker:up:analytics:
+    desc: "Run backend + Matomo analytics stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.analytics.yaml --profile analytics up --build
+
+  docker:up:full:
+    desc: "Run backend + Caddy + observability + analytics stacks"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml -f docker/compose.analytics.yaml --profile caddy --profile observability --profile analytics up --build
+
+  docker:down:
+    desc: "Stop local container stack"
+    cmds:
+      - docker compose -f docker/compose.yaml -f docker/compose.override.yaml -f docker/compose.observability.yaml -f docker/compose.analytics.yaml down
+
+  # ── Security ─────────────────────────────────────────────────
+  security:audit:
+    desc: "Run security audits on all dependencies"
+    cmds:
+      - task: backend:security:audit
+
+  security:scan:
+    desc: "Run all security scans (Bandit + pip-audit + secrets)"
+    cmds:
+      - task: backend:security:bandit
+      - task: backend:security:audit
+      - task: lint:secrets
+
+  # ── Cleanup ──────────────────────────────────────────────────
+  clean:
+    desc: "Clean build artifacts and caches"
+    cmds:
+      - task: backend:clean
+      - task: frontend:clean
+      - cmd: rm -rf dist/ build/
+
+  # ── Versioning (Commitizen) ──────────────────────────────────
+  version-cz:
+    desc: "Show current version (commitizen)"
+    cmds:
+      - uv run cz version -p
+
+  changelog-cz:
+    desc: "Generate changelog (commitizen)"
+    cmds:
+      - uv run cz changelog
+
+  bump-cz:
+    desc: "Bump version with commitizen"
+    cmds:
+      - uv run cz bump --yes
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Tool Management (CodeRabbit, OpenSpec, GitNexus)
+  # ══════════════════════════════════════════════════════════════════════════
+
+  tools:openapi:generate:
+    desc: "Generate OpenAPI specification (JSON, YAML, HTML)"
+    cmds:
+      - uv run --project backend python tools/generate_openapi.py
+
+  tools:openapi:view:
+    desc: "Open generated OpenAPI documentation in browser"
+    cmds:
+      - cmd: open docs/api/index.html
+        platforms: [darwin]
+      - cmd: xdg-open docs/api/index.html
+        platforms: [linux]
+      - cmd: start docs/api/index.html
+        platforms: [windows]
+
+  tools:coderabbit:validate:
+    desc: "Validate CodeRabbit configuration"
+    cmds:
+      - |
+        if [ -f .coderabbit.yaml ]; then
+          echo "✓ CodeRabbit configuration found"
+        else
+          echo "✗ CodeRabbit configuration missing"
+          exit 1
+        fi
+
+  tools:gitnexus:validate:
+    desc: "Validate GitNexus configuration"
+    cmds:
+      - |
+        if [ -f .gitnexus/config.json ]; then
+          echo "✓ GitNexus configuration found (.gitnexus/config.json)"
+        else
+          echo "✗ GitNexus configuration missing"
+          exit 1
+        fi
+
+  tools:openspec:validate:
+    desc: "Validate OpenSpec scaffolding and strict artifact/schema integrity"
+    cmds:
+      - |
+        if [ -f openspec/config.yaml ] && [ -d openspec/specs ] && [ -d openspec/changes ]; then
+          echo "✓ OpenSpec repository scaffold found (openspec/config.yaml + specs/ + changes/)"
+        else
+          echo "✗ OpenSpec scaffold missing"
+          echo "  Expected: openspec/config.yaml, openspec/specs/, openspec/changes/"
+          exit 1
+        fi
+      - npx --yes @fission-ai/openspec@latest validate --all --strict
+      - npx --yes @fission-ai/openspec@latest schema validate ekko-production
+
+  tools:openspec:init:
+    desc: "Initialize OpenSpec integrations for Copilot, Claude, and Codex"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest init . --tools github-copilot,claude,codex --profile core --force
+
+  tools:openspec:update:
+    desc: "Refresh OpenSpec-generated agent skills and command prompts"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest update .
+
+  # ── OpenSpec Shortcuts ───────────────────────────────────────
+  spec:validate:
+    desc: "Validate all OpenSpec specs and changes"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest validate --all
+
+  spec:list:
+    desc: "List active OpenSpec changes and specs"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest list
+      - npx --yes @fission-ai/openspec@latest list --specs
+
+  spec:status:
+    desc: "Show status of active changes"
+    cmds:
+      - npx --yes @fission-ai/openspec@latest list --json
+
+  tools:actionlint:validate:
+    desc: "Validate GitHub Actions workflows"
+    cmds:
+      - uvx pre-commit run actionlint --all-files
+
+  tools:setup:
+    desc: "Setup all development tools (CodeRabbit, OpenSpec, GitNexus)"
+    cmds:
+      - task: tools:coderabbit:validate
+      - task: tools:gitnexus:validate
+      - task: tools:openspec:validate
+      - task: tools:actionlint:validate
+      - task: tools:openapi:generate
+      - echo "✓ All tools configured successfully"
+
+  tools:status:
+    desc: "Check status of all configured tools"
+    cmds:
+      - |
+        echo "=== Tool Configuration Status ==="
+        echo ""
+        echo "CodeRabbit:"
+        if [ -f .coderabbit.yaml ]; then
+          echo "  ✓ Configured (.coderabbit.yaml)"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "GitNexus:"
+        if [ -f .gitnexus/config.json ]; then
+          echo "  ✓ Configured (.gitnexus/config.json)"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "OpenSpec:"
+        if [ -f openspec/config.yaml ] && [ -d openspec/specs ] && [ -d openspec/changes ]; then
+          echo "  ✓ Configured (openspec/config.yaml + specs/ + changes/)"
+        else
+          echo "  ✗ Not configured"
+        fi
+        echo ""
+        echo "OpenAPI:"
+        if [ -f docs/api/openapi.json ]; then
+          echo "  ✓ Generated (docs/api/)"
+        else
+          echo "  ⚠ Not yet generated (run: task tools:openapi:generate)"
+        fi
+        echo ""
+        echo "VS Code:"
+        if [ -f .vscode/settings.json ]; then
+          echo "  ✓ Configured (.vscode/settings.json)"
+          echo "  ✓ Copilot settings present (verify model in Copilot Chat picker)"
+        else
+          echo "  ✗ Not configured"
+        fi
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Pipeline Verification
+  # ══════════════════════════════════════════════════════════════════════════
+
+  verify:
+    desc: "Verify that CI/CD pipeline will pass before pushing"
+    cmds:
+      - cmd: bash scripts/verify-pipeline.sh
+        platforms: [darwin, linux]
+      - cmd: pwsh -NoProfile -File scripts/verify-pipeline.ps1
+        platforms: [windows]
+
+  verify:full:
+    desc: "Verify with full checks (longer-running tests)"
+    cmds:
+      - cmd: bash scripts/verify-pipeline.sh --full
+        platforms: [darwin, linux]
+      - cmd: pwsh -NoProfile -File scripts/verify-pipeline.ps1 -Full
+        platforms: [windows]
+
+  verify:fullstack:
+    desc: "Verify backend/frontend independently and together via runtime smoke checks"
+    cmds:
+      - cmd: pwsh -NoProfile -File scripts/verify-fullstack.ps1
+        platforms: [windows]
+
+  # ── Agentic Topology ─────────────────────────────────────────
+  sync:agentic:
+    desc: "Synchronize agentic assets across .github, .claude, and .agents"
+    cmds:
+      - uv run --project backend python .agents/sync_agentic_setup.py

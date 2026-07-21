@@ -1,0 +1,69 @@
+{
+  "environments": {
+    "local": {"label": "Local", "description": "Local development environment"},
+    "dev": {"label": "Development", "description": "Shared development environment"},
+    "test": {"label": "Test", "description": "Automated test environment"},
+    "staging": {"label": "Staging", "description": "Pre-production staging environment"},
+    "prod": {"label": "Production", "description": "Production environment"}
+  },
+  "llm_providers": {
+    "openai": {"label": "OpenAI", "description": "OpenAI API"},
+    "azure_openai": {"label": "Azure OpenAI", "description": "Azure-hosted OpenAI"},
+    "anthropic": {"label": "Anthropic", "description": "Anthropic Claude API"},
+    "cohere": {"label": "Cohere", "description": "Cohere API"},
+    "google": {"label": "Google", "description": "Google AI API"},
+    "other": {"label": "Other", "description": "Other LLM provider"}
+  },
+  "stt_providers": {
+    "whisper": {"label": "Whisper", "description": "OpenAI Whisper"},
+    "faster_whisper": {"label": "Faster Whisper", "description": "CTranslate2-based Whisper"},
+    "azure_speech": {"label": "Azure Speech", "description": "Azure Cognitive Services Speech"},
+    "google_speech": {"label": "Google Speech", "description": "Google Cloud Speech-to-Text"},
+    "other": {"label": "Other", "description": "Other STT provider"}
+  },
+  "audio_formats": {
+    "wav": {"label": "WAV", "description": "Waveform Audio"},
+    "flac": {"label": "FLAC", "description": "Free Lossless Audio Codec"},
+    "mp3": {"label": "MP3", "description": "MPEG Audio Layer III"},
+    "ogg": {"label": "OGG", "description": "Ogg Vorbis"},
+    "pcm16": {"label": "PCM 16-bit", "description": "Raw PCM 16-bit audio"}
+  },
+  "message_roles": {
+    "system": {"label": "System", "description": "System instruction message"},
+    "user": {"label": "User", "description": "User input message"},
+    "assistant": {"label": "Assistant", "description": "AI assistant response"},
+    "tool": {"label": "Tool", "description": "Tool call result"}
+  },
+  "transcript_statuses": {
+    "received": {"label": "Received", "description": "Audio data received"},
+    "queued": {"label": "Queued", "description": "Waiting in processing queue"},
+    "processing": {"label": "Processing", "description": "Currently being transcribed"},
+    "completed": {"label": "Completed", "description": "Transcription finished"},
+    "failed": {"label": "Failed", "description": "Transcription failed"},
+    "cancelled": {"label": "Cancelled", "description": "Transcription was cancelled"}
+  },
+  "field_names": {
+    "role": {"value": "role", "description": "Message role field in dict structures"},
+    "content": {"value": "content", "description": "Message content field"},
+    "email": {"value": "email", "description": "Email address field"},
+    "name": {"value": "name", "description": "Name field (generic)"},
+    "type": {"value": "type", "description": "Type discriminator field"},
+    "request_id": {"value": "request_id", "description": "Request identifier field"},
+    "user": {"value": "user", "description": "User field in state/context"}
+  },
+  "api_routes": {
+    "health": {"value": "/health", "description": "Health check endpoint"},
+    "docs": {"value": "/docs", "description": "Swagger UI documentation"},
+    "openapi_json": {"value": "/openapi.json", "description": "OpenAPI schema JSON"},
+    "redoc": {"value": "/redoc", "description": "ReDoc documentation"},
+    "graphql": {"value": "/graphql", "description": "GraphQL endpoint"},
+    "start_stream": {"value": "/start_stream", "description": "Start audio streaming"},
+    "pause_stream": {"value": "/pause_stream", "description": "Pause audio streaming"}
+  },
+  "error_codes": {
+    "value_error_missing": {"value": "value_error.missing", "description": "Required value is missing"}
+  },
+  "status_values": {
+    "active": {"value": "active", "description": "Active status"}
+  }
+}

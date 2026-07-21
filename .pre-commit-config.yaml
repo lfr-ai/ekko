@@ -1,0 +1,252 @@
+# =================================================================
+# Pre-commit Configuration for Ekko
+# https://pre-commit.com/
+# =================================================================
+
+minimum_pre_commit_version: '4.0'
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_language_version:
+  python: python3.12
+
+repos:
+  # ---------------------------------------------------------------
+  # General File Checks
+  # ---------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-toml
+      - id: check-json
+        exclude: >-
+          ^(\.vscode/.*\.json|\.devcontainer/devcontainer\.json)$
+      - id: check-ast
+      - id: check-merge-conflict
+      - id: check-docstring-first
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+        exclude: ^(backend/\.venv_old/|frontend/~/)
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: ^hooks/scripts/.*\.sh$
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: ^\.secrets\.baseline$
+      - id: no-commit-to-branch
+        args: [--branch, master]
+        stages: [pre-push]
+      - id: debug-statements
+      - id: name-tests-test
+        args: [--pytest-test-first]
+        files: ^backend/tests/.*\.py$
+        exclude: ^backend/tests/(fixtures|factories|utils|mocks)/
+
+  # ---------------------------------------------------------------
+  # Python Linting and Formatting
+  # ---------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^backend/src/ekko/.*\.py$
+        types_or: [python, pyi]
+      - id: ruff-format
+        files: ^backend/src/ekko/.*\.py$
+        types_or: [python, pyi]
+
+  # ---------------------------------------------------------------
+  # Commit Quality
+  # ---------------------------------------------------------------
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.13.10
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+      - id: commitizen-branch
+        stages: [pre-push]
+
+  # ---------------------------------------------------------------
+  # Security Scanning
+  # ---------------------------------------------------------------
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - --baseline
+          - .secrets.baseline
+          - --exclude-files
+          - (^|[\\/])tests[\\/]|(^|[\\/])storybook-static[\\/]|(^|[\\/])backend[\\/]src[\\/]ekko[\\/]ai[\\/]prompts[\\/]versions[\\/]registry\.json$
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.4
+    hooks:
+      - id: bandit
+        args: [-c, bandit.toml]
+        additional_dependencies: ['bandit[toml]']
+        files: ^backend/src/
+
+  # ---------------------------------------------------------------
+  # YAML, Markdown, and Shell
+  # ---------------------------------------------------------------
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [-c, .yamllint.yaml]
+        types: [yaml]
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.0
+    hooks:
+      - id: markdownlint-cli2
+        exclude: ^(\.gsd/|\.agents/|\.claude/|frontend/storybook-static/|CHANGELOG\.md)
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+        exclude: \.zsh$
+        types: [shell]
+
+  # ---------------------------------------------------------------
+  # Dockerfile Linting
+  # ---------------------------------------------------------------
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+        args: [-c, .hadolint.yaml]
+        exclude: \.dockerignore$
+
+  # ---------------------------------------------------------------
+  # Spelling and Quality
+  # ---------------------------------------------------------------
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.45.1
+    hooks:
+      - id: typos
+        exclude: ^(frontend/storybook-static/|\.lock$)
+        args: []
+
+  - repo: https://github.com/rubik/xenon
+    rev: v0.9.3
+    hooks:
+      - id: xenon
+        args: [--max-absolute=B, --max-modules=B, --max-average=A, backend/src]
+        always_run: false
+        pass_filenames: false
+
+  # ---------------------------------------------------------------
+  # Link Checking
+  # ---------------------------------------------------------------
+  - repo: https://github.com/lycheeverse/lychee.git
+    rev: lychee-v0.24.2
+    hooks:
+      - id: lychee-docker
+        args: [--no-progress, -c, .lychee.toml]
+        types_or: [markdown, html, rst, text]
+        stages: [manual]
+
+  # ---------------------------------------------------------------
+  # GitHub Actions Validation
+  # ---------------------------------------------------------------
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+        args: [-color]
+
+  # ---------------------------------------------------------------
+  # Local Custom Hooks
+  # ---------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: check-architecture-boundaries
+        name: check architecture boundaries
+        entry: python tools/security/check_architecture_boundaries.py
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [manual]
+
+      - id: check-magic-strings
+        name: check magic strings
+        entry: python tools/conventions/check_magic_strings.py --verbose
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-push]
+
+      - id: ty-check
+        name: type check with ty
+        entry: uv run --project backend --no-sync python -m ty check backend/src/ekko
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+
+      - id: module-docstrings
+        name: check module docstrings
+        entry: python tools/conventions/check_module_docstrings.py
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [manual]
+
+      - id: dependency-audit
+        name: dependency vulnerability audit
+        entry: python scripts/security/dependency_audit.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: jscpd
+        name: jscpd copy-paste detection
+        entry: npx jscpd -c jscpd.json .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: lychee
+        name: link checker
+        entry: lychee --no-progress -c .lychee.toml .
+        language: system
+        pass_filenames: false
+        types_or: [markdown, html, rst]
+        stages: [manual]
+
+      - id: backend-test-suite
+        name: backend unit tests
+        entry: uv run --project backend python -m pytest tests/unit/ -x --tb=short -q
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-push]
+
+      - id: biome-check
+        name: biome lint + format
+        entry: bash -c 'cd frontend && bun run biome check .'
+        language: system
+        pass_filenames: false
+        types_or: [javascript, ts, tsx, json]
+        stages: [pre-commit]
+
+      - id: frontend-test-suite
+        name: frontend unit tests
+        entry: bash -c 'cd frontend && bun run test'
+        language: system
+        pass_filenames: false
+        types_or: [javascript, ts, tsx]
+        stages: [pre-push]

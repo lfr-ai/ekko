@@ -1,0 +1,107 @@
+{
+  // ═══════════════════════════════════════════════════════════
+  // Launch Configurations for Ekko
+  // ═══════════════════════════════════════════════════════════
+
+  "version": "0.2.0",
+  "configurations": [
+    // ──────────────────────────────────────────────────────────
+    // Python/Backend Debugging
+    // ──────────────────────────────────────────────────────────
+    {
+      "name": "Python: FastAPI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "ekko.composition.app_factory:app",
+        "--reload",
+        "--host", "127.0.0.1",
+        "--port", "8000"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "EKKO_ENVIRONMENT": "local",
+        "EKKO_DEBUG": "true",
+        "UV_LINK_MODE": "copy"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend/src",
+        "UV_LINK_MODE": "copy"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Python: Pytest Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v",
+        "--tb=short"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Pytest All",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/",
+        "-v"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+
+    // ──────────────────────────────────────────────────────────
+    // Frontend Debugging
+    // ──────────────────────────────────────────────────────────
+    {
+      "name": "Frontend: Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true,
+      "trace": "verbose"
+    },
+    {
+      "name": "Frontend: Edge",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true
+    }
+  ],
+
+  // ──────────────────────────────────────────────────────────
+  // Compound Configurations
+  // ──────────────────────────────────────────────────────────
+  "compounds": [
+    {
+      "name": "Full Stack: Backend + Frontend",
+      "configurations": [
+        "Python: FastAPI",
+        "Frontend: Chrome"
+      ],
+      "stopAll": true
+    }
+  ]
+}

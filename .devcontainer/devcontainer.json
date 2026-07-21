@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
+  // Follows the project baseline with intentional timing optimization:
+  // postCreateCommand (heavy install) runs ONCE on create, postStartCommand (light config) runs on every start.
+  // This is more efficient than postStartCommand-only approaches that re-install on every start.
+  "name": "Ekko Dev Container",
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
+  "runServices": ["app"],
+  "workspaceFolder": "/workspace",
+  "overrideCommand": false,
+  "waitFor": "postCreateCommand",
+  "forwardPorts": [8000, 5173, 6006, 9090, 3000, 4317, 4318, 9464],
+  "portsAttributes": {
+    "8000": {
+      "label": "Ekko Backend"
+    },
+    "5173": {
+      "label": "Ekko Frontend"
+    },
+    "6006": {
+      "label": "Storybook"
+    },
+    "9090": {
+      "label": "Prometheus"
+    },
+    "3000": {
+      "label": "Grafana"
+    },
+    "4317": {
+      "label": "OTLP gRPC"
+    },
+    "4318": {
+      "label": "OTLP HTTP"
+    },
+    "9464": {
+      "label": "OTel Collector Prometheus Export"
+    }
+  },
+  "mounts": [
+    "source=ekko-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+    "source=ekko-precommit-cache,target=/home/vscode/.cache/pre-commit,type=volume",
+    "source=ekko-bun-cache,target=/home/vscode/.bun/install/cache,type=volume"
+  ],
+  "remoteEnv": {
+    "PYTHONPATH": "/workspace/backend/src",
+    "UV_LINK_MODE": "copy",
+    "UV_CACHE_DIR": "/home/vscode/.cache/uv",
+    "EKKO_ENVIRONMENT": "local"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "python.defaultInterpreterPath": "/workspace/backend/.venv",
+        "python.terminal.activateEnvironment": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["backend/tests", "--no-cov"],
+        "editor.autoIndentOnPaste": true,
+        "editor.formatOnSave": true,
+        "editor.folding": false,
+        "editor.rulers": [120],
+        "editor.tabCompletion": "on",
+        "editor.trimAutoWhitespace": true,
+        "diffEditor.ignoreTrimWhitespace": true,
+        "files.trimTrailingWhitespace": true,
+        "files.eol": "\n",
+        "workbench.iconTheme": "vscode-icons",
+        "workbench.panel.defaultLocation": "right",
+        "workbench.editor.closeOnFileDelete": true,
+        "workbench.colorTheme": "Dark Modern",
+        "cSpell.language": "en, da",
+        "evenBetterToml.formatter.arrayAutoCollapse": true,
+        "evenBetterToml.formatter.arrayAutoExpand": true,
+        "extensions.ignoreRecommendations": true,
+        "chat.agent.maxRequests": 250,
+        "chat.detectParticipant.enabled": false,
+        "chat.useAgentSkills": true,
+        "chat.mcp.discovery.enabled": false,
+        "chat.mcp.autoStart": true,
+        "chat.instructionsFilesLocations": {
+          ".github/instructions": true,
+          ".claude/rules": true,
+          "~/.copilot/instructions": false,
+          "~/.claude/rules": false
+        },
+        "github.copilot.chat.codesearch.enabled": true,
+        "github.copilot.chat.alternateGptPrompt.enabled": true,
+        "github.copilot.nextEditSuggestions.enabled": true,
+        "github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": false,
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          }
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "vscode.json-language-features"
+        },
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+        },
+        "[toml]": {
+          "editor.defaultFormatter": "tamasfe.even-better-toml"
+        },
+        "[shellscript]": {
+          "editor.defaultFormatter": "timonwong.shellcheck"
+        }
+      }
+    }
+  },
+  "postCreateCommand": "task install && cd frontend && bunx playwright install --with-deps chromium && npm install -g @fission-ai/openspec@latest",
+  "postStartCommand": "zsh .devcontainer/post-start.zsh",
+  "updateRemoteUserUID": true,
+  "remoteUser": "vscode",
+  "shutdownAction": "stopCompose"
+}

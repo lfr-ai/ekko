@@ -1,0 +1,145 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":rebaseStalePrs",
+    ":dependencyDashboard"
+  ],
+  "description": [
+    "Repository-level Renovate config for automated dependency updates."
+  ],
+  "configMigration": true,
+  "timezone": "Europe/Copenhagen",
+  "schedule": [
+    "* 6-21 * * 1-5"
+  ],
+  "prConcurrentLimit": 8,
+  "branchConcurrentLimit": 8,
+  "prHourlyLimit": 2,
+  "dependencyDashboardAutoclose": true,
+  "labels": [
+    "dependencies"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 4am on monday"
+    ]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security",
+      "dependencies"
+    ]
+  },
+  "enabledManagers": [
+    "pre-commit",
+    "pip_requirements",
+    "pep621",
+    "npm",
+    "dockerfile",
+    "docker-compose",
+    "github-actions",
+    "azure-pipelines"
+  ],
+  "rangeStrategy": "bump",
+  "fetchChangeLogs": "off",
+  "prCreation": "not-pending",
+  "packageRules": [
+    {
+      "description": "Skip requires-python lookups to avoid python-version datasource noise",
+      "matchManagers": [
+        "pep621"
+      ],
+      "matchDepTypes": [
+        "requires-python"
+      ],
+      "enabled": false
+    },
+    {
+      "matchManagers": [
+        "pep621"
+      ],
+      "groupName": "python dependencies"
+    },
+    {
+      "matchManagers": [
+        "npm"
+      ],
+      "groupName": "frontend dependencies"
+    },
+    {
+      "description": "Apply dependency cooldown to frontend ecosystem",
+      "matchManagers": [
+        "npm"
+      ],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-required",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "Apply dependency cooldown to Python ecosystem",
+      "matchManagers": [
+        "pep621",
+        "pip_requirements"
+      ],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-required",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "Group React ecosystem dependencies",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "groupName": "react ecosystem"
+    },
+    {
+      "description": "Group frontend UI stack dependencies",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/vite",
+        "@radix-ui/**",
+        "class-variance-authority",
+        "tailwind-merge",
+        "tw-animate-css",
+        "lucide-react",
+        "storybook",
+        "@storybook/**"
+      ],
+      "groupName": "frontend ui stack"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github actions dependencies"
+    },
+    {
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose"
+      ],
+      "groupName": "container image dependencies"
+    },
+    {
+      "description": "Require explicit approval for major dependency updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": false
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-06-08",
+  "openspec": {
+    "apply": {
+      "copilotPrompt": ".github/prompts/openspec/apply.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/apply.md",
+      "neutralPrompt": ".agents/prompts/openspec/apply.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/apply.md"
+    },
+    "archive": {
+      "copilotPrompt": ".github/prompts/openspec/archive.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/archive.md",
+      "neutralPrompt": ".agents/prompts/openspec/archive.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/archive.md"
+    },
+    "bulk-archive": {
+      "copilotPrompt": ".github/prompts/openspec/bulk-archive.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/bulk-archive.md",
+      "neutralPrompt": ".agents/prompts/openspec/bulk-archive.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/bulk-archive.md"
+    },
+    "continue": {
+      "copilotPrompt": ".github/prompts/openspec/continue.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/continue.md",
+      "neutralPrompt": ".agents/prompts/openspec/continue.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/continue.md"
+    },
+    "explore": {
+      "copilotPrompt": ".github/prompts/openspec/explore.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/explore.md",
+      "neutralPrompt": ".agents/prompts/openspec/explore.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/explore.md"
+    },
+    "ff": {
+      "copilotPrompt": ".github/prompts/openspec/ff.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/ff.md",
+      "neutralPrompt": ".agents/prompts/openspec/ff.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/ff.md"
+    },
+    "new": {
+      "copilotPrompt": ".github/prompts/openspec/new.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/new.md",
+      "neutralPrompt": ".agents/prompts/openspec/new.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/new.md"
+    },
+    "onboard": {
+      "copilotPrompt": ".github/prompts/openspec/onboard.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/onboard.md",
+      "neutralPrompt": ".agents/prompts/openspec/onboard.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/onboard.md"
+    },
+    "propose": {
+      "copilotPrompt": ".github/prompts/openspec/propose.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/propose.md",
+      "neutralPrompt": ".agents/prompts/openspec/propose.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/propose.md"
+    },
+    "sync": {
+      "copilotPrompt": ".github/prompts/openspec/sync.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/sync.md",
+      "neutralPrompt": ".agents/prompts/openspec/sync.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/sync.md"
+    },
+    "verify": {
+      "copilotPrompt": ".github/prompts/openspec/verify.prompt.md",
+      "claudeCommand": ".claude/commands/openspec/verify.md",
+      "neutralPrompt": ".agents/prompts/openspec/verify.prompt.md",
+      "neutralCommand": ".agents/commands/openspec/verify.md"
+    }
+  },
+  "gitnexus": {
+    "debug": {
+      "copilotPrompt": ".github/prompts/gitnexus/debug.prompt.md",
+      "claudeCommand": ".claude/commands/gitnexus/debug.md",
+      "neutralPrompt": ".agents/prompts/gitnexus/debug.prompt.md",
+      "neutralCommand": ".agents/commands/gitnexus/debug.md"
+    },
+    "impact": {
+      "copilotPrompt": ".github/prompts/gitnexus/impact.prompt.md",
+      "claudeCommand": ".claude/commands/gitnexus/impact.md",
+      "neutralPrompt": ".agents/prompts/gitnexus/impact.prompt.md",
+      "neutralCommand": ".agents/commands/gitnexus/impact.md"
+    }
+  }
+}

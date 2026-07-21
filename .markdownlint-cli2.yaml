@@ -1,0 +1,74 @@
+---
+# Single source of truth for markdownlint configuration (CLI2 + VS Code extension).
+# Used by: pre-commit markdownlint-cli2 hook, VS Code markdownlint extension.
+# Ignore patterns live here — .markdownlintignore is NOT used.
+
+globs:
+  - "**/*.md"
+
+ignores:
+  - ".gsd/**"
+  - ".tox/**"
+  - "**/.tox/**"
+  - ".pytest_cache/**"
+  - ".github/**"
+  - ".agents/**"
+  - ".claude/**"
+  - "frontend/storybook-static/**"
+  - "node_modules/**"
+  - "**/node_modules/**"
+  - ".venv/**"
+  - "**/.venv/**"
+  - ".venv*/**"
+  - "**/.venv*/**"
+  - "dist/**"
+  - "build/**"
+  - "htmlcov/**"
+  - "logs/**"
+  - "frontend/~/**"
+  - "**/frontend/~/**"
+  - ".bun/**"
+  - "**/.bun/**"
+  - "frontend/node_modules_stuck/**"
+  - "openspec/schemas/ekko-production/templates/**"
+  - "openspec/changes/**"
+  - "docker/README.md"
+  - "CLAUDE.md"
+
+config:
+  default: true
+
+  # Line length — generous limit for technical docs; code blocks, tables, and headings are exempt.
+  # 160 accommodates long agent persona descriptions and technical path references.
+  MD013:
+    line_length: 160
+    code_blocks: false
+    tables: false
+    headings: false
+
+  # Allow duplicate headings when they are siblings only.
+  MD024:
+    siblings_only: true
+
+  # Trailing punctuation in headings — allowed (e.g. "Why?").
+  MD026: false
+
+  # Inline HTML — allowed (used in GitHub-rendered docs).
+  MD033: false
+
+  # Emphasis used as heading — allowed.
+  MD036: false
+
+  # First line must be top-level heading — not enforced (many files start with frontmatter).
+  MD041: false
+
+  # Fenced code blocks must use backtick style.
+  MD046:
+    style: fenced
+
+  # Code fence style — backticks only.
+  MD048:
+    style: backtick
+
+  # Proper names capitalization — not enforced (generates too many false positives).
+  MD060: false

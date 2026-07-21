@@ -1,0 +1,64 @@
+{
+  "threshold": 5,
+  "reporters": [
+    "console"
+  ],
+  "format": [
+    "python",
+    "typescript",
+    "tsx",
+    "javascript"
+  ],
+  "skipBlocks": [
+    {
+      "open": "\"\"\"",
+      "close": "\"\"\""
+    }
+  ],
+  "ignore": [
+    "**/.git/**",
+    "**/.venv/**",
+    "**/.venv_clean/**",
+    "**/backend/.venv_clean/**",
+    "**/.tox/**",
+    "**/__pycache__/**",
+    "**/node_modules/**",
+    "**/.bun/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.egg-info/**",
+    "**/uv.lock",
+    "**/bun.lockb",
+    "**/jscpd-report/**",
+    "**/htmlcov/**",
+    "**/logs/**",
+    "**/storybook-static/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    "**/.github/**",
+    "**/.claude/**",
+    "**/.agents/**",
+    "**/.warp/**",
+    "**/.devcontainer/**",
+    "**/backend/src/ekko/ai/prompts/**",
+    "**/backend/src/ekko/ai/crewai/config/**",
+    "**/frontend/~/**",
+    "**/frontend/node_modules_stuck/**",
+    "**/.gsd/**",
+    "**/docs/**",
+    "**/openspec/**",
+    "**/postman/**",
+    "**/memories/**",
+    "**/registry/**",
+    "**/alembic/versions/**",
+    "**/caddy/**",
+    "**/hooks/**",
+    "**/scripts/install/**",
+    "**/AGENTS.md",
+    "**/CLAUDE.md",
+    "**/CLAUDE.local.md",
+    "**/CHANGELOG.md",
+    "**/CONTRIBUTING.md",
+    "**/README.md"
+  ]
+}

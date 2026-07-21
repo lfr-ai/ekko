@@ -1,0 +1,16 @@
+[environment]
+root = ["."]
+
+[src]
+exclude = [
+    "**/__pycache__/**",
+    ".venv/**",
+    "backend/.venv/**",
+    ".tox/**",
+    "dist/**",
+    "build/**",
+    "node_modules/**"
+]
+
+[rules]
+unresolved-import = "ignore"

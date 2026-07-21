@@ -1,0 +1,63 @@
+# https://taskfile.dev
+---
+version: "3"
+
+tasks:
+  dev:
+    desc: "Run frontend dev server"
+    cmds:
+      - bun run dev
+
+  install:
+    desc: "Install frontend dependencies"
+    cmds:
+      - bun install
+
+  build:
+    desc: "Build frontend for production"
+    cmds:
+      - bun run build
+
+  # ── Testing ──────────────────────────────────────────────────
+  test:unit:
+    desc: "Run frontend unit tests"
+    cmds:
+      - bun run test {{.CLI_ARGS}}
+
+  test:e2e:
+    desc: "Run Playwright E2E tests"
+    cmds:
+      - bunx playwright test {{.CLI_ARGS}}
+
+  # ── Linting ──────────────────────────────────────────────────
+  lint:
+    desc: "Lint frontend with Biome"
+    cmds:
+      - bun run lint
+
+  format:
+    desc: "Format frontend code"
+    cmds:
+      - bun run format
+
+  typecheck:
+    desc: "Type check frontend"
+    cmds:
+      - bun run typecheck
+
+  # ── Storybook ────────────────────────────────────────────────
+  storybook:
+    desc: "Run Storybook dev server"
+    cmds:
+      - bun run storybook
+
+  storybook:build:
+    desc: "Build Storybook static site"
+    cmds:
+      - bun run build-storybook
+
+  # ── Cleanup ──────────────────────────────────────────────────
+  clean:
+    desc: "Remove frontend build artifacts"
+    cmds:
+      - rm -rf dist node_modules/.vite coverage playwright-report test-results

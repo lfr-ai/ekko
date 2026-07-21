@@ -1,0 +1,38 @@
+# Optional analytics stack for local diagnostics (Matomo + MariaDB).
+
+services:
+  matomo-db:
+    image: mariadb:11.7
+    profiles: [analytics]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MATOMO_DB_ROOT_PASSWORD:-matomo-root}
+      MYSQL_DATABASE: ${MATOMO_DB_NAME:-matomo}
+      MYSQL_USER: ${MATOMO_DB_USER:-matomo}
+      MYSQL_PASSWORD: ${MATOMO_DB_PASSWORD:-matomo}
+    volumes:
+      - matomo-db-data:/var/lib/mysql
+    networks:
+      - backend
+
+  matomo:
+    image: matomo:5-apache
+    profiles: [analytics]
+    depends_on:
+      - matomo-db
+    environment:
+      MATOMO_DATABASE_HOST: matomo-db
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX: matomo_
+      MATOMO_DATABASE_USERNAME: ${MATOMO_DB_USER:-matomo}
+      MATOMO_DATABASE_PASSWORD: ${MATOMO_DB_PASSWORD:-matomo}
+      MATOMO_DATABASE_DBNAME: ${MATOMO_DB_NAME:-matomo}
+    ports:
+      - "8081:80"
+    volumes:
+      - matomo-data:/var/www/html
+    networks:
+      - backend
+
+volumes:
+  matomo-db-data:
+  matomo-data:

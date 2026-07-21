@@ -1,0 +1,31 @@
+# Local HTTPS reverse proxy.
+#
+# Docker:  docker compose -f docker/compose.yaml -f docker/compose.override.yaml --profile caddy up
+# Native:  UPSTREAM=localhost:$EKKO_PORT caddy run --config caddy/Caddyfile --adapter caddyfile
+#
+# Trust the CA to silence browser warnings: caddy trust
+#
+# CONFIGURATION NOTES
+# -------------------
+# This Caddyfile uses a modular reverse proxy configuration pattern:
+# - Snippet import pattern with `import snippets/*.caddy` for modular configuration
+# - Consolidated snippet files (global.caddy, routes.caddy, security.caddy) containing multiple named snippets
+# - Global block for server-wide settings (logging, security)
+# - Per-site blocks with TLS, security headers, and route imports
+# - Argument passing to snippets for upstream configuration
+# - Internal TLS for local development
+
+import snippets/*.caddy
+
+{
+	import global_base
+	import global_servers
+	import global_logging_json
+}
+
+localhost, 127.0.0.1, ::1 {
+	tls internal
+
+	import security_headers_base
+	import app_routes {$UPSTREAM}
+}

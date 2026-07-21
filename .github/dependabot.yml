@@ -1,0 +1,182 @@
+# =================================================================
+# Dependabot Configuration for Ekko
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+# =================================================================
+
+version: 2
+
+updates:
+  # ---------------------------------------------------------------
+  # Python Backend Dependencies (uv)
+  # ---------------------------------------------------------------
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 10
+    reviewers:
+      - lauritsfromberg
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - backend
+      - python
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: scope
+    groups:
+      fastapi-ecosystem:
+        patterns:
+          - fastapi*
+          - uvicorn*
+          - starlette*
+          - pydantic*
+      sqlalchemy-ecosystem:
+        patterns:
+          - sqlalchemy*
+          - alembic*
+          - aiosqlite*
+          - asyncpg*
+      ai-ml:
+        patterns:
+          - langchain*
+          - crewai*
+          - openai*
+          - anthropic*
+      testing:
+        patterns:
+          - pytest*
+          - hypothesis*
+          - factory-boy*
+          - faker*
+      linting:
+        patterns:
+          - ruff*
+          - ty*
+          - bandit*
+          - xenon*
+
+  # ---------------------------------------------------------------
+  # Frontend Dependencies (Bun)
+  # ---------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 10
+    reviewers:
+      - lauritsfromberg
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - frontend
+      - javascript
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: scope
+    groups:
+      react-ecosystem:
+        patterns:
+          - react
+          - react-dom
+          - '@vitejs/*'
+      ui-components:
+        patterns:
+          - '@radix-ui/*'
+          - lucide-react
+          - tailwindcss
+          - tailwindcss-animate
+      testing:
+        patterns:
+          - '@testing-library/*'
+          - vitest
+          - '@vitest/*'
+          - '@playwright/*'
+          - '@storybook/*'
+      linting:
+        patterns:
+          - '@biomejs/*'
+          - typescript
+          - '@types/*'
+
+  # ---------------------------------------------------------------
+  # GitHub Actions
+  # ---------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 5
+    reviewers:
+      - lauritsfromberg
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - github-actions
+      - ci
+    commit-message:
+      prefix: 'chore(deps)'
+      include: scope
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # ---------------------------------------------------------------
+  # Docker - Production Image
+  # ---------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 5
+    reviewers:
+      - lauritsfromberg
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: 'chore(deps)'
+      include: scope
+
+  # ---------------------------------------------------------------
+  # Docker - Dev Container
+  # ---------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 5
+    reviewers:
+      - lauritsfromberg
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - docker
+      - devcontainer
+    commit-message:
+      prefix: 'chore(deps)'
+      include: scope

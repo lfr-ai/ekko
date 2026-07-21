@@ -1,0 +1,69 @@
+# Base compose -- shared service definitions.
+# Keep this file minimal (app + optional reverse proxy).
+#
+# Optional observability stack is defined in:
+#   docker/compose.observability.yaml
+
+name: ekko
+
+x-ekko-env-files: &ekko_env_files
+  - path: ../.env
+    required: false
+  - path: ../.env.local
+    required: false
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Containerfile
+    init: true
+    env_file: *ekko_env_files
+    environment:
+      EKKO_DISABLE_AUDIO: "true"
+      EKKO_HOST: "0.0.0.0"
+    networks:
+      - backend
+    healthcheck:
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request as u;u.urlopen('http://localhost:8000/health',timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  caddy:
+    image: caddy:2.11-alpine
+    profiles: [caddy]
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    env_file: *ekko_env_files
+    environment:
+      UPSTREAM: "app:8000"
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../caddy/snippets:/etc/caddy/snippets:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  caddy_data:
+    name: ekko_caddy_data
+  caddy_config:
+    name: ekko_caddy_config
+
+networks:
+  backend:

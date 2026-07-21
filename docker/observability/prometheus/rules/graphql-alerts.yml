@@ -1,0 +1,40 @@
+groups:
+  - name: ekko-graphql-anomalies
+    rules:
+      - alert: EkkoGraphQLErrorRateHigh
+        expr: |
+          sum(rate(ekko_graphql_operation_total{status="error"}[5m]))
+            /
+          clamp_min(sum(rate(ekko_graphql_operation_total[5m])), 0.001)
+          > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          service: ekko
+        annotations:
+          summary: "Elevated GraphQL error rate"
+          description: "GraphQL error ratio has exceeded 20% for at least 10 minutes."
+
+      - alert: EkkoGraphQLOperationCostP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(ekko_graphql_operation_cost_bucket[10m])) by (le)
+          ) > 250
+        for: 15m
+        labels:
+          severity: warning
+          service: ekko
+        annotations:
+          summary: "GraphQL operation cost p95 is high"
+          description: "95th percentile GraphQL operation cost is above 250 for 15 minutes."
+
+      - alert: EkkoGraphQLRejectedOperationsBurst
+        expr: sum(rate(ekko_graphql_operation_rejected_total[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: ekko
+        annotations:
+          summary: "Frequent GraphQL policy rejections"
+          description: "GraphQL operations are being rejected frequently by cost/trusted-document policy."

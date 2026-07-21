@@ -1,0 +1,11 @@
+{USER_QUERY}
+
+Context:
+{CONTEXT}
+
+Instructions:
+{INSTRUCTIONS}
+
+Return:
+- If structured: a JSON object matching the OUTPUT FORMAT in prompt.txt
+- If free text: a short answer + a JSON METADATA block

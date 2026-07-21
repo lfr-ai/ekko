@@ -1,0 +1,16 @@
+# .redocly.yaml — Redocly OpenAPI Validation
+# Docs: https://redocly.com/docs/cli/configuration
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: warn
+  operation-summary: warn
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages:
+        - lang: Python
+        - lang: JavaScript

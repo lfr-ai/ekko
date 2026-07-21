@@ -1,0 +1,8 @@
+[environment]
+root = ["."]
+
+[src]
+exclude = ["**/__pycache__/**", ".venv/**", ".tox/**", "dist/**", "build/**"]
+
+[rules]
+unresolved-import = "ignore"

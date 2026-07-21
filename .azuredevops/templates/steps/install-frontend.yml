@@ -1,0 +1,12 @@
+parameters:
+  - name: frontendDir
+    type: string
+    default: "frontend"
+
+steps:
+  - script: npm i -g bun
+    displayName: Install Bun
+
+  - script: bun install --frozen-lockfile
+    workingDirectory: ${{ parameters.frontendDir }}
+    displayName: Install frontend dependencies

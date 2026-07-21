@@ -1,0 +1,61 @@
+# Extend the root ruff.toml configuration.
+# This file exists for when ruff is invoked directly from backend/.
+extend = "../ruff.toml"
+
+# Override per-file-ignores with paths relative to this directory.
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # assert allowed in tests
+    "S106",    # hardcoded test secrets
+    "ARG",     # unused args (fixtures)
+    "PLR2004", # magic values
+    "SLF001",  # private access in tests
+    "T20",     # print in tests
+    "PLC0415", # lazy imports in test fixtures
+]
+"alembic/**/*.py" = [
+    "ERA001", # commented-out code in migrations
+    "I001",   # isort — alembic has its own convention
+    "UP",     # pyupgrade — alembic templates need compat
+    "INP001", # namespace package
+    "T20",    # print
+]
+"src/ekko/infrastructure/audio_streamer/**/*.py" = [
+    "T20", # print allowed in subprocess code
+]
+"src/ekko/config/**/*.py" = [
+    "PLC0415", # lazy imports for optional dependencies
+    "TC002",   # SecretStr used at runtime
+]
+"src/ekko/composition/**/*.py" = [
+    "PLC0415", # lazy DI imports in container + app factory
+    "C901",    # lifespan inherently complex
+    "PLR0915", # lifespan has many statements
+    "SLF001",  # private state attributes on app.state
+]
+"src/ekko/presentation/api/middleware/**/*.py" = [
+    "ARG001", # FastAPI exception handlers require request/exc params
+    "ARG002", # middleware call signatures
+]
+"src/ekko/presentation/api/exception_handlers.py" = [
+    "ARG001", # FastAPI exception handlers require request/exc params
+]
+"src/ekko/presentation/api/responses.py" = [
+    "UP040", # TypeAlias kept for Python 3.12 compat until min version is 3.13
+]
+"src/ekko/presentation/api/routes/**/*.py" = [
+    "PLC0415", # lazy DI imports in route handlers
+    "S105",    # "bearer" token_type is not a password
+    "S106",    # "bearer" token_type is not a password
+]
+"src/ekko/presentation/api/schemas/**/*.py" = [
+    "S105", # "bearer" token_type default is not a password
+]
+"src/ekko/presentation/graphql/**/*.py" = [
+    "PLC0415", # lazy imports in resolvers (DI pattern)
+    "ARG002",  # strawberry permission interface requires source/kwargs
+    "TC002",   # strawberry types used at runtime
+]
+"src/ekko/ai/**/*.py" = [
+    "PLC0415", # lazy imports for optional AI deps
+]

@@ -1,0 +1,7 @@
+[install]
+# Use text lockfile for better diffs
+saveTextLockfile = true
+# Use copyfile backend to avoid hardlink/symlink issues on Windows/OneDrive
+backend = "copyfile"
+# Use hoisted node_modules layout for compatibility with Node-based tooling (Vitest)
+linker = "hoisted"

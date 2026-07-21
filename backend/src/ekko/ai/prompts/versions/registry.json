@@ -1,0 +1,29 @@
+{
+  "prompts": {
+    "conversational_system": {
+      "current_version": "v1",
+      "versions": [
+        {
+          "checksum": "86e1ead98aa77fbb96ea2b420906951089dbf1b16acc20ef6314d1a5c12260d4",
+          "created_at": "2026-05-18T08:23:49.872428+00:00",
+          "file_name": "conversational_system.v1.txt",
+          "source_name": "templates.CONVERSATIONAL_SYSTEM",
+          "version": "v1"
+        }
+      ]
+    },
+    "summary_chunks": {
+      "current_version": "v1",
+      "versions": [
+        {
+          "checksum": "379704e40d9afe315d2543d3acc9ba618741a46b227fe239e6a1b1982e171f79",
+          "created_at": "2026-05-18T08:23:49.848026+00:00",
+          "file_name": "summary_chunks.v1.txt",
+          "source_name": "summary_prompt_chunks.txt",
+          "version": "v1"
+        }
+      ]
+    }
+  },
+  "schema_version": 1
+}
