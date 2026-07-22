@@ -3,6 +3,11 @@
 This module provides a file-backed prompt registry that snapshots prompt sources
 into immutable versioned files. If a source prompt changes, a new version is
 provisioned automatically (unless disabled in settings).
+
+When ``prompt_version_set`` is ``"experimental"``, the registry bypasses
+versioning entirely and always reads directly from the template source files.
+This allows rapid iteration during development without creating version
+snapshots.
 """
 
 from __future__ import annotations
@@ -29,6 +34,7 @@ REGISTRY_FILE_NAME: Final[str] = "registry.json"
 REGISTRY_LOCK_FILE_NAME: Final[str] = ".registry.lock"
 REGISTRY_LOCK_TIMEOUT_SECONDS: Final[float] = 5.0
 REGISTRY_LOCK_POLL_INTERVAL_SECONDS: Final[float] = 0.05
+EXPERIMENTAL_VERSION_SET: Final[str] = "experimental"
 
 PROMPT_KEY_SUMMARY_CHUNKS: Final[str] = "summary_chunks"
 PROMPT_KEY_CONVERSATIONAL_SYSTEM: Final[str] = "conversational_system"
@@ -107,13 +113,18 @@ def get_prompt_text(
 ) -> str:
     """Return prompt text for the requested prompt key.
 
-    If prompt auto-provisioning is enabled, source changes are snapshotted into
-    a new immutable version file automatically.
+    If ``prompt_version_set`` is ``"experimental"``, the source template is
+    returned directly — no versioning or provisioning occurs. Otherwise,
+    provisioning behaviour follows the ``prompt_auto_provision`` setting.
     """
     config = settings or get_settings()
     source = PROMPT_SOURCES.get(prompt_key)
     if source is None:
         raise PromptRegistryError(f"Unknown prompt key: {prompt_key}")
+
+    # Experimental mode: always read from template source, bypass versioning.
+    if config.prompt_version_set == EXPERIMENTAL_VERSION_SET:
+        return _resolve_source_text(source=source, prompt_dir=Path(config.prompt_dir_path))
 
     active_version = _normalize_prompt_version(config.prompt_version)
     if not config.prompt_auto_provision and active_version is None:
@@ -200,6 +211,17 @@ def get_active_prompt_version(
     source = PROMPT_SOURCES.get(prompt_key)
     if source is None:
         raise PromptRegistryError(f"Unknown prompt key: {prompt_key}")
+
+    # Experimental mode: return pseudo-info from source, no provisioning.
+    if config.prompt_version_set == EXPERIMENTAL_VERSION_SET:
+        prompt_dir = Path(config.prompt_dir_path)
+        source_text = _resolve_source_text(source=source, prompt_dir=prompt_dir)
+        return _provision_disabled_info(
+            prompt_key=prompt_key,
+            source=source,
+            source_text=source_text,
+            prompt_dir=prompt_dir,
+        )
 
     selected_version = _normalize_prompt_version(config.prompt_version)
     if selected_version is not None:

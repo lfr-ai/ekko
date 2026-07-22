@@ -98,6 +98,7 @@ class BaseAppConfig(BaseSettings):
     logs_dir_path: Path = Path("./logs")
     prompt_dir_path: Path = package_dir_path / "ai" / "prompts"
     prompt_version: str | None = None
+    prompt_version_set: str = "experimental"
     prompt_auto_provision: bool = True
     interaction_dir_path: Path = package_dir_path / "interaction"
 

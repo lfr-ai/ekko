@@ -9,6 +9,7 @@ import pytest
 
 import ekko.ai.prompts.registry as prompt_registry
 from ekko.ai.prompts.registry import (
+    EXPERIMENTAL_VERSION_SET,
     PROMPT_KEY_CONVERSATIONAL_SYSTEM,
     PROMPT_KEY_SUMMARY_CHUNKS,
     PromptRegistryError,
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 class PromptSettingsStub:
     prompt_dir_path: Path
     prompt_version: str | None = None
+    prompt_version_set: str = "production"
     prompt_auto_provision: bool = True
 
 
@@ -163,3 +165,24 @@ def test_provision_prompt_with_stale_lock_raises_registry_error(
     settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
     with pytest.raises(PromptRegistryError, match="Timed out waiting for prompt registry lock"):
         provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+
+@pytest.mark.unit
+def test_experimental_version_set_reads_from_source_directly(tmp_path: Path) -> None:
+    """Experimental mode always reads from template source, no versioning."""
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+    source_file = prompt_dir / "summary_prompt_chunks.txt"
+    source_file.write_text("experimental content", encoding="utf-8")
+
+    settings = PromptSettingsStub(
+        prompt_dir_path=prompt_dir,
+        prompt_version_set=EXPERIMENTAL_VERSION_SET,
+    )
+
+    text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+    assert text == "experimental content"
+
+    # No version file should have been created.
+    versions_dir = prompt_dir / "versions"
+    assert not versions_dir.exists() or not list(versions_dir.glob("*.txt"))
