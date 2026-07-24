@@ -258,4 +258,7 @@ backend/dist/
 # Project-Specific (accidental root-level dirs)
 # ═══════════════════════════════════════════════════════════════
 /config
+
+# Azure IaC generated ARM JSON (compiled from Bicep)
+azure/iac/**/*.json
 /core

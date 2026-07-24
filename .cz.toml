@@ -4,3 +4,4 @@ version_provider = "pep621"
 tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_file = "CHANGELOG.md"
+version_files = ["backend/src/ekko/__init__.py:__version__"]
