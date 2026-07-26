@@ -56,6 +56,15 @@ class TestPIIAnonymizer:
         result = anonymizer.anonymize(text)
         assert len(result.pii_matches) >= 2
 
+    def test_anonymize_twice_when_long_digit_run_then_is_idempotent(self):
+        anonymizer = PIIAnonymizer()
+        text = "00000000000000000000000000000"
+
+        first_pass = anonymizer.anonymize(text)
+        second_pass = anonymizer.anonymize(first_pass.anonymized_text)
+
+        assert second_pass.anonymized_text == first_pass.anonymized_text
+
     def test_patterns_are_compiled(self):
         for pattern in PII_PATTERNS:
             assert pattern.name

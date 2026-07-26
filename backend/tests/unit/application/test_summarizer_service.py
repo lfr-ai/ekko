@@ -31,12 +31,10 @@ def test_summarizer_basic():
 
 
 @pytest.mark.unit
-def test_summarizer_file_not_found_uses_fallback():
+def test_summarizer_file_not_found_raises_error():
     gateway = DummyGateway()
     svc = SummarizerService(gateway=gateway, prompt_provider=FailingPromptProvider())
     chunks = ["Test chunk"]
 
-    result = svc.summarize(chunks)
-
-    # Should use fallback template and still return a result
-    assert result.startswith("summary:")
+    with pytest.raises(PromptProviderError):
+        svc.summarize(chunks)
