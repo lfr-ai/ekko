@@ -218,7 +218,7 @@ The project uses the `uv run python -m <tool>` pattern for cross-platform CLI in
 
 - Python 3.12+ features
 - Full type hints on all functions/methods
-- Google-style docstrings
+- Google-style docstrings with `"""` triple-double-quote delimiters (imperative mood for functions, noun phrase for classes)
 - Keyword-only args with `*` separator for 3+ params
 - `frozen=True, slots=True` on all dataclasses
 - No magic numbers; use named constants
@@ -308,7 +308,7 @@ Review `.secrets.baseline` before committing to ensure no real secrets were adde
 ### Security Baselines
 
 - **detect-secrets**: `.secrets.baseline`
-- **bandit**: `bandit.toml`
+- **bandit**: root `bandit.toml`
 
 Update baselines only after confirming false positives.
 
