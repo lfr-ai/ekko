@@ -1,83 +1,34 @@
-"""
-OpenAPI specification generation configuration for Ekko.
+"""OpenAPI specification configuration for Ekko."""
 
-This module provides configuration for generating OpenAPI/Swagger documentation
-from the FastAPI application with enhanced metadata and examples.
-"""
+from __future__ import annotations
 
 from typing import Final
+
+from fastapi import status
 
 # OpenAPI metadata
 OPENAPI_TITLE: Final[str] = "Ekko API"
 OPENAPI_VERSION: Final[str] = "0.1.0"
-OPENAPI_DESCRIPTION: Final[str] = """
-# Ekko — AI-Powered Voice Assistant Platform
-
-Ekko is a modern, full-stack AI voice assistant platform built with Clean Architecture principles.
-
-## Features
-
-- 🎤 **Real-time Voice Streaming**: Low-latency audio capture and processing
-- 🤖 **AI-Powered Conversations**: LLM integration with CrewAI multi-agent system
-- 🔒 **PII Anonymization**: Regex-based sensitive data scrubbing
-- 📊 **GraphQL-first API**: Strawberry schema with queries, mutations, and subscriptions
-- 🧪 **Comprehensive Testing**: Unit, integration, property-based, and E2E tests
-
-## Architecture
-
-This API follows Clean Architecture with strict layer boundaries:
-
-```
-Presentation → Application → Core ← Infrastructure
-```
-
-- **Core**: Domain entities, value objects, business rules
-- **Application**: Use case orchestration, DTOs, mappers
-- **Infrastructure**: Database, external integrations, adapters
-- **Presentation**: GraphQL schema, health route, middleware, WebSocket handlers
+OPENAPI_DESCRIPTION: Final[str] = """\
+AI-powered voice assistant platform with real-time transcription, \
+LLM summarization, and PII anonymization.
 
 ## Authentication
 
-This is a local-only desktop application. All requests are auto-authenticated as `dev-user`.
-
-## Rate Limiting
-
-Rate limits are applied per endpoint:
-- Health endpoints: 100 requests/minute
-- GraphQL: 60 requests/minute
-
-## WebSocket Connections
-
-Real-time features use WebSocket connections:
-- GraphQL subscriptions: `/graphql` (WebSocket upgrade)
+Local-only desktop application. Requests are auto-authenticated as `dev-user`.
 
 ## Error Responses
 
-All errors follow a consistent structure:
+All errors return:
 
 ```json
-{
-  "detail": "Human-readable error message",
-  "error_code": "SPECIFIC_ERROR_CODE",
-  "timestamp": "2026-05-02T10:52:21.123456"
-}
+{"detail": "...", "error_code": "SPECIFIC_ERROR_CODE"}
 ```
-
-## Changelog
-
-- **v0.1.0** (2026-05-02): Initial release
-  - Core voice streaming functionality
-  - LLM integration with OpenAI
-  - CrewAI multi-agent system
-  - GraphQL API with subscriptions
-  - PII anonymization
 """
-
-OPENAPI_TERMS_OF_SERVICE: Final[str] = "https://example.com/terms"
 
 OPENAPI_CONTACT: Final[dict[str, str]] = {
     "name": "Ekko Development Team",
-    "url": "https://github.com/yourusername/ekko",
+    "url": "https://github.com/ap-pension/ekko",
     "email": "lfr@tik-ai.dk",
 }
 
@@ -121,20 +72,13 @@ OPENAPI_TAGS: Final[list[dict[str, str]]] = [
 # External documentation
 OPENAPI_EXTERNAL_DOCS: Final[dict[str, str]] = {
     "description": "Project Documentation",
-    "url": "https://github.com/yourusername/ekko/blob/main/README.md",
+    "url": "https://github.com/ap-pension/ekko/blob/main/README.md",
 }
 
 # Schema customization
-OPENAPI_SCHEMA_EXTRA: Final[dict[str, object]] = {
-    "x-logo": {
-        "url": "https://example.com/logo.png",
-        "altText": "Ekko Logo",
-    },
-}
-
 # Response examples
 OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
-    400: {
+    status.HTTP_400_BAD_REQUEST: {
         "description": "Bad Request - Invalid input parameters",
         "content": {
             "application/json": {
@@ -145,7 +89,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    401: {
+    status.HTTP_401_UNAUTHORIZED: {
         "description": "Unauthorized - Authentication required",
         "content": {
             "application/json": {
@@ -156,7 +100,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    403: {
+    status.HTTP_403_FORBIDDEN: {
         "description": "Forbidden - Insufficient permissions",
         "content": {
             "application/json": {
@@ -167,7 +111,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    404: {
+    status.HTTP_404_NOT_FOUND: {
         "description": "Not Found - Resource doesn't exist",
         "content": {
             "application/json": {
@@ -178,7 +122,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    422: {
+    status.HTTP_422_UNPROCESSABLE_CONTENT: {
         "description": "Unprocessable Entity - Validation error",
         "content": {
             "application/json": {
@@ -194,7 +138,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    429: {
+    status.HTTP_429_TOO_MANY_REQUESTS: {
         "description": "Too Many Requests - Rate limit exceeded",
         "content": {
             "application/json": {
@@ -205,7 +149,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    500: {
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {
         "description": "Internal Server Error - Something went wrong",
         "content": {
             "application/json": {
@@ -216,7 +160,7 @@ OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
             }
         },
     },
-    503: {
+    status.HTTP_503_SERVICE_UNAVAILABLE: {
         "description": "Service Unavailable - Server is temporarily unavailable",
         "content": {
             "application/json": {
