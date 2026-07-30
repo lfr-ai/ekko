@@ -26,4 +26,4 @@ class TestHealthRoute:
         data = resp.json()
         # Without lifespan, state won't have queue_manager
         assert "ok" in data
-        assert "duckdb_enabled" in data["details"]
+        assert "sqlite_database_present" in data["details"]

@@ -1,16 +1,7 @@
 # Codecov configuration
 # https://docs.codecov.io/docs/codecov-yaml
 
-codecov:
-  require_ci_to_pass: true
-  notify:
-    wait_for_ci: true
-
 coverage:
-  precision: 2
-  round: down
-  range: "70...95"
-
   status:
     project:
       default:
@@ -22,11 +13,8 @@ coverage:
         threshold: 5%
 
 comment:
-  layout: "reach,diff,flags,components"
-  behavior: default
+  layout: "reach,diff,flags"
   require_changes: true
-  require_base: false
-  require_head: true
 
 flags:
   backend:

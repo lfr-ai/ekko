@@ -4,12 +4,11 @@ import uuid
 from datetime import UTC, datetime
 
 from ekko.application.mappers import (
-    agent_result_to_dto,
     conversation_to_dto,
     message_to_dto,
     transcript_to_dto,
 )
-from ekko.core.entities import AgentResult, Conversation, Message, Transcript
+from ekko.core.entities import Conversation, Message, Transcript
 from ekko.core.enums import MessageRole
 
 
@@ -42,11 +41,3 @@ class TestTranscriptMapper:
         dto = transcript_to_dto(t)
         assert dto.text == "Hello"
         assert dto.confidence == 0.9
-
-
-class TestAgentResultMapper:
-    def test_maps_fields(self):
-        r = AgentResult(agent_name="summarizer", task_name="summarize", output="Done", execution_time_seconds=2.0)
-        dto = agent_result_to_dto(r)
-        assert dto.agent_name == "summarizer"
-        assert dto.execution_time_seconds == 2.0

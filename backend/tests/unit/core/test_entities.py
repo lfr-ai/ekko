@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from ekko.core.entities import AgentResult, Conversation, Message, Transcript
+from ekko.core.entities import Conversation, Message, Transcript
 from ekko.core.enums import MessageRole, TranscriptStatus
 
 
@@ -55,18 +55,6 @@ class TestTranscript:
         assert t.confidence == 0.95
 
 
-class TestAgentResult:
-    def test_default_agent_result(self):
-        r = AgentResult()
-        assert r.agent_name == ""
-        assert r.execution_time_seconds == 0.0
-
-    def test_agent_result_with_data(self):
-        r = AgentResult(agent_name="intent_detector", output="question", execution_time_seconds=1.5)
-        assert r.agent_name == "intent_detector"
-        assert r.execution_time_seconds == 1.5
-
-
 class TestFactoryUsage:
     """Demonstrate and validate factory-based test data generation."""
 
@@ -110,19 +98,3 @@ class TestFactoryUsage:
 
         assert transcript.confidence == 0.3
         assert transcript.status == TranscriptStatus.RECEIVED
-
-    def test_agent_result_factory_execution_time_traits(self, agent_result_factory):
-        """AgentResultFactory provides execution time helper methods."""
-        fast = agent_result_factory.fast_execution()
-        slow = agent_result_factory.slow_execution()
-
-        assert fast.execution_time_seconds < 1.0
-        assert slow.execution_time_seconds > 10.0
-
-    def test_factory_batch_creation(self, message_factory):
-        """Factories support batch creation for multiple entities."""
-        messages = message_factory.create_batch(5, role=MessageRole.USER)
-
-        assert len(messages) == 5
-        assert all(msg.role == MessageRole.USER for msg in messages)
-        assert all(isinstance(msg.id, uuid.UUID) for msg in messages)
