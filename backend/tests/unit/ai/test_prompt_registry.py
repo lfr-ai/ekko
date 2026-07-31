@@ -20,18 +20,7 @@ from ekko.ai.prompts.registry import (
 )
 from ekko.core.registry_constants import (
     PROMPT_KEY_CONVERSATIONAL_SYSTEM,
-    PROMPT_KEY_HMAS_AGENT_POLICY,
-    PROMPT_KEY_HMAS_AGGREGATION_POLICY,
-    PROMPT_KEY_HMAS_DELEGATION_BRIEF,
-    PROMPT_KEY_HMAS_FAILURE_POLICY,
-    PROMPT_KEY_HMAS_PLANNING_POLICY,
-    PROMPT_KEY_HMAS_PROFILE_ANALYST,
-    PROMPT_KEY_HMAS_PROFILE_PLANNER,
-    PROMPT_KEY_HMAS_PROFILE_RESEARCHER,
-    PROMPT_KEY_HMAS_PROFILE_REVIEWER,
-    PROMPT_KEY_HMAS_PROFILE_WRITER,
-    PROMPT_KEY_HMAS_SUPERVISOR_SYSTEM,
-    PROMPT_KEY_HMAS_TASK_POLICY,
+    PROMPT_KEY_SUMMARIZER_SYSTEM,
     PROMPT_KEY_SUMMARY_CHUNKS,
 )
 
@@ -42,16 +31,6 @@ class PromptSettingsStub:
     prompt_version: str | None = None
     prompt_version_set: str = "production"
     prompt_auto_provision: bool = True
-
-
-def _seed_file_backed_hmas_prompts(prompt_dir: Path) -> None:
-    for source in PROMPT_SOURCES.values():
-        if source.source_kind != "file":
-            continue
-        file_path = prompt_dir / source.source_name
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        if not file_path.exists():
-            file_path.write_text(f"seeded {source.key}", encoding="utf-8")
 
 
 @pytest.mark.unit
@@ -137,10 +116,11 @@ def test_get_prompt_text_raises_for_unknown_version(tmp_path: Path) -> None:
 def test_get_active_prompt_versions_with_auto_provision_returns_versions(tmp_path: Path) -> None:
     prompt_dir = tmp_path / "prompts"
     prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-    _seed_file_backed_hmas_prompts(prompt_dir)
+    templates_dir = prompt_dir / "templates"
+    templates_dir.mkdir(parents=True, exist_ok=True)
+    (templates_dir / "summary_chunks.prompt.md").write_text("summary", encoding="utf-8")
+    (templates_dir / "summarizer_system.prompt.md").write_text("system", encoding="utf-8")
+    (templates_dir / "conversational_system.prompt.md").write_text("convo", encoding="utf-8")
 
     settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
     provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
@@ -258,80 +238,3 @@ def test_named_version_set_without_entry_and_auto_provision_disabled_raises(tmp_
 
     with pytest.raises(PromptRegistryError, match="version set"):
         get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=strict_settings)
-
-
-@pytest.mark.unit
-def test_hmas_prompt_registry_keys_are_present_and_non_empty(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    summary_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    summary_file.parent.mkdir(parents=True, exist_ok=True)
-    summary_file.write_text("summary", encoding="utf-8")
-    _seed_file_backed_hmas_prompts(prompt_dir)
-
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    hmas_keys = [
-        PROMPT_KEY_HMAS_AGENT_POLICY,
-        PROMPT_KEY_HMAS_TASK_POLICY,
-        PROMPT_KEY_HMAS_PROFILE_PLANNER,
-        PROMPT_KEY_HMAS_PROFILE_RESEARCHER,
-        PROMPT_KEY_HMAS_PROFILE_ANALYST,
-        PROMPT_KEY_HMAS_PROFILE_WRITER,
-        PROMPT_KEY_HMAS_PROFILE_REVIEWER,
-        PROMPT_KEY_HMAS_SUPERVISOR_SYSTEM,
-        PROMPT_KEY_HMAS_PLANNING_POLICY,
-        PROMPT_KEY_HMAS_DELEGATION_BRIEF,
-        PROMPT_KEY_HMAS_AGGREGATION_POLICY,
-        PROMPT_KEY_HMAS_FAILURE_POLICY,
-    ]
-
-    for key in hmas_keys:
-        assert key in PROMPT_SOURCES
-        assert get_prompt_text(key, settings=settings).strip()
-
-
-@pytest.mark.unit
-def test_hmas_prompt_registry_sources_use_file_backed_subfolders() -> None:
-    file_backed_hmas_keys = [
-        PROMPT_KEY_HMAS_AGENT_POLICY,
-        PROMPT_KEY_HMAS_TASK_POLICY,
-        PROMPT_KEY_HMAS_PROFILE_PLANNER,
-        PROMPT_KEY_HMAS_PROFILE_RESEARCHER,
-        PROMPT_KEY_HMAS_PROFILE_ANALYST,
-        PROMPT_KEY_HMAS_PROFILE_WRITER,
-        PROMPT_KEY_HMAS_PROFILE_REVIEWER,
-        PROMPT_KEY_HMAS_SUPERVISOR_SYSTEM,
-        PROMPT_KEY_HMAS_PLANNING_POLICY,
-        PROMPT_KEY_HMAS_DELEGATION_BRIEF,
-        PROMPT_KEY_HMAS_AGGREGATION_POLICY,
-        PROMPT_KEY_HMAS_FAILURE_POLICY,
-    ]
-
-    for key in file_backed_hmas_keys:
-        source = PROMPT_SOURCES[key]
-        assert source.source_kind == "file"
-        assert source.source_name.startswith("templates/hmas/")
-        assert source.inline_text is None
-
-
-@pytest.mark.unit
-def test_hmas_prompt_registry_files_exist_in_prompt_directory() -> None:
-    prompt_directory = Path(prompt_registry.__file__).parent
-    hmas_source_files = [
-        "templates/hmas/agent_policy.prompt.md",
-        "templates/hmas/task_policy.prompt.md",
-        "templates/hmas/profiles/planner.prompt.md",
-        "templates/hmas/profiles/researcher.prompt.md",
-        "templates/hmas/profiles/analyst.prompt.md",
-        "templates/hmas/profiles/writer.prompt.md",
-        "templates/hmas/profiles/reviewer.prompt.md",
-        "templates/hmas/supervisor/system.prompt.md",
-        "templates/hmas/supervisor/planning_policy.prompt.md",
-        "templates/hmas/supervisor/delegation_brief.prompt.md",
-        "templates/hmas/supervisor/aggregation_policy.prompt.md",
-        "templates/hmas/supervisor/failure_policy.prompt.md",
-    ]
-
-    for relative_path in hmas_source_files:
-        file_path = prompt_directory / relative_path
-        assert file_path.exists(), f"Missing HMAS prompt file: {relative_path}"
