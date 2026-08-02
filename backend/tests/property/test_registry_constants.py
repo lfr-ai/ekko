@@ -10,7 +10,6 @@ import importlib
 import json
 import re
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -18,7 +17,7 @@ from ekko.core import registry_constants
 
 
 @pytest.fixture
-def registry_json() -> dict[str, Any]:
+def registry_json() -> dict[str, object]:
     """Load the naming registry JSON for validation."""
     # Navigate from backend/tests/property to project root
     registry_path = Path(__file__).parent.parent.parent.parent / "registry" / "naming_registry.json"
@@ -130,8 +129,9 @@ class TestRegistryConstantsFormatPatterns:
         all_constants: dict[str, str],
     ) -> None:
         """Constants should use one of the supported naming suffix/prefix conventions."""
+        allowed_prefixes = ("FIELD_", "ROUTE_", "ERROR_", "STATUS_", "PROMPT_KEY_")
         for name in all_constants:
-            assert name.endswith("_LABEL") or name.startswith(("FIELD_", "ROUTE_", "ERROR_", "STATUS_")), (
+            assert name.endswith("_LABEL") or name.startswith(allowed_prefixes), (
                 f"Constant {name} does not match expected naming convention"
             )
 
@@ -177,6 +177,8 @@ class TestRegistryConstantsConsistency:
             return f"ERROR_{key_upper}"
         if category == "status_values":
             return f"STATUS_{key_upper}"
+        if category == "prompt_keys":
+            return f"PROMPT_KEY_{key_upper}"
         return f"{category_upper}_{key_upper}_LABEL"
 
     def test_all_registry_entries_have_constants(

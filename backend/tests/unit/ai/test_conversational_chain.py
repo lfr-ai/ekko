@@ -5,12 +5,13 @@ import asyncio
 import pytest
 
 from ekko.ai.chains.conversational import ConversationalChain
-from ekko.ai.prompts.templates import CONVERSATIONAL_SYSTEM
 from ekko.core.enums import MessageRole
 
+_STUB_SYSTEM_PROMPT = "You are Ekko, an AI voice assistant.\n\nCurrent context:\n{context}\n\nRespond helpfully."
 
-class MockLLMAdapter:
-    """Mock LLM adapter for testing."""
+
+class MockChatClient:
+    """Mock chat client for testing."""
 
     def __init__(self, response: str = "mock response"):
         self.response = response
@@ -18,7 +19,7 @@ class MockLLMAdapter:
         self.last_system_prompt = None
         self.last_user_prompt = None
 
-    async def async_chat(self, *, system_prompt: str, user_prompt: str) -> str:
+    async def achat(self, *, system_prompt: str, user_prompt: str, **kwargs: object) -> str:
         """Mock async chat method."""
         await asyncio.sleep(0)
         self.call_count += 1
@@ -31,7 +32,7 @@ class MockLLMAdapter:
 def stub_prompt_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "ekko.ai.chains.conversational.get_prompt_text",
-        lambda *_args, **_kwargs: CONVERSATIONAL_SYSTEM,
+        lambda *_args, **_kwargs: _STUB_SYSTEM_PROMPT,
     )
 
 
@@ -39,8 +40,8 @@ def stub_prompt_registry(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.asyncio
 async def test_conversational_chain_basic():
     # Arrange
-    llm = MockLLMAdapter(response="Hello, how can I help?")
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient(response="Hello, how can I help?")
+    chain = ConversationalChain(chat_client=client)
 
     # Act
     response = await chain.run("Hi there")
@@ -58,12 +59,12 @@ async def test_conversational_chain_basic():
 @pytest.mark.asyncio
 async def test_conversational_chain_maintains_history():
     # Arrange
-    llm = MockLLMAdapter(response="Response 1")
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient(response="Response 1")
+    chain = ConversationalChain(chat_client=client)
 
     # Act
     await chain.run("Message 1")
-    llm.response = "Response 2"
+    client.response = "Response 2"
     await chain.run("Message 2")
 
     # Assert
@@ -78,8 +79,8 @@ async def test_conversational_chain_maintains_history():
 @pytest.mark.asyncio
 async def test_conversational_chain_respects_max_history():
     # Arrange
-    llm = MockLLMAdapter(response="Response")
-    chain = ConversationalChain(llm=llm, max_history=2)
+    client = MockChatClient(response="Response")
+    chain = ConversationalChain(chat_client=client, max_history=2)
 
     # Act
     await chain.run("Message 1")
@@ -99,8 +100,8 @@ async def test_conversational_chain_respects_max_history():
 @pytest.mark.asyncio
 async def test_conversational_chain_clear_history():
     # Arrange
-    llm = MockLLMAdapter(response="Response")
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient(response="Response")
+    chain = ConversationalChain(chat_client=client)
     await chain.run("Message 1")
     await chain.run("Message 2")
 
@@ -115,8 +116,8 @@ async def test_conversational_chain_clear_history():
 @pytest.mark.asyncio
 async def test_conversational_chain_builds_context_from_empty_history():
     # Arrange
-    llm = MockLLMAdapter(response="Response")
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient(response="Response")
+    chain = ConversationalChain(chat_client=client)
 
     # Act
     context = chain._build_context()
@@ -129,23 +130,23 @@ async def test_conversational_chain_builds_context_from_empty_history():
 @pytest.mark.asyncio
 async def test_conversational_chain_injects_context_in_system_prompt():
     # Arrange
-    llm = MockLLMAdapter(response="Response")
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient(response="Response")
+    chain = ConversationalChain(chat_client=client)
 
     # Act
     await chain.run("Test message")
 
     # Assert
-    assert llm.last_system_prompt is not None
-    assert "context" in llm.last_system_prompt.lower() or "conversation" in llm.last_system_prompt.lower()
-    assert llm.last_user_prompt == "Test message"
+    assert client.last_system_prompt is not None
+    assert "context" in client.last_system_prompt.lower() or "conversation" in client.last_system_prompt.lower()
+    assert client.last_user_prompt == "Test message"
 
 
 @pytest.mark.unit
 def test_conversational_chain_default_max_history():
     # Arrange / Act
-    llm = MockLLMAdapter()
-    chain = ConversationalChain(llm=llm)
+    client = MockChatClient()
+    chain = ConversationalChain(chat_client=client)
 
     # Assert
     assert chain.max_history == 20
