@@ -1,4 +1,4 @@
-"""Container-backed integration tests for database and API boundaries."""
+"""Integration tests for database and API boundaries."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_postgres_engine_when_container_running_then_select_one_succeeds(
-    postgres_async_engine,
+async def test_db_engine_when_started_then_select_one_succeeds(
+    test_async_engine,
 ) -> None:
-    """Testcontainer PostgreSQL should accept simple connectivity probes."""
+    """SQLite async engine should accept simple connectivity probes."""
     # Arrange / Act
-    async with postgres_async_engine.connect() as connection:
+    async with test_async_engine.connect() as connection:
         result = await connection.execute(text("SELECT 1"))
 
     # Assert
@@ -30,16 +30,16 @@ async def test_postgres_engine_when_container_running_then_select_one_succeeds(
 
 @pytest.mark.asyncio
 async def test_user_create_when_valid_payload_then_row_is_persisted(
-    postgres_session: AsyncSession,
+    test_session: AsyncSession,
 ) -> None:
-    """User rows should persist through async ORM session with PostgreSQL."""
+    """User rows should persist through async ORM session."""
     # Arrange
     user = User(username="integration_user", full_name="Integration User")
 
     # Act
-    postgres_session.add(user)
-    await postgres_session.commit()
-    await postgres_session.refresh(user)
+    test_session.add(user)
+    await test_session.commit()
+    await test_session.refresh(user)
 
     # Assert
     assert user.id is not None
@@ -48,16 +48,16 @@ async def test_user_create_when_valid_payload_then_row_is_persisted(
 
 @pytest.mark.asyncio
 async def test_user_read_when_row_exists_then_query_returns_it(
-    postgres_session: AsyncSession,
+    test_session: AsyncSession,
 ) -> None:
     """Inserted rows should be queryable with SQLAlchemy select statements."""
     # Arrange
     seeded_user = User(username="reader", full_name="Read Model")
-    postgres_session.add(seeded_user)
-    await postgres_session.commit()
+    test_session.add(seeded_user)
+    await test_session.commit()
 
     # Act
-    result = await postgres_session.execute(select(User).where(User.username == "reader"))
+    result = await test_session.execute(select(User).where(User.username == "reader"))
     loaded_user = result.scalar_one()
 
     # Assert

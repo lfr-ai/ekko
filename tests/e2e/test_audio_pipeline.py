@@ -1,9 +1,9 @@
-"""End-to-end tests for audio → STT → LLM → response pipeline.
+"""End-to-end tests for audio → STT → chat client → response pipeline.
 
 Tests the complete flow:
 1. Audio input → STT adapter
-2. Transcript → LLM adapter
-3. LLM response → output validation
+2. Transcript → chat client
+3. Chat response → output validation
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from tests.fixtures.audio.fixture_audio import (
     FIXTURE_AUDIO_INVALID,
     FIXTURE_AUDIO_SHORT,
 )
-from tests.mocks.llm_mock import FailingLLMAdapter, MockLLMAdapter
+from tests.mocks.chat_mock import FailingChatClient, MockChatClient
 from tests.mocks.stt_mock import FailingSTTAdapter, MockSTTAdapter
 
 # ── Happy Path Tests ─────────────────────────────────────────
@@ -29,13 +29,13 @@ class TestAudioPipelineHappyPath:
     """Test successful audio pipeline execution."""
 
     async def test_full_pipeline_with_valid_audio(self) -> None:
-        """Full pipeline processes audio → transcript → LLM response."""
+        """Full pipeline processes audio → transcript → chat response."""
         # Arrange
         expected_transcript = "Hello, how can I help you today?"
-        expected_llm_response = "I can assist you with various tasks."
+        expected_chat_response = "I can assist you with various tasks."
 
         stt_adapter = MockSTTAdapter(transcript_text=expected_transcript)
-        llm_adapter = MockLLMAdapter(response_text=expected_llm_response)
+        chat_client = MockChatClient(response_text=expected_chat_response)
 
         output_queue: asyncio.Queue[object] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
@@ -48,10 +48,10 @@ class TestAudioPipelineHappyPath:
         transcript = await asyncio.wait_for(output_queue.get(), timeout=1.0)
 
         # Process transcript through LLM
-        llm_response = llm_adapter.chat(
+        chat_response = chat_client.chat(
             system_prompt="You are a helpful assistant.",
             user_prompt=transcript.text,
-            deployment_name="test-deployment",
+            model="test-deployment",
         )
 
         await stt_adapter.stop()
@@ -59,9 +59,9 @@ class TestAudioPipelineHappyPath:
         # Assert
         assert transcript.text == expected_transcript
         assert transcript.stream_name == "test_stream"
-        assert llm_response == expected_llm_response
-        assert llm_adapter.call_count == 1
-        assert llm_adapter.last_user_prompt == expected_transcript
+        assert chat_response == expected_chat_response
+        assert chat_client.call_count == 1
+        assert chat_client.last_user_prompt == expected_transcript
 
     async def test_pipeline_with_callback(self) -> None:
         """Pipeline processes audio with transcript callback."""
@@ -141,54 +141,54 @@ class TestAudioPipelineHappyPath:
 @pytest.mark.e2e
 @pytest.mark.asyncio
 class TestLLMIntegration:
-    """Test LLM adapter integration with transcripts."""
+    """Test chat client integration with transcripts."""
 
     async def test_llm_processes_transcript_text(self) -> None:
-        """LLM adapter receives and processes transcript text."""
+        """chat client receives and processes transcript text."""
         # Arrange
         transcript_text = "What is the weather today?"
-        llm_response = "The weather is sunny and warm."
+        chat_response = "The weather is sunny and warm."
 
-        llm_adapter = MockLLMAdapter(response_text=llm_response)
+        chat_client = MockChatClient(response_text=chat_response)
 
         # Act
-        response = llm_adapter.chat(
+        response = chat_client.chat(
             system_prompt="You are a weather assistant.",
             user_prompt=transcript_text,
-            deployment_name="gpt-4",
+            model="gpt-4",
         )
 
         # Assert
-        assert response == llm_response
-        assert llm_adapter.last_system_prompt == "You are a weather assistant."
-        assert llm_adapter.last_user_prompt == transcript_text
+        assert response == chat_response
+        assert chat_client.last_system_prompt == "You are a weather assistant."
+        assert chat_client.last_user_prompt == transcript_text
 
     async def test_llm_async_chat(self) -> None:
-        """LLM adapter supports async chat."""
+        """chat client supports async chat."""
         # Arrange
-        llm_adapter = MockLLMAdapter(response_text="Async response")
+        chat_client = MockChatClient(response_text="Async response")
 
         # Act
-        response = await llm_adapter.async_chat(
+        response = await chat_client.achat(
             system_prompt="System prompt",
             user_prompt="User prompt",
-            deployment_name="test-model",
+            model="test-model",
         )
 
         # Assert
         assert response == "Async response"
-        assert llm_adapter.call_count == 1
+        assert chat_client.call_count == 1
 
     async def test_llm_with_custom_parameters(self) -> None:
-        """LLM adapter accepts custom parameters."""
+        """chat client accepts custom parameters."""
         # Arrange
-        llm_adapter = MockLLMAdapter(response_text="Custom params response")
+        chat_client = MockChatClient(response_text="Custom params response")
 
         # Act
-        response = llm_adapter.chat(
+        response = chat_client.chat(
             system_prompt="System",
             user_prompt="User",
-            deployment_name="custom-model",
+            model="custom-model",
             max_completion_tokens=2048,
             temperature=0.7,
             top_p=0.9,
@@ -210,7 +210,7 @@ class TestResponseValidation:
         """Pipeline returns response as string."""
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="Test input")
-        llm_adapter = MockLLMAdapter(response_text="Test output")
+        chat_client = MockChatClient(response_text="Test output")
         output_queue: asyncio.Queue[object] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
@@ -218,10 +218,10 @@ class TestResponseValidation:
         await stt_adapter.start()
         await stt_adapter.accept_bytes("stream", FIXTURE_AUDIO_1_SEC)
         transcript = await asyncio.wait_for(output_queue.get(), timeout=1.0)
-        response = llm_adapter.chat(
+        response = chat_client.chat(
             system_prompt="System",
             user_prompt=transcript.text,
-            deployment_name="test",
+            model="test",
         )
         await stt_adapter.stop()
 
@@ -232,9 +232,9 @@ class TestResponseValidation:
     async def test_response_content_matches_expectation(self) -> None:
         """Pipeline response content is correct."""
         # Arrange
-        expected_response = "This is the expected LLM response."
+        expected_response = "This is the expected chat response."
         stt_adapter = MockSTTAdapter(transcript_text="Input text")
-        llm_adapter = MockLLMAdapter(response_text=expected_response)
+        chat_client = MockChatClient(response_text=expected_response)
         output_queue: asyncio.Queue[object] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
@@ -242,10 +242,10 @@ class TestResponseValidation:
         await stt_adapter.start()
         await stt_adapter.accept_bytes("stream", FIXTURE_AUDIO_1_SEC)
         transcript = await asyncio.wait_for(output_queue.get(), timeout=1.0)
-        response = llm_adapter.chat(
+        response = chat_client.chat(
             system_prompt="System",
             user_prompt=transcript.text,
-            deployment_name="test",
+            model="test",
         )
         await stt_adapter.stop()
 
@@ -295,29 +295,29 @@ class TestPipelineErrorHandling:
         await stt_adapter.stop()
 
     async def test_llm_failure_handling(self) -> None:
-        """Pipeline handles LLM processing failures."""
+        """Pipeline handles Chat processing failures."""
         # Arrange
-        llm_adapter = FailingLLMAdapter()
+        chat_client = FailingChatClient()
 
         # Act & Assert
-        with pytest.raises(RuntimeError, match="LLM processing failed"):
-            llm_adapter.chat(
+        with pytest.raises(RuntimeError, match="Chat processing failed"):
+            chat_client.chat(
                 system_prompt="System",
                 user_prompt="User",
-                deployment_name="test",
+                model="test",
             )
 
     async def test_llm_async_failure_handling(self) -> None:
-        """Pipeline handles async LLM processing failures."""
+        """Pipeline handles async Chat processing failures."""
         # Arrange
-        llm_adapter = FailingLLMAdapter()
+        chat_client = FailingChatClient()
 
         # Act & Assert
-        with pytest.raises(RuntimeError, match="LLM processing failed"):
-            await llm_adapter.async_chat(
+        with pytest.raises(RuntimeError, match="Chat processing failed"):
+            await chat_client.achat(
                 system_prompt="System",
                 user_prompt="User",
-                deployment_name="test",
+                model="test",
             )
 
     async def test_invalid_audio_data(self) -> None:
@@ -443,7 +443,7 @@ class TestIntegrationSmoke:
         stt_adapter = MockSTTAdapter(transcript_text="Hello, what's your name?")
         stt_adapter.on_transcript = on_transcript
 
-        llm_adapter = MockLLMAdapter(response_text="My name is Assistant.")
+        chat_client = MockChatClient(response_text="My name is Assistant.")
 
         # Act
         await stt_adapter.start()
@@ -454,12 +454,12 @@ class TestIntegrationSmoke:
 
         # Get transcript and process with LLM
         transcript_text = conversation[0][1]
-        llm_response = llm_adapter.chat(
+        chat_response = chat_client.chat(
             system_prompt="You are a conversational assistant.",
             user_prompt=transcript_text,
-            deployment_name="gpt-4",
+            model="gpt-4",
         )
-        conversation.append(("response", llm_response))
+        conversation.append(("response", chat_response))
 
         await stt_adapter.stop()
 
@@ -493,7 +493,7 @@ class TestIntegrationSmoke:
             "Third message",
         ]
         stt_adapter = MockSTTAdapter()
-        llm_adapter = MockLLMAdapter(response_text="Acknowledged")
+        chat_client = MockChatClient(response_text="Acknowledged")
 
         responses = []
 
@@ -508,10 +508,10 @@ class TestIntegrationSmoke:
             await stt_adapter.accept_bytes(f"stream_{i}", FIXTURE_AUDIO_1_SEC)
             transcript = await asyncio.wait_for(output_queue.get(), timeout=1.0)
 
-            response = llm_adapter.chat(
+            response = chat_client.chat(
                 system_prompt="System",
                 user_prompt=transcript.text,
-                deployment_name="test",
+                model="test",
             )
             responses.append(response)
 
@@ -520,4 +520,5 @@ class TestIntegrationSmoke:
         # Assert
         assert len(responses) == 3
         assert all(r == "Acknowledged" for r in responses)
-        assert llm_adapter.call_count == 3
+        assert chat_client.call_count == 3
+

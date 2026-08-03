@@ -1,8 +1,7 @@
-"""Container-backed end-to-end tests for backend API behavior.
+"""End-to-end tests for backend API behavior.
 
 These tests execute against an in-process FastAPI app with real lifespan
-startup/shutdown and a PostgreSQL Testcontainer injected for GraphQL readiness
-probes.
+startup/shutdown and an in-memory SQLite database for GraphQL readiness probes.
 """
 
 from __future__ import annotations
