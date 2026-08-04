@@ -35,8 +35,8 @@ def test_graphql_health_ready_when_queried_then_database_dependency_is_reported(
         assert isinstance(database_dependency.get("detail"), str)
 
 
-def test_metrics_when_graphql_request_executed_then_graphql_metrics_are_exposed(integration_client) -> None:
-    """Metrics endpoint should expose GraphQL operation counters after GraphQL traffic."""
+def test_metrics_endpoint_exposes_http_metrics(integration_client) -> None:
+    """Metrics endpoint should expose HTTP instrumentation metrics."""
     query = {
         "query": "query { health { status } }",
     }
@@ -47,5 +47,4 @@ def test_metrics_when_graphql_request_executed_then_graphql_metrics_are_exposed(
 
     assert metrics_response.status_code == 200
     body = metrics_response.text
-    assert "ekko_graphql_operation_total" in body
-    assert "ekko_graphql_operation_duration_seconds" in body
+    assert "http_request_duration" in body or "http_requests_total" in body

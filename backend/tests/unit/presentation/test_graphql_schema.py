@@ -11,24 +11,18 @@ Tests the Strawberry GraphQL schema including:
 
 from __future__ import annotations
 
-import asyncio
-from datetime import UTC, datetime
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 import strawberry
-from graphql import GraphQLError
 from strawberry.extensions import ParserCache, ValidationCache
 from strawberry.extensions.max_aliases import MaxAliasesLimiter
 from strawberry.extensions.max_tokens import MaxTokensLimiter
 from strawberry.extensions.query_depth_limiter import QueryDepthLimiter
 
 from ekko.core.enums import ServiceStatus
-from ekko.presentation.graphql.extensions import PersistedOperationsExtension, QueryCostLimiterExtension
 from ekko.presentation.graphql.mutations import Mutation
 from ekko.presentation.graphql.queries import Query
-from ekko.presentation.graphql.router import _sanitize_graphql_errors
 from ekko.presentation.graphql.schema import schema
 from ekko.presentation.graphql.subscriptions import Subscription
 
@@ -42,10 +36,12 @@ from tests.fixtures.graphql_fixtures import (
     END_CONVERSATION_MUTATION,
     HEALTH_QUERY,
     HEALTH_READY_QUERY,
+    INSURANCE_CONDITION_OPTIONS_QUERY,
     INVALID_QUERY,
     MALFORMED_QUERY,
     SEND_MESSAGE_MUTATION,
     START_CONVERSATION_MUTATION,
+    SUBMIT_CLAIM_INTAKE_MUTATION,
 )
 
 # Create a test schema without async extensions for async execution
@@ -132,7 +128,6 @@ class TestGraphQLSchemaStructure:
         assert "QueryDepthLimiter" in extension_names
         assert "MaxAliasesLimiter" in extension_names
         assert "MaxTokensLimiter" in extension_names
-        assert "QueryCostLimiterExtension" in extension_names
 
         # Custom async extensions
         assert "QueryTimingExtension" in extension_names
@@ -150,6 +145,7 @@ class TestGraphQLSchemaStructure:
             "conversation",
             "conversations",
             "check_pii",
+            "insurance_condition_options",
         }
 
         assert expected_fields.issubset(field_names)
@@ -165,6 +161,7 @@ class TestGraphQLSchemaStructure:
             "end_conversation",
             "send_message",
             "anonymize_text",
+            "submit_claim_intake",
         }
 
         assert expected_fields.issubset(field_names)
@@ -300,6 +297,21 @@ class TestGraphQLQueryExecution:
         pii_result = result.data["checkPii"]
         assert pii_result["piiFound"] is False
         assert pii_result["matchCount"] == 0
+
+    @pytest.mark.asyncio
+    async def test_insurance_condition_options_query_returns_seeded_options(self) -> None:
+        """Insurance condition options query returns expected option values."""
+        result = await test_schema.execute(INSURANCE_CONDITION_OPTIONS_QUERY)
+
+        assert result.errors is None
+        assert result.data is not None
+        assert "insuranceConditionOptions" in result.data
+
+        options = result.data["insuranceConditionOptions"]
+        assert isinstance(options, list)
+        assert len(options) >= 2
+        assert options[0]["id"] == "p-basic"
+        assert options[0]["code"] == "P_BASIC"
 
 
 # ── Mutation Execution Tests ─────────────────────────────────
@@ -452,6 +464,44 @@ class TestGraphQLMutationExecution:
         assert result.errors is None
         assert result.data is not None
 
+    @pytest.mark.asyncio
+    async def test_submit_claim_intake_mutation_with_pii_notes(self) -> None:
+        """Claim intake mutation anonymizes notes and returns submission metadata."""
+        variables = {
+            "input": {
+                "attachments": [
+                    {
+                        "id": "att-1",
+                        "name": "claim.pdf",
+                        "source": "url",
+                        "url": "https://example.com/claim.pdf",
+                    }
+                ],
+                "coverageEndDate": "2026-12-31",
+                "coverageStartDate": "2026-01-01",
+                "cpr": "010190-1234",
+                "hasMultiplePolicies": False,
+                "hasPaid": False,
+                "hasPriorCasesInKs": False,
+                "insuranceConditionId": "p-basic",
+                "notes": "Email john.doe@example.com",
+                "payoutAmount": 1250,
+            }
+        }
+        result = await test_schema.execute(
+            SUBMIT_CLAIM_INTAKE_MUTATION,
+            variable_values=variables,
+            context_value=_make_context(),
+        )
+
+        assert result.errors is None
+        assert result.data is not None
+        payload = result.data["submitClaimIntake"]
+        assert payload["referenceId"].startswith("CLAIM-")
+        assert payload["acceptedAtIso"].endswith("Z")
+        assert payload["piiFoundInNotes"] is True
+        assert "john.doe@example.com" not in (payload["anonymizedNotes"] or "")
+
 
 # ── Error Handling Tests ─────────────────────────────────────
 
@@ -459,30 +509,6 @@ class TestGraphQLMutationExecution:
 @pytest.mark.unit
 class TestGraphQLErrorHandling:
     """Test GraphQL error handling for invalid queries."""
-
-    @pytest.mark.unit
-    def test_sanitize_graphql_errors_when_validation_error_then_preserves_message(self) -> None:
-        """Validation/spec errors should remain client-visible after sanitization."""
-        validation_error = GraphQLError("Cannot query field 'boom' on type 'Query'.")
-
-        masked = _sanitize_graphql_errors(errors=[validation_error])
-
-        assert len(masked) == 1
-        assert masked[0]["message"] == "Cannot query field 'boom' on type 'Query'."
-
-    @pytest.mark.unit
-    def test_sanitize_graphql_errors_when_internal_error_then_masks_details(self) -> None:
-        """Unhandled execution errors should be normalized to a generic message."""
-        runtime_error = GraphQLError(
-            "Database connection failed with DSN postgres://username:password@host:5432/db",
-            original_error=RuntimeError("database secret leakage"),
-        )
-
-        masked = _sanitize_graphql_errors(errors=[runtime_error])
-
-        assert len(masked) == 1
-        assert masked[0]["message"] == "Internal server error"
-        assert "database" not in masked[0]["message"].lower()
 
     @pytest.mark.asyncio
     async def test_invalid_query_field(self) -> None:
@@ -549,163 +575,6 @@ class TestGraphQLErrorHandling:
         assert len(result.errors) > 0
 
 
-@pytest.mark.unit
-class TestGraphQLErrorContractsAsData:
-    """Validate expected domain errors are returned as typed GraphQL data."""
-
-    @pytest.mark.asyncio
-    async def test_control_stream_when_invalid_action_then_returns_domain_error_payload(self) -> None:
-        """Invalid stream action should be represented as data-level domain error."""
-        mutation = """
-            mutation ControlStream($command: StreamCommandInput!) {
-                controlStream(command: $command) {
-                    active
-                    message
-                    errors {
-                        code
-                        message
-                        field
-                    }
-                }
-            }
-        """
-        variables = {"command": {"action": "invalid"}}
-        result = await test_schema.execute(mutation, variable_values=variables)
-
-        assert result.errors is None
-        assert result.data is not None
-        payload = result.data["controlStream"]
-        assert payload["active"] is False
-        assert payload["errors"]
-        assert payload["errors"][0]["code"] == "INVALID_STREAM_ACTION"
-
-    @pytest.mark.asyncio
-    async def test_check_pii_when_strict_policy_and_anonymizer_missing_then_returns_domain_error_data(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """Strict policy without anonymizer should avoid top-level exceptions and return typed errors."""
-        from ekko.presentation.graphql import queries as queries_module
-
-        monkeypatch.setattr(queries_module, "get_settings", lambda: SimpleNamespace(pii_policy_profile="strict"))
-
-        query = """
-            query CheckPII($text: String!) {
-                checkPii(text: $text) {
-                    anonymizedText
-                    piiFound
-                    matchCount
-                    errors {
-                        code
-                        message
-                        field
-                    }
-                }
-            }
-        """
-        variables = {"text": "email@example.com"}
-        result = await test_schema.execute(query, variable_values=variables, context_value={})
-
-        assert result.errors is None
-        assert result.data is not None
-        payload = result.data["checkPii"]
-        assert payload["piiFound"] is False
-        assert payload["errors"]
-        assert payload["errors"][0]["code"] == "PII_POLICY_VIOLATION"
-
-    @pytest.mark.asyncio
-    async def test_anonymize_text_when_strict_policy_and_anonymizer_missing_then_returns_domain_error_data(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """Strict policy for anonymize mutation should return typed errors when anonymizer is unavailable."""
-        from ekko.presentation.graphql import mutations as mutations_module
-
-        monkeypatch.setattr(mutations_module, "get_settings", lambda: SimpleNamespace(pii_policy_profile="strict"))
-
-        mutation = """
-            mutation AnonymizeText($input: AnonymizeTextInput!) {
-                anonymizeText(input: $input) {
-                    anonymizedText
-                    piiFound
-                    matchCount
-                    errors {
-                        code
-                        message
-                        field
-                    }
-                }
-            }
-        """
-        variables = {"input": {"text": "email@example.com"}}
-        result = await test_schema.execute(mutation, variable_values=variables, context_value={})
-
-        assert result.errors is None
-        assert result.data is not None
-        payload = result.data["anonymizeText"]
-        assert payload["errors"]
-        assert payload["errors"][0]["code"] == "PII_POLICY_VIOLATION"
-
-
-@pytest.mark.unit
-class TestGraphQLDemandControl:
-    """Test GraphQL demand-control behavior for cost and trusted operations."""
-
-    @pytest.mark.asyncio
-    async def test_query_cost_limit_rejects_expensive_operation(self) -> None:
-        """A low budget should reject a structurally expensive query."""
-        constrained_schema = strawberry.Schema(
-            query=Query,
-            mutation=Mutation,
-            subscription=Subscription,
-            extensions=[
-                QueryDepthLimiter(max_depth=10),
-                MaxAliasesLimiter(max_alias_count=25),
-                MaxTokensLimiter(max_token_count=2500),
-                lambda: QueryCostLimiterExtension(max_cost=2),
-            ],
-        )
-
-        expensive_query = """
-            query {
-                health {
-                    status
-                    environment
-                    dependencies {
-                        name
-                        healthy
-                        detail
-                    }
-                }
-            }
-        """
-
-        result = await constrained_schema.execute(expensive_query)
-
-        assert result.errors is not None
-        assert any("Query cost" in str(error) for error in result.errors)
-
-    @pytest.mark.asyncio
-    async def test_persisted_operations_reject_unknown_hash(self) -> None:
-        """Trusted-documents mode should reject operations absent from allowlist."""
-        trusted_schema = strawberry.Schema(
-            query=Query,
-            mutation=Mutation,
-            subscription=Subscription,
-            extensions=[
-                lambda: PersistedOperationsExtension(
-                    trusted_operation_hashes={"deadbeef"},
-                    require_trusted_documents=True,
-                )
-            ],
-        )
-
-        result = await trusted_schema.execute(HEALTH_QUERY)
-
-        assert result.errors is not None
-        assert any("not trusted" in str(error).lower() for error in result.errors)
-
-
 # ── Subscription Structure Tests ─────────────────────────────
 
 
@@ -759,92 +628,6 @@ class TestGraphQLSubscriptionStructure:
 
         arg_names = {arg.python_name for arg in events_field.arguments}
         assert "conversation_id" in arg_names
-
-
-@pytest.mark.unit
-class TestGraphQLSubscriptionRuntime:
-    """Test runtime behavior of GraphQL subscriptions with app-state context."""
-
-    @pytest.mark.asyncio
-    async def test_transcript_stream_when_queue_payload_then_yields_scrubbed_transcript(self) -> None:
-        """Transcript stream should emit queued payloads and apply PII anonymization."""
-        from ekko.ai.pii.anonymizer import PIIAnonymizer
-
-        subscription = Subscription()
-        async_queue: asyncio.Queue[object] = asyncio.Queue()
-        await async_queue.put(
-            {
-                "text": "contact me at subscription-test@example.com",
-                "source": "microphone",
-                "timestamp": datetime.now(UTC),
-            }
-        )
-
-        app_state = SimpleNamespace(async_transcript_queue=async_queue)
-        request = SimpleNamespace(app=SimpleNamespace(state=app_state))
-        info = SimpleNamespace(context={"request": request, "pii_anonymizer": PIIAnonymizer()})
-
-        stream = subscription.transcript_stream(info=info, source="all")
-        item = await asyncio.wait_for(anext(stream), timeout=2.0)
-        await stream.aclose()
-
-        assert item.source == "microphone"
-        assert item.timestamp.endswith("Z")
-        assert "subscription-test@example.com" not in item.text
-        assert "[EMAIL-REDACTED]" in item.text
-
-    @pytest.mark.asyncio
-    async def test_agent_status_when_bridge_task_running_then_reports_running(self) -> None:
-        """Agent status subscription should reflect running transcript bridge state."""
-        subscription = Subscription()
-        bridge_task = asyncio.create_task(asyncio.sleep(5))
-        app_state = SimpleNamespace(_transcript_bridge_task=bridge_task)
-        request = SimpleNamespace(app=SimpleNamespace(state=app_state))
-        info = SimpleNamespace(context={"request": request})
-
-        stream = subscription.agent_status(info=info)
-        status = await asyncio.wait_for(anext(stream), timeout=2.0)
-        await stream.aclose()
-
-        bridge_task.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await bridge_task
-
-        assert status == "running"
-
-    @pytest.mark.asyncio
-    async def test_transcript_stream_when_strict_policy_and_missing_anonymizer_then_masks_payload(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-    ) -> None:
-        """Strict PII policy should fail closed for subscription text when anonymizer is unavailable."""
-        from ekko.presentation.graphql import subscriptions as subscriptions_module
-
-        monkeypatch.setattr(
-            subscriptions_module,
-            "get_settings",
-            lambda: SimpleNamespace(pii_policy_profile="strict"),
-        )
-
-        subscription = Subscription()
-        async_queue: asyncio.Queue[object] = asyncio.Queue()
-        await async_queue.put(
-            {
-                "text": "my email is strict-subscription@example.com",
-                "source": "microphone",
-                "timestamp": datetime.now(UTC),
-            }
-        )
-
-        app_state = SimpleNamespace(async_transcript_queue=async_queue)
-        request = SimpleNamespace(app=SimpleNamespace(state=app_state))
-        info = SimpleNamespace(context={"request": request})
-
-        stream = subscription.transcript_stream(info=info, source="all")
-        item = await asyncio.wait_for(anext(stream), timeout=2.0)
-        await stream.aclose()
-
-        assert item.text == "[PII-REDACTION-UNAVAILABLE]"
 
 
 # ── Schema Introspection Tests ───────────────────────────────

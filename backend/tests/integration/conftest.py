@@ -1,4 +1,4 @@
-"""Integration conftest."""
+"""Integration conftest — SQLite-backed test fixtures."""
 
 from __future__ import annotations
 
@@ -6,12 +6,13 @@ import os
 from typing import TYPE_CHECKING
 
 import pytest
-from testcontainers.postgres import PostgresContainer
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import AsyncGenerator, Generator
 
-    from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+
+_TEST_DATABASE_URL: str = "sqlite+aiosqlite://"
 
 
 @pytest.fixture(autouse=True)
@@ -52,62 +53,27 @@ def integration_settings() -> object:
     )
 
 
-@pytest.fixture(scope="session")
-def postgres_container() -> Generator[PostgresContainer, None, None]:
-    """Run PostgreSQL in Docker for integration tests."""
-    try:
-        import docker
-
-        docker.from_env().ping()
-    except Exception as exc:  # pragma: no cover - depends on local Docker runtime
-        pytest.skip(f"Docker not available: {exc}")
-
-    container = PostgresContainer(image="postgres:16", driver=None)
-
-    try:
-        container.start()
-    except Exception as exc:  # pragma: no cover - depends on local Docker runtime
-        pytest.skip(f"Postgres Testcontainer unavailable: {exc}")
-
-    yield container
-
-    container.stop()
-
-
-@pytest.fixture(scope="session")
-def postgres_async_database_url(postgres_container: PostgresContainer) -> str:
-    """Build SQLAlchemy async database URL from container connection details."""
-    return postgres_container.get_connection_url(driver="asyncpg")
-
-
 @pytest.fixture
-async def test_db_engine(postgres_async_database_url: str) -> AsyncEngine:
-    """Create a PostgreSQL async engine backed by Testcontainers."""
+async def test_db_engine() -> AsyncGenerator[AsyncEngine, None]:
+    """Create an in-memory SQLite async engine with schema."""
     from sqlalchemy.ext.asyncio import create_async_engine
 
-    # Import models to ensure they're registered with Base.metadata
     from ekko.infrastructure.db import models as _  # noqa: F401
     from ekko.infrastructure.db.base import Base
 
-    engine = create_async_engine(
-        postgres_async_database_url,
-        future=True,
-        echo=False,
-    )
+    engine = create_async_engine(_TEST_DATABASE_URL, future=True, echo=False)
 
-    # Create all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     yield engine
 
-    # Cleanup
     await engine.dispose()
 
 
 @pytest.fixture
-def test_db_session_factory(test_db_engine: AsyncEngine) -> async_sessionmaker[object]:
-    """Provide async SQLAlchemy session factory for integration app/tests."""
+def test_db_session_factory(test_db_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    """Provide async SQLAlchemy session factory for integration tests."""
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     return async_sessionmaker(
@@ -118,7 +84,7 @@ def test_db_session_factory(test_db_engine: AsyncEngine) -> async_sessionmaker[o
 
 
 @pytest.fixture
-async def test_db_session(test_db_session_factory: async_sessionmaker[object]):
+async def test_db_session(test_db_session_factory: async_sessionmaker[AsyncSession]) -> AsyncGenerator[AsyncSession, None]:
     """Create a test database session."""
     async with test_db_session_factory() as session:
         yield session
@@ -143,26 +109,20 @@ def integration_client(integration_app):
 
 
 @pytest.fixture
-def integration_app_with_db(postgres_async_database_url: str):
-    """Create an integration app with container-backed DB engine injected."""
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+def integration_app_with_db(test_db_engine: AsyncEngine):
+    """Create an integration app with in-memory SQLite DB engine injected."""
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     from ekko.composition import create_app
 
     app = create_app()
-    db_engine = create_async_engine(postgres_async_database_url, future=True, echo=False)
-    app.state.db_engine = db_engine
+    app.state.db_engine = test_db_engine
     app.state.session_factory = async_sessionmaker(
-        db_engine,
+        test_db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
-
-    yield app
-
-    import asyncio
-
-    asyncio.run(db_engine.dispose())
+    return app
 
 
 @pytest.fixture
