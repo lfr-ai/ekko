@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
-from contextlib import suppress
 from typing import Final
 
-import duckdb
 import strawberry
 from sqlalchemy import text
 from strawberry.types import Info
@@ -19,31 +16,17 @@ from ekko.presentation.graphql.types import (
     DependencyHealthType,
     DomainErrorType,
     HealthType,
+    InsuranceConditionOptionType,
     PIIResultType,
 )
 
-_DUCKDB_ALIAS: Final[str] = "source_sqlite"
+_DEFAULT_PAGINATION_LIMIT: Final[int] = 20
 
-
-def _probe_duckdb_sqlite(*, sqlite_path: str, duckdb_path: str) -> tuple[bool, str]:
-    """Probe DuckDB by attaching the configured SQLite file."""
-    escaped_path = sqlite_path.replace("'", "''")
-    attach_statement = f"ATTACH '{escaped_path}' AS {_DUCKDB_ALIAS} (TYPE sqlite)"
-    detach_statement = f"DETACH {_DUCKDB_ALIAS}"
-
-    try:
-        with duckdb.connect(database=duckdb_path, read_only=False) as conn:
-            conn.execute("INSTALL sqlite")
-            conn.execute("LOAD sqlite")
-            with suppress(duckdb.Error):
-                conn.execute(detach_statement)
-            conn.execute(attach_statement)
-            conn.execute(f"SHOW TABLES FROM {_DUCKDB_ALIAS}")
-            with suppress(duckdb.Error):
-                conn.execute(detach_statement)
-            return True, "duckdb sqlite attach successful"
-    except duckdb.Error as exc:
-        return False, str(exc)
+_INSURANCE_CONDITION_OPTIONS: Final[tuple[InsuranceConditionOptionType, ...]] = (
+    InsuranceConditionOptionType(id="p-basic", code="P_BASIC", label="Basic Protection"),
+    InsuranceConditionOptionType(id="p-plus", code="P_PLUS", label="Plus Protection"),
+    InsuranceConditionOptionType(id="p-premium", code="P_PREMIUM", label="Premium Protection"),
+)
 
 
 @strawberry.type
@@ -78,14 +61,6 @@ class Query:
         else:
             deps.append(DependencyHealthType(name="database", healthy=False, detail="not configured"))
 
-        if settings.duckdb_enabled:
-            duckdb_ok, duckdb_detail = await asyncio.to_thread(
-                _probe_duckdb_sqlite,
-                sqlite_path=str(settings.resolved_db_path),
-                duckdb_path=str(settings.resolved_duckdb_path),
-            )
-            deps.append(DependencyHealthType(name="duckdb", healthy=duckdb_ok, detail=duckdb_detail))
-
         all_healthy = all(d.healthy for d in deps)
         return HealthType(
             status=ServiceStatus.HEALTHY if all_healthy else ServiceStatus.DEGRADED,
@@ -100,7 +75,7 @@ class Query:
         return None
 
     @strawberry.field
-    async def conversations(self, limit: int = 20, offset: int = 0) -> list[ConversationType]:
+    async def conversations(self, limit: int = _DEFAULT_PAGINATION_LIMIT, offset: int = 0) -> list[ConversationType]:
         """List conversations with pagination."""
         _ = (limit, offset)
         return []
@@ -138,3 +113,8 @@ class Query:
             pii_found=outcome.pii_found,
             match_count=outcome.match_count,
         )
+
+    @strawberry.field
+    async def insurance_condition_options(self, _info: Info) -> list[InsuranceConditionOptionType]:
+        """List insurance condition options available for claim intake selection."""
+        return list(_INSURANCE_CONDITION_OPTIONS)

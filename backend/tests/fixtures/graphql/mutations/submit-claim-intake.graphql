@@ -1,0 +1,8 @@
+mutation SubmitClaimIntake($input: ClaimIntakeInput!) {
+  submitClaimIntake(input: $input) {
+    referenceId
+    acceptedAtIso
+    piiFoundInNotes
+    anonymizedNotes
+  }
+}

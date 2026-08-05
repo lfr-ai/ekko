@@ -43,7 +43,6 @@ class StreamStatusType:
 
     active: bool
     message: str
-    errors: list[DomainErrorType] = strawberry.field(default_factory=list)
 
 
 @strawberry.type
@@ -79,6 +78,14 @@ class AgentResultType:
 
 
 @strawberry.type
+class DomainErrorType:
+    """Structured domain error surfaced to GraphQL clients."""
+
+    code: str
+    message: str
+
+
+@strawberry.type
 class PIIResultType:
     """Result of PII anonymization."""
 
@@ -89,12 +96,22 @@ class PIIResultType:
 
 
 @strawberry.type
-class DomainErrorType:
-    """Typed, client-safe domain error represented as data."""
+class InsuranceConditionOptionType:
+    """Insurance condition option for claim intake selection."""
 
+    id: str
     code: str
-    message: str
-    field: str | None = None
+    label: str
+
+
+@strawberry.type
+class ClaimIntakeSubmissionType:
+    """Submission metadata returned for a claim intake request."""
+
+    reference_id: str
+    accepted_at_iso: str
+    pii_found_in_notes: bool
+    anonymized_notes: str | None = None
 
 
 # ── Enum types ───────────────────────────────────────────────
@@ -139,6 +156,34 @@ class AnonymizeTextInput:
 
     text: str
     enabled_types: list[str] | None = None
+
+
+@strawberry.input
+class ClaimAttachmentInput:
+    """Input attachment metadata for claim intake submission."""
+
+    id: str
+    source: str
+    name: str
+    mime_type: str | None = None
+    size_bytes: int | None = None
+    url: str | None = None
+
+
+@strawberry.input
+class ClaimIntakeInput:
+    """Input payload for claim intake submission."""
+
+    cpr: str
+    insurance_condition_id: str
+    coverage_start_date: str
+    coverage_end_date: str
+    payout_amount: float
+    has_multiple_policies: bool
+    has_paid: bool
+    has_prior_cases_in_ks: bool
+    notes: str | None = None
+    attachments: list[ClaimAttachmentInput]
 
 
 # ── Pagination ───────────────────────────────────────────────

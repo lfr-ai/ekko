@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 import pytest
 
@@ -14,127 +16,46 @@ if TYPE_CHECKING:
 # ── Query strings ────────────────────────────────────────────
 
 
-HEALTH_QUERY = """
-    query {
-        health {
-            status
-            environment
-            dependencies {
-                name
-                healthy
-                detail
-            }
-        }
-    }
-"""
+_GRAPHQL_FIXTURES_DIR: Final[Path] = Path(__file__).resolve().parent / "graphql"
 
-HEALTH_READY_QUERY = """
-    query {
-        healthReady {
-            status
-            environment
-            dependencies {
-                name
-                healthy
-                detail
-            }
-        }
-    }
-"""
 
-CONVERSATION_QUERY = """
-    query GetConversation($id: String!) {
-        conversation(id: $id) {
-            id
-            startedAt
-            endedAt
-            summary
-            isActive
-        }
-    }
-"""
+def _read_graphql_document(*, relative_path: str) -> str:
+    """Read a GraphQL fixture document from disk."""
+    return (_GRAPHQL_FIXTURES_DIR / relative_path).read_text(encoding="utf-8").strip()
 
-CONVERSATIONS_LIST_QUERY = """
-    query ListConversations($limit: Int, $offset: Int) {
-        conversations(limit: $limit, offset: $offset) {
-            id
-            startedAt
-            isActive
-        }
-    }
-"""
 
-CHECK_PII_QUERY = """
-    query CheckPII($text: String!) {
-        checkPii(text: $text) {
-            anonymizedText
-            piiFound
-            matchCount
-        }
-    }
-"""
+HEALTH_QUERY = _read_graphql_document(relative_path="queries/health.graphql")
 
-CONTROL_STREAM_MUTATION = """
-    mutation ControlStream($command: StreamCommandInput!) {
-        controlStream(command: $command) {
-            active
-            message
-        }
-    }
-"""
+HEALTH_READY_QUERY = _read_graphql_document(relative_path="queries/health-ready.graphql")
 
-START_CONVERSATION_MUTATION = """
-    mutation StartConversation($input: StartConversationInput) {
-        startConversation(input: $input) {
-            id
-            startedAt
-            isActive
-        }
-    }
-"""
+CONVERSATION_QUERY = _read_graphql_document(relative_path="queries/conversation.graphql")
 
-END_CONVERSATION_MUTATION = """
-    mutation EndConversation($conversationId: String!) {
-        endConversation(conversationId: $conversationId) {
-            id
-            endedAt
-            isActive
-        }
-    }
-"""
+CONVERSATIONS_LIST_QUERY = _read_graphql_document(relative_path="queries/conversations-list.graphql")
 
-SEND_MESSAGE_MUTATION = """
-    mutation SendMessage($input: SendMessageInput!) {
-        sendMessage(input: $input)
-    }
-"""
+CHECK_PII_QUERY = _read_graphql_document(relative_path="queries/check-pii.graphql")
 
-ANONYMIZE_TEXT_MUTATION = """
-    mutation AnonymizeText($input: AnonymizeTextInput!) {
-        anonymizeText(input: $input) {
-            anonymizedText
-            piiFound
-            matchCount
-        }
-    }
-"""
+INSURANCE_CONDITION_OPTIONS_QUERY = _read_graphql_document(
+    relative_path="queries/insurance-condition-options.graphql"
+)
+
+CONTROL_STREAM_MUTATION = _read_graphql_document(relative_path="mutations/control-stream.graphql")
+
+START_CONVERSATION_MUTATION = _read_graphql_document(relative_path="mutations/start-conversation.graphql")
+
+END_CONVERSATION_MUTATION = _read_graphql_document(relative_path="mutations/end-conversation.graphql")
+
+SEND_MESSAGE_MUTATION = _read_graphql_document(relative_path="mutations/send-message.graphql")
+
+ANONYMIZE_TEXT_MUTATION = _read_graphql_document(relative_path="mutations/anonymize-text.graphql")
+
+SUBMIT_CLAIM_INTAKE_MUTATION = _read_graphql_document(
+    relative_path="mutations/submit-claim-intake.graphql"
+)
 
 # Invalid query for error testing
-INVALID_QUERY = """
-    query {
-        nonExistentField {
-            invalidData
-        }
-    }
-"""
+INVALID_QUERY = _read_graphql_document(relative_path="queries/invalid.graphql")
 
-MALFORMED_QUERY = """
-    query {
-        health {
-            status
-            environment
-            # Missing closing brace
-"""
+MALFORMED_QUERY = _read_graphql_document(relative_path="queries/malformed.graphql")
 
 
 # ── Sample data ──────────────────────────────────────────────
