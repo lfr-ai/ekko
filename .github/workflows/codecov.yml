@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  merge_group:
 
 permissions:
   contents: read
@@ -25,7 +26,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8
@@ -39,11 +40,12 @@ jobs:
         run: cd backend && uv run python -m pytest tests/unit --quiet --maxfail=1 --cov=src/ekko --cov-report=xml
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: backend/coverage.xml
+          disable_search: true
           flags: backend
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Prune uv cache
@@ -69,12 +71,23 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run tests with coverage
-        run: bun run test:coverage
+        run: >-
+          bun run vitest run --coverage
+          --coverage.reporter=text
+          --coverage.reporter=html
+          --coverage.reporter=json
+          --coverage.reporter=lcov
+
+      - name: Verify coverage artifacts
+        run: |
+          test -f coverage/coverage-final.json
+          test -f coverage/lcov.info
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
-          files: frontend/coverage/coverage-final.json
+          files: frontend/coverage/coverage-final.json,frontend/coverage/lcov.info
+          disable_search: true
           flags: frontend
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}

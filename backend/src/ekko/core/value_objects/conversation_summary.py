@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class ConversationSummary:
     """Summary of a conversation produced by the summarizer agent."""
 

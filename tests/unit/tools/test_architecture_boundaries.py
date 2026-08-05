@@ -31,7 +31,10 @@ from tools.security.check_architecture_boundaries import (
 )
 
 ARCHITECTURE_CHECK_SCRIPT = (
-    Path(__file__).resolve().parents[3] / "tools" / "security" / "check_architecture_boundaries.py"
+    Path(__file__).resolve().parents[3]
+    / "tools"
+    / "security"
+    / "check_architecture_boundaries.py"
 )
 
 
@@ -110,7 +113,9 @@ class TestCoreLayerChecks:
         """core/ importing from ekko.presentation is detected as violation."""
         core_file = tmp_path / "core" / "protocols.py"
         core_file.parent.mkdir(parents=True)
-        core_file.write_text("from ekko.presentation.api.schemas import MessageSchema\n")
+        core_file.write_text(
+            "from ekko.presentation.api.schemas import MessageSchema\n"
+        )
 
         violations = _check_core([core_file])
 
@@ -133,7 +138,9 @@ class TestCoreLayerChecks:
 class TestInfrastructureLayerChecks:
     """Test infrastructure/ layer boundary enforcement."""
 
-    def test_infrastructure_importing_application_detected(self, tmp_path: Path) -> None:
+    def test_infrastructure_importing_application_detected(
+        self, tmp_path: Path
+    ) -> None:
         """infrastructure/ importing from ekko.application is detected as violation."""
         infra_file = tmp_path / "infrastructure" / "db" / "session.py"
         infra_file.parent.mkdir(parents=True)
@@ -145,7 +152,9 @@ class TestInfrastructureLayerChecks:
         assert violations[0].layer == "infrastructure"
         assert violations[0].imported_layer == "application"
 
-    def test_infrastructure_importing_presentation_detected(self, tmp_path: Path) -> None:
+    def test_infrastructure_importing_presentation_detected(
+        self, tmp_path: Path
+    ) -> None:
         """infrastructure/ importing from ekko.presentation is detected as violation."""
         infra_file = tmp_path / "infrastructure" / "adapters" / "audio.py"
         infra_file.parent.mkdir(parents=True)
@@ -198,7 +207,9 @@ class TestApplicationLayerChecks:
         """application/ importing from ekko.infrastructure is allowed."""
         app_file = tmp_path / "application" / "services" / "data.py"
         app_file.parent.mkdir(parents=True)
-        app_file.write_text("from ekko.infrastructure.db.repositories import UserRepository\n")
+        app_file.write_text(
+            "from ekko.infrastructure.db.repositories import UserRepository\n"
+        )
 
         violations = _check_application([app_file])
 
@@ -327,7 +338,9 @@ class TestEdgeCases:
         core_file = tmp_path / "core" / "protocols.py"
         core_file.parent.mkdir(parents=True)
         core_file.write_text(
-            "from typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    from ekko.application import Service\n"
+            "from typing import TYPE_CHECKING\n"
+            "if TYPE_CHECKING:\n"
+            "    from ekko.application import Service\n"
         )
 
         violations = _check_core([core_file])
@@ -338,7 +351,9 @@ class TestEdgeCases:
         """Multiline from imports are detected."""
         core_file = tmp_path / "core" / "types.py"
         core_file.parent.mkdir(parents=True)
-        core_file.write_text("from ekko.application.services import (\n    ChatService,\n    UserService,\n)\n")
+        core_file.write_text(
+            "from ekko.application.services import (\n    ChatService,\n    UserService,\n)\n"
+        )
 
         violations = _check_core([core_file])
 
@@ -348,7 +363,11 @@ class TestEdgeCases:
         """Inline import statements are detected."""
         ai_file = tmp_path / "ai" / "service.py"
         ai_file.parent.mkdir(parents=True)
-        ai_file.write_text("def process():\n    from ekko.infrastructure.db import Session\n    return Session()\n")
+        ai_file.write_text(
+            "def process():\n"
+            "    from ekko.infrastructure.db import Session\n"
+            "    return Session()\n"
+        )
 
         violations = _check_ai([ai_file])
 
