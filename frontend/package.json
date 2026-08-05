@@ -70,7 +70,7 @@
     "axe-playwright": "^2.2.2",
     "esbuild": "^0.28.0",
     "fast-check": "^3.23.2",
-    "happy-dom": "^16.8.1",
+    "happy-dom": "^20.11.1",
     "pathe": "^2.0.3",
     "rollup-plugin-visualizer": "^5.14.0",
     "shadcn": "^2.10.0",
