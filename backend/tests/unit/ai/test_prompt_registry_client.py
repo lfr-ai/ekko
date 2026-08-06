@@ -1,6 +1,6 @@
 """Tests for PromptRegistryClient."""
 
-from ekko.core.enums import Prompt
+from ekko.core.enums.ai import Prompt
 from ekko.infrastructure.clients.prompt_registry import PromptRegistryClient
 
 
