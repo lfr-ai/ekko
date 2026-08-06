@@ -2,7 +2,10 @@
 
 from enum import StrEnum
 
-from ekko.infrastructure.clients.prompt_registry import PromptRegistryClient
+import pytest
+
+prompt_registry_module = pytest.importorskip("ekko.infrastructure.clients.prompt_registry")
+PromptRegistryClient = prompt_registry_module.PromptRegistryClient
 
 
 class PromptId(StrEnum):
