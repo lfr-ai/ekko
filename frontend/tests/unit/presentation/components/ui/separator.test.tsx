@@ -11,12 +11,12 @@ describe("Separator", () => {
 
   it("renders horizontal orientation classes by default", () => {
     const { container } = render(<Separator />);
-    expect(container.firstChild).toHaveClass("h-px", "w-full");
+    expect(container.firstChild).toHaveClass("h-[1px]", "w-full");
   });
 
   it("renders vertical orientation classes", () => {
     const { container } = render(<Separator orientation="vertical" />);
-    expect(container.firstChild).toHaveClass("h-full", "w-px");
+    expect(container.firstChild).toHaveClass("h-full", "w-[1px]");
   });
 
   it("exposes the separator role when non-decorative", () => {

@@ -18,11 +18,10 @@ from ekko.ai.prompts.registry import (
     get_prompt_versions,
     provision_prompt,
 )
-from ekko.core.registry_constants import (
-    PROMPT_KEY_CONVERSATIONAL_SYSTEM,
-    PROMPT_KEY_SUMMARIZER_SYSTEM,
-    PROMPT_KEY_SUMMARY_CHUNKS,
-)
+
+PROMPT_KEY_SUMMARY_CHUNKS = "summary_chunks"
+PROMPT_KEY_SUMMARIZER_SYSTEM = "summarizer_system"
+PROMPT_KEY_CONVERSATIONAL_SYSTEM = "conversational_system"
 
 
 @dataclass(slots=True)
