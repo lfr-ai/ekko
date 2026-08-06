@@ -1,7 +1,14 @@
 """Tests for PromptRegistryClient."""
 
-from ekko.core.enums.ai import Prompt
+from enum import StrEnum
+
 from ekko.infrastructure.clients.prompt_registry import PromptRegistryClient
+
+
+class PromptId(StrEnum):
+    """Local prompt identifiers used to avoid coupling to enum re-exports."""
+
+    CONVERSATIONAL_SYSTEM = "conversational_system"
 
 
 class TestPromptRegistryClient:
@@ -11,7 +18,7 @@ class TestPromptRegistryClient:
 
         settings = get_settings()
         client = PromptRegistryClient.from_config(settings)
-        text = client.load_prompt(Prompt.CONVERSATIONAL_SYSTEM)
+        text = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)
         assert isinstance(text, str)
         assert len(text) > 0
 
@@ -21,6 +28,6 @@ class TestPromptRegistryClient:
 
         settings = get_settings()
         client = PromptRegistryClient.from_config(settings)
-        text1 = client.load_prompt(Prompt.CONVERSATIONAL_SYSTEM)
-        text2 = client.load_prompt(Prompt.CONVERSATIONAL_SYSTEM)
+        text1 = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)
+        text2 = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)
         assert text1 is text2
