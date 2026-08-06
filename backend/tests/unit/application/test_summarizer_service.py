@@ -1,7 +1,11 @@
 import pytest
 
 from ekko.application.services.summarizer_service import SummarizerService
-from ekko.core.ports import PromptRegistryError
+
+try:
+    from ekko.core.ports import PromptRegistryError
+except ImportError:
+    from ekko.core.ports.external.prompt_registry import PromptRegistryError
 
 
 class DummyGateway:
