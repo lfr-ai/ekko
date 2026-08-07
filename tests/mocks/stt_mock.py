@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
 
 
 class MockTranscript:
@@ -13,8 +12,8 @@ class MockTranscript:
         self,
         stream_name: str,
         text: str,
-        segments: list[Any] | None = None,
-        info: Any | None = None,
+        segments: list[object] | None = None,
+        info: object | None = None,
     ) -> None:
         self.stream_name = stream_name
         self.text = text
