@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Deploy Ekko infrastructure to Azure.
+# Usage: ./deploy.azcli [project-name] [image-name] [image-tag]
+
+PROJECT="${1:-ekko}"
+IMAGE_NAME="${2:-ekko}"
+IMAGE_TAG="${3:-}"
+
+if [[ -z "$IMAGE_TAG" ]]; then
+  echo "Usage: ./deploy.azcli <project-name> <image-name> <image-tag>" >&2
+  echo "Refusing deployment without explicit immutable image tag." >&2
+  exit 1
+fi
+
+for env in dev prod; do
+  if [[ "$env" == "prod" && "${IMAGE_TAG,,}" == "latest" ]]; then
+    echo "Refusing to deploy prod with mutable image tag 'latest'. Use an immutable tag (for example: git sha or semver)." >&2
+    exit 1
+  fi
+
+  echo "Deploying $env..."
+  az deployment sub create \
+    --location swedencentral \
+    --template-file azure/iac/deploy.bicep \
+    --parameters "azure/iac/parameters/$env/deploy.$env.bicepparam" \
+    --parameters projectName="$PROJECT" \
+    --parameters imageName="$IMAGE_NAME" \
+    --parameters imageTag="$IMAGE_TAG" \
+    --only-show-errors
+  echo "$env deployment complete."
+done
