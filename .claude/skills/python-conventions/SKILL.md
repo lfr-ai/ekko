@@ -11,7 +11,7 @@ paths:
 
 | Aspect | Standard |
 |--------|----------|
-| Language | Python 3.12 |
+| Language | Python 3.14 |
 | Package manager | `uv` |
 | Type checker | `ty` (Astral) |
 | Linter/formatter | Ruff |
@@ -102,7 +102,7 @@ Never use `Any` in production code. Alternatives:
 | Variables | `snake_case` | `audio_buffer` |
 | Classes | `PascalCase` | `TranscriptionService` |
 | Constants | `SCREAMING_SNAKE_CASE` | `MAX_BUFFER_SIZE` |
-| Type aliases | `PascalCase` | `Transcription = list[TranscriptionEntry]` |
+| Type aliases | `PascalCase` | `type Transcription = list[TranscriptionEntry]` |
 | Protocols | `PascalCase` + `Protocol` suffix | `STTServiceProtocol` |
 | Private | `_leading_underscore` | `_parse_header()` |
 | Module files | `snake_case.py` | `audio_streamer.py` |
@@ -280,15 +280,28 @@ def parse_audio_format(
 
 ---
 
-## Dictionary Type Aliases
+## Custom Type Selection
 
-Use project type aliases instead of bare `dict[str, ...]`:
+Choose the least complex construct that enforces the intended semantics:
+
+1. Use a validated value object when invalid values must be rejected at runtime.
+2. Use `NewType` only for opaque identifiers that share a primitive representation
+    but must not be interchanged statically. `NewType` performs no runtime validation.
+3. Use a PEP 695 `type` alias for recurring compound shapes or transparent
+    architecture-decoupling names.
+4. Use `TypedDict` for mappings with known keys, and a frozen dataclass or
+    Pydantic model when the data has behavior, validation, or evolution needs.
+5. Use `Protocol` for behavioral structure and abstract collections such as
+    `Mapping` or `Sequence` for read-only inputs.
+6. Keep a bare primitive or container when a custom name adds no useful meaning.
+
+Use the project dictionary aliases only for genuinely open string-keyed shapes:
 
 ```python
 from ekko.core.types import BaseDict, JSONDict
 
-# BaseDict = dict[str, object]  — generic string-keyed dict
-# JSONDict = dict[str, Any]     — JSON-compatible dict (only where serialization requires it)
+# BaseDict is an open string-to-object mapping for framework metadata.
+# JSONDict is a recursively JSON-compatible dictionary.
 
 def build_metadata(*, source: str, timestamp: float) -> BaseDict:
     return {"source": source, "timestamp": timestamp}
