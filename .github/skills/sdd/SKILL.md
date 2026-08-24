@@ -5,7 +5,8 @@ description: >
   Given-When-Then scenario authoring, executable specs, living documentation, and
   the spec-first workflow that bridges product requirements and automated tests.
 paths:
-  - "docs/specs/**/*.md"
+    - "openspec/specs/**/*.md"
+    - "openspec/changes/**/*.md"
 ---
 
 # Skill: Specification-Driven Development (SDD)
@@ -24,14 +25,14 @@ Every significant behavior in Ekko must have a spec scenario that:
 
 1. Describes the behavior in business language (Given-When-Then).
 2. Maps directly to a passing automated test.
-3. Lives in `docs/specs/` and stays in sync with the code.
+3. Lives under `openspec/specs/` or a change delta and stays in sync with the code.
 
 ---
 
 ## Spec Directory Structure
 
 ```text
-docs/specs/
+openspec/specs/
 ├── audio-processing/
 │   ├── recording-session.md      # AudioSession scenarios
 │   └── audio-chunking.md         # Chunk boundary scenarios
@@ -89,11 +90,11 @@ A running Ekko backend with an empty database.
 
 ### Step 1: Write the Spec
 
-Create or update a file in `docs/specs/{bounded-context}/{feature}.md`.
+Create or update the matching OpenSpec capability or change-delta specification.
 Use concrete examples. Use domain language (ubiquitous language from DDD skill).
 
 ```bash
-touch docs/specs/transcription/transcription-creation.md
+openspec new change transcription-creation
 # Write the scenarios before any code
 ```
 
@@ -205,7 +206,7 @@ Scenario: Submit audio and get a response
 Scenario: Submit 10-second English WAV and receive 202 with integer ID
 
 # BAD — describes implementation
-Given the AudioProcessor calls faster-whisper with chunk_size=512
+Given the audio processor calls a specific provider with an internal chunk size
 
 # GOOD — describes behavior
 Given a 10-second English WAV audio file
@@ -282,7 +283,7 @@ task test:integration   # runs all spec-linked tests
 
 When modifying existing behavior:
 
-1. Update the spec in `docs/specs/` first.
+1. Update the OpenSpec scenario first.
 2. Update the test to match the new scenario.
 3. Update the implementation.
 4. All three change together in the same PR.
@@ -291,7 +292,7 @@ When modifying existing behavior:
 
 ## Quick Checklist
 
-- [ ] Spec file exists in `docs/specs/{context}/{feature}.md` before any code
+- [ ] Capability or change-delta spec exists under `openspec/` before any code
 - [ ] Each scenario uses concrete values (no "some", "valid", "a request")
 - [ ] Scenario maps 1:1 to a pytest test with a docstring citing the spec
 - [ ] Spec uses ubiquitous language (domain terms from the DDD skill)

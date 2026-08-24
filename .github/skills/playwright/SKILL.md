@@ -1,3 +1,8 @@
+---
+name: playwright
+description: Build and debug end-to-end browser tests with Playwright. Use for UI flows, accessibility assertions, traces, and deterministic browser testing.
+---
+
 # Playwright Skill
 
 Use this skill for end-to-end testing, UI flows, accessibility assertions, and trace-driven debugging in `frontend/tests/`.

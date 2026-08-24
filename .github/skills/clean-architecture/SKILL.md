@@ -13,33 +13,10 @@ Dependencies always flow **inward**. Outer layers depend on inner layers,
 never the reverse. The `core/` layer has zero framework imports.
 
 ```text
-┌─────────────────────────────────────────────────┐
-│  presentation/   (FastAPI routes, GraphQL, DI)  │
-│  ┌─────────────────────────────────────────┐    │
-│  │  composition/   (Container, app factory)│    │
-│  │  ┌─────────────────────────────────┐    │    │
-│  │  │  application/  (services, DTOs) │    │    │
-│  │  │  ┌─────────────────────────┐    │    │    │
-│  │  │  │  infrastructure/        │    │    │    │
-│  │  │  │  ai/                    │    │    │    │
-│  │  │  │  ┌─────────────────┐   │    │    │    │
-│  │  │  │  │  core/           │   │    │    │    │
-│  │  │  │  │  ┌───────────┐  │   │    │    │    │
-│  │  │  │  │  │  config/  │  │   │    │    │    │
-│  │  │  │  │  │  utils/   │  │   │    │    │    │
-│  │  │  │  │  └───────────┘  │   │    │    │    │
-│  │  │  │  └─────────────────┘   │    │    │    │
-│  │  │  └─────────────────────────┘    │    │    │
-│  │  └─────────────────────────────────┘    │    │
-│  └─────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────┘
+config -> core -> {ai | infrastructure} -> application -> presentation -> composition -> cli
 ```
 
-The full dependency direction (inner to outer):
-
-```text
-utils -> config -> core -> infrastructure/ai -> application -> composition -> presentation
-```
+`ai/` and `infrastructure/` are independent sibling adapter layers.
 
 ---
 
@@ -47,14 +24,14 @@ utils -> config -> core -> infrastructure/ai -> application -> composition -> pr
 
 | Layer | May Import From | NEVER Imports From |
 |-------|----------------|--------------------|
-| `utils/` | stdlib ONLY | ALL other project layers |
-| `config/` | `utils/`, external libs | `presentation/`, `application/`, `core/` |
-| `core/` | `utils/`, `config/` | `presentation/`, `application/`, `infrastructure/` |
-| `infrastructure/` | `core/`, `config/`, `utils/`, external libs | `presentation/`, `application/` |
-| `ai/` | `core/`, `config/`, `utils/` | `presentation/`, `application/`, `infrastructure/` |
-| `application/` | `core/`, `infrastructure/`, `ai/`, `config/`, `utils/` | `presentation/` |
-| `composition/` | ALL inner layers | `presentation/` (except wiring) |
-| `presentation/` | `application/`, `core/`, `config/`, `utils/` | (top layer — nothing imports from here) |
+| `config/` | external libs, stdlib | `core/`, `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `core/` | `config/`, stdlib (+ Pydantic hooks) | `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `infrastructure/` | `core/`, `config/`, external libs | `ai/`, `application/`, `presentation/` |
+| `ai/` | `core/`, `config/` | `infrastructure/`, `application/`, `presentation/` |
+| `application/` | `core/`, `infrastructure/`, `ai/`, `config/` | `presentation/` |
+| `presentation/` | `application/`, `core/`, `config/` | `infrastructure/`, `ai/`, `composition/` |
+| `composition/` | all layers (DI wiring) | — |
+| `cli/` | `composition/`, `presentation/`, `config/` | entry point |
 
 ### Import Examples
 
@@ -88,15 +65,9 @@ from ekko.infrastructure.db.engine import get_session  # VIOLATION
 
 ## What Each Layer Contains
 
-### `utils/` -- Cross-cutting utilities
-
-Stdlib-only helpers: logger wrapper, type aliases, validators, common helpers.
-No project imports. No framework imports.
-
 ### `config/` -- Configuration
 
 Pydantic `BaseSettings` classes, environment-based overrides, `.env` loading.
-May use `utils/` for helpers.
 
 ### `core/` -- Domain layer
 
@@ -107,6 +78,7 @@ The heart of the application. Pure business logic with no framework coupling.
 | `entities/` | Domain entities (identity + behavior) |
 | `value_objects/` | Immutable value objects (identity by value) |
 | `ports/` | Port protocols (abstract boundaries) |
+| `policies/` | Pure domain policy and rule evaluation |
 | `exceptions/` | Domain exception hierarchy |
 | `enums/` | Domain enumerations |
 | `protocols.py` | Shared protocols |
@@ -127,17 +99,14 @@ external systems: databases, APIs, file systems, audio hardware.
 
 ### `ai/` -- AI vertical
 
-AI-specific implementations: LLM chains, embeddings, PII scrubbing,
-multi-agent orchestration. Depends on `core/` ports, not on `infrastructure/`.
+AI-specific implementations: conversational chains, PII scrubbing.
+Depends on `core/` ports, not on `infrastructure/`.
 
 | Directory | Purpose |
-|-----------|---------|
-| `crewai/` | HMAS multi-agent system (YAML config) |
-| `chains/` | LangChain conversational chains |
-| `embeddings/` | Embedding service |
-| `llm/` | LLM adapter |
+|-----------|--------|
+| `chains/` | Conversational chains (LiteLLM-backed) |
 | `pii/` | PII anonymization (regex-based) |
-| `prompts/` | Prompt templates |
+| `prompts/` | Prompt registry, templates, and versioning |
 
 ### `application/` -- Use cases & orchestration
 
@@ -179,10 +148,10 @@ class STTService(Protocol):
 # ADAPTER — infrastructure/adapters/stt_adapter.py
 from ekko.core.ports import STTService
 
-class FasterWhisperSTT:
-    """Concrete STT adapter using faster-whisper."""
+class AzureSpeechSTT:
+    """Concrete STT adapter using Azure Speech."""
     async def transcribe(self, audio: bytes) -> str:
-        # Implementation using faster-whisper library
+        # Implementation using the Azure Speech SDK
         ...
 ```
 
@@ -261,7 +230,7 @@ Key rules for the Container:
 |-----------|---------|-----|
 | Outward dependency | `core/` imports from `application/` | Move shared type to `core/` |
 | Framework in core | `core/` imports `fastapi` or `sqlalchemy` | Use stdlib or `Protocol` |
-| Concrete in application | Service depends on `FasterWhisperSTT` | Depend on `STTService` protocol |
+| Concrete in application | Service depends on `AzureSpeechSTT` | Depend on `STTService` protocol |
 | Business logic in routes | Validation/orchestration in route handler | Move to `application/services/` |
 | DB models in core | `core/entities/` uses SQLAlchemy columns | Separate domain entity from ORM model |
 | Cross-layer circular | `A -> B -> A` across layers | Extract shared interface to inner layer |

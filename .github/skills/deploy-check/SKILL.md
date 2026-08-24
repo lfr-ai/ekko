@@ -6,8 +6,6 @@ effort: high
 argument-hint: "[target]"
 allowed-tools:
   - Bash(task *)
-  - Bash(git status *)
-  - Bash(git log *)
 ---
 
 # Deploy Check
@@ -21,7 +19,7 @@ Run each step and verify it passes:
 1. **All tests pass**: `task test`
 2. **No lint errors**: `task lint`
 3. **Type check clean**: `task typecheck`
-4. **No uncommitted changes**: `git status`
+4. **Change scope reviewed**: inspect the IDE source-control view or GitNexus change detection
 5. **Database migrations up to date**: `task db:migrate`
 
 ## Build

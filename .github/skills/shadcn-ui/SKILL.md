@@ -1,3 +1,8 @@
+---
+name: shadcn-ui
+description: Create and refine shadcn/ui components with Tailwind CSS. Use for CLI-driven component composition, design tokens, themes, and accessible UI primitives.
+---
+
 # shadcn/ui Skill
 
 Use this skill when creating or refining UI components with shadcn/ui + Tailwind v4.

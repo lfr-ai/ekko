@@ -11,11 +11,11 @@ paths:
 
 | Aspect | Standard |
 |--------|----------|
-| Language | Python 3.12 |
+| Language | Python 3.14 |
 | Package manager | `uv` |
 | Type checker | `ty` (Astral) |
 | Linter/formatter | Ruff |
-| Logging | `structlog` |
+| Logging | stdlib `logging` |
 | Settings | Pydantic `BaseSettings` |
 | ORM | SQLAlchemy 2.0+ async |
 | Enums | `ParseableEnum(StrEnum)` base class |
@@ -102,7 +102,7 @@ Never use `Any` in production code. Alternatives:
 | Variables | `snake_case` | `audio_buffer` |
 | Classes | `PascalCase` | `TranscriptionService` |
 | Constants | `SCREAMING_SNAKE_CASE` | `MAX_BUFFER_SIZE` |
-| Type aliases | `PascalCase` | `Transcription = list[TranscriptionEntry]` |
+| Type aliases | `PascalCase` | `type Transcription = list[TranscriptionEntry]` |
 | Protocols | `PascalCase` + `Protocol` suffix | `STTServiceProtocol` |
 | Private | `_leading_underscore` | `_parse_header()` |
 | Module files | `snake_case.py` | `audio_streamer.py` |
@@ -166,25 +166,35 @@ class LocalConfig(BaseAppConfig):
 
 ## Logging
 
-Use `structlog` exclusively. Never use `print()` or bare `logging`.
+Use Python stdlib `logging` with a module-scoped logger. Never use `print()`.
 
 ```python
-import structlog
+import logging
 
-log: structlog.stdlib.BoundLogger = structlog.get_logger()
+_logger = logging.getLogger(__name__)
 
-# Structured key-value context
-log.info("transcription_complete", duration_ms=elapsed, word_count=len(words))
-log.warning("retry_attempt", attempt=attempt, max_retries=MAX_RETRIES)
-log.error("pipeline_failed", stage="pii_scrub", error=str(exc))
+# Short human-readable message; attach context via extra={...}
+_logger.info("Transcription complete", extra={"duration_ms": elapsed, "word_count": len(words)})
+_logger.warning("Retrying operation", extra={"attempt": attempt, "max_retries": MAX_RETRIES})
+
+# Inside except blocks, use exception() to attach the traceback
+try:
+    run_pipeline()
+except PipelineError:
+    _logger.exception("Pipeline failed", extra={"stage": "pii_scrub"})
+    raise
 ```
 
 ### Rules
 
-- Bind loggers at module level: `log = structlog.get_logger()`
-- Use snake_case keys in structured events
-- Include relevant context as keyword arguments
-- Use appropriate log levels: `debug`, `info`, `warning`, `error`, `critical`
+- Bind a module-level logger: `_logger = logging.getLogger(__name__)`
+- Use `import logging` with qualified `logging.<Symbol>`; never `from logging import ...`
+- Use a short, human-readable sentence as the message (sentence case)
+- Attach context as an `extra={...}` mapping, never via f-strings
+- Use `_logger.exception(...)` inside `except` blocks to capture the traceback
+- Use appropriate levels: `debug`, `info`, `warning`, `error`, `critical`
+- Never log secrets, tokens, raw transcripts, or other sensitive data
+- Never use emojis in log messages
 
 ---
 
@@ -280,15 +290,28 @@ def parse_audio_format(
 
 ---
 
-## Dictionary Type Aliases
+## Custom Type Selection
 
-Use project type aliases instead of bare `dict[str, ...]`:
+Choose the least complex construct that enforces the intended semantics:
+
+1. Use a validated value object when invalid values must be rejected at runtime.
+2. Use `NewType` only for opaque identifiers that share a primitive representation
+    but must not be interchanged statically. `NewType` performs no runtime validation.
+3. Use a PEP 695 `type` alias for recurring compound shapes or transparent
+    architecture-decoupling names.
+4. Use `TypedDict` for mappings with known keys, and a frozen dataclass or
+    Pydantic model when the data has behavior, validation, or evolution needs.
+5. Use `Protocol` for behavioral structure and abstract collections such as
+    `Mapping` or `Sequence` for read-only inputs.
+6. Keep a bare primitive or container when a custom name adds no useful meaning.
+
+Use the project dictionary aliases only for genuinely open string-keyed shapes:
 
 ```python
 from ekko.core.types import BaseDict, JSONDict
 
-# BaseDict = dict[str, object]  — generic string-keyed dict
-# JSONDict = dict[str, Any]     — JSON-compatible dict (only where serialization requires it)
+# BaseDict is an open string-to-object mapping for framework metadata.
+# JSONDict is a recursively JSON-compatible dictionary.
 
 def build_metadata(*, source: str, timestamp: float) -> BaseDict:
     return {"source": source, "timestamp": timestamp}
@@ -364,7 +387,7 @@ async def create_transcription(...):
 - [ ] Dataclasses use `frozen=True, slots=True`
 - [ ] Functions with 3+ params use `*` separator
 - [ ] Exceptions chained with `from original_error`
-- [ ] Logging uses `structlog`, never `print()`
+- [ ] Logging uses stdlib `logging` with `extra={...}`, never `print()`
 - [ ] Docstrings follow Google style
 - [ ] String literals extracted to constants or registry
 - [ ] Enums extend `ParseableEnum` with `@unique` + `auto()`

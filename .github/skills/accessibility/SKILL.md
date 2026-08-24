@@ -1,3 +1,8 @@
+---
+name: accessibility
+description: Enforce WCAG accessibility in frontend features. Use for semantic markup, labels, keyboard interaction, focus, contrast, and accessible tests.
+---
+
 # Accessibility Skill
 
 Use this skill to enforce WCAG 2.1 AA practices in frontend features.

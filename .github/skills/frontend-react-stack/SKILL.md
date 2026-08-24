@@ -105,10 +105,9 @@ bun run shadcn add --diff         # Show diff before applying
 - Use `Alert` not custom styled divs
 - Use `toast()` from sonner, not custom toasts
 
-### MCP/Skills Workflow
+### CLI workflow
 
-Use the shadcn MCP server (configured in `.vscode/mcp.json`) for AI-assisted
-component discovery:
+Use the installed shadcn CLI for component discovery and updates:
 
 ```bash
 shadcn docs <component>     # Read component documentation
