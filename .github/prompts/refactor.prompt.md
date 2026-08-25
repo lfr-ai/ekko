@@ -28,7 +28,7 @@ Refactor the selected code to comply with Ekko project standards.
 
 ### Logging and error handling
 
-- Replace `print()` with `structlog` calls.
+- Replace `print()` with stdlib `logging` calls using `extra={...}`.
 - Add exception chaining: `raise NewError(...) from original_error`.
 - Add Google-style docstrings with `Raises:` only for directly raised exceptions.
 

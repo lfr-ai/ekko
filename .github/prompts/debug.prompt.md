@@ -40,7 +40,7 @@ task db:migrate    # Ensure DB schema is current
 
 ### 5. Check recent changes
 
-- Review `git diff` and `git log` for recent changes near the error site.
+- Review IDE source-control changes or GitNexus change detection near the error site.
 - Check if a recent refactor broke a protocol contract or moved a dependency.
 
 ## Output

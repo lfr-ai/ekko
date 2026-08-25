@@ -1,18 +1,21 @@
-# Copilot Prompt Organization
+# Copilot Prompt Registry
 
-This directory contains GitHub Copilot prompt files.
+GitHub Copilot prompt files (`*.prompt.md`), discovered via
+`chat.promptFilesLocations` in `.vscode/settings.json`.
 
-## Domain subfolders
+## Layout
 
-- `openspec/` — grouped OpenSpec workflow prompts (canonical grouped view)
-- `gitnexus/` — grouped GitNexus analysis prompts
+| Location | Prompts |
+|----------|---------|
+| `opsx/` | OpenSpec workflow: `/propose`, `/explore`, `/apply`, `/continue`, `/ff`, `/new`, `/onboard`, `/sync`, `/update`, `/verify`, `/archive`, `/bulk-archive` |
+| `gitnexus/` | GitNexus analysis: `/debug`, `/impact` |
+| _(top level)_ | Task prompts: `review`, `test`, `refactor`, `debug` |
 
-## Legacy compatibility
+## Parity
 
-Flat `opsx-*.prompt.md` files are retained for backward compatibility.
-Use `openspec/*.prompt.md` for new references.
+The OpenSpec and GitNexus workflows are mirrored across platforms:
 
-## Maintenance
+- Claude Code slash commands — `.claude/commands/{opsx,gitnexus}/`
+- Agent Skills — `{.github,.claude,.agents}/skills/{opsx,gitnexus}/`
 
-Run `uv run python .agents/sync_agentic_setup.py` after editing OpenSpec prompts
-so grouped and neutral prompt topology stays aligned.
+The three skill trees are kept identical; `.github/skills` is canonical.

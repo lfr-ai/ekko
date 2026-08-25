@@ -8,7 +8,7 @@ Review the selected code (or the current diff) against the Ekko project standard
 
 ### 1. Architecture boundaries
 
-- Verify imports follow the dependency direction: `utils -> config -> core -> infrastructure/ai -> application -> composition -> presentation`.
+- Verify imports follow the dependency direction: `config -> core -> {ai | infrastructure} -> application -> presentation -> composition -> cli`.
 - Flag any outward dependency (e.g., `core/` importing from `application/`).
 - Confirm `core/` has zero framework imports (no FastAPI, SQLAlchemy, etc.).
 - Ensure application services depend on protocols from `core/ports/`, not concrete adapters.
@@ -24,7 +24,7 @@ Review the selected code (or the current diff) against the Ekko project standard
 
 - Dataclasses are `@dataclass(frozen=True, slots=True)` (except `Container`).
 - Google-style docstrings with `Raises:` only for directly raised exceptions.
-- No `print()` -- use `structlog` for logging.
+- No `print()` -- use stdlib `logging` with `extra={...}`.
 - No dead code or commented-out blocks.
 - Exception chaining: `raise NewError(...) from original_error`.
 
