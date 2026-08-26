@@ -1,13 +1,11 @@
 ---
-description: Shell, zsh, and PowerShell conventions for scripts and hooks
-applyTo: "**/*.{sh,zsh,ps1}"
+description: Shell script standards
+applyTo: "**/*.zsh, **/*.ps1"
 ---
 
-# Shell Conventions
+# Shell Instructions
 
-- Bash: always `set -euo pipefail`
-- Quote all variables: `"$var"` not `$var`
-- Keep `.sh` and `.ps1` behavior aligned when both variants exist
-- Use `"$CLAUDE_PROJECT_DIR"` for portable project-root paths in hooks
-- Hook scripts must output valid JSON to stdout for Claude/Copilot integration
-- Use `exit 0` for success, `exit 2` for blocking errors
+- Use safe defaults and fail-fast behavior.
+- Keep scripts idempotent where feasible.
+- Validate required environment variables before running side effects.
+- Prefer descriptive output and explicit exit codes.

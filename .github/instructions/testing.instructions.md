@@ -1,31 +1,13 @@
 ---
-description: Test structure, markers, libraries, and quality conventions
-applyTo: "tests/**/*.py"
+description: Testing standards for Python tests
+applyTo: "**/test_*.py, **/conftest.py"
 ---
 
-# Testing Conventions
+# Testing Instructions
 
-## Markers
-
-- `@pytest.mark.unit` — fast, isolated, no I/O
-- `@pytest.mark.integration` — database, API, external services
-- `@pytest.mark.asyncio` — async test functions
-- `@pytest.mark.slow` — long-running tests
-
-## Libraries
-
-- `factory-boy` for test data (`tests/factories/`)
-- `hypothesis` for property-based tests (`tests/property/`)
-- `freezegun` for time-dependent tests
-- `respx` for mocking httpx calls
-- `pytest-benchmark` for performance assertions
-
-## Rules
-
-- Test behavior, not implementation. Tests must be deterministic.
-- Every bug fix gets a regression test.
-- Reusable mocks in `tests/mocks/`, shared fixtures in `conftest.py`
-- Minimum 70% code coverage target.
-- No `unittest.TestCase` — use pytest functions.
-- Test naming: `test_{method}_{scenario}_{expected}`
-- Arrange-Act-Assert structure in all tests.
+- Write focused tests with clear Arrange/Act/Assert structure.
+- Prefer behavior-oriented assertions over implementation details.
+- Add regression tests for every bug fix.
+- Avoid flaky time/network dependencies unless explicitly integration-scoped.
+- For HTTP status assertions, always use constants from 'fastapi.status'
+	instead of numeric literals.

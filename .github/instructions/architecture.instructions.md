@@ -6,28 +6,31 @@ applyTo: "backend/src/ekko/**/*.py"
 # Architecture Instructions
 
 Dependencies always flow **inward**. Outer layers depend on inner layers, never the reverse.
+Enforced by import-linter contracts in `backend/pyproject.toml`; run `task architecture`.
 
 ```text
-utils -> config -> core -> infrastructure/ai -> application -> composition -> presentation
+config -> core -> {ai | infrastructure} -> application -> presentation -> composition -> cli
 ```
 
 ## Import Rules
 
 | Layer | May Import From | NEVER From |
 |-------|----------------|------------|
-| `utils/` | stdlib ONLY | ALL other project layers |
-| `config/` | `utils/`, external libs | `presentation/`, `application/`, `core/` |
-| `core/` | `utils/`, `config/` | `presentation/`, `application/`, `infrastructure/` |
-| `infrastructure/` | `core/`, `config/`, `utils/`, external libs | `presentation/`, `application/` |
-| `ai/` | `core/`, `config/`, `utils/` | `presentation/`, `application/`, `infrastructure/` |
-| `application/` | `core/`, `infrastructure/`, `ai/`, `config/`, `utils/` | `presentation/` |
-| `presentation/` | `application/`, `core/`, `config/`, `utils/` | top layer |
+| `config/` | external libs, stdlib | `core/`, `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `core/` | `config/`, stdlib (+ Pydantic hooks) | `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `infrastructure/` | `core/`, `config/`, external libs | `ai/`, `application/`, `presentation/` |
+| `ai/` | `core/`, `config/` | `infrastructure/`, `application/`, `presentation/` |
+| `application/` | `core/`, `infrastructure/`, `ai/`, `config/` | `presentation/` |
+| `presentation/` | `application/`, `core/`, `config/` | `infrastructure/`, `ai/`, `composition/` |
+| `composition/` | all layers (DI wiring) | — |
+| `cli/` | `composition/`, `presentation/`, `config/` | (entrypoint) |
 
 ## Port / Adapter Pattern
 
 - Ports (protocols) live in `core/ports/`
 - Adapters (concrete) live in `infrastructure/` or `ai/`
 - Application services depend on protocols, never concrete classes
+- `ai` and `infrastructure` are sibling verticals: neither imports the other
 - DI via `composition/Container` with `@cached_property`
 - FastAPI `Depends()` callables in `presentation/api/dependencies.py`
 

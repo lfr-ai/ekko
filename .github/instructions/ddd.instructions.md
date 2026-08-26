@@ -1,55 +1,63 @@
 ---
-description: Domain-Driven Design patterns for the Ekko domain layer
-applyTo: "backend/src/ekko/core/**/*.py"
+description: Domain-Driven Design patterns for the domain layer
+applyTo: "**/core/**/*.py"
 ---
 
-# DDD Instructions
+# Domain-Driven Design Instructions
 
-Apply these patterns to all code in `backend/src/ekko/core/`.
+Apply DDD tactical patterns to all code in the core layer.
 
 ## Aggregates
 
-- `@dataclass(frozen=True, slots=True)` on all aggregate roots.
-- All invariants enforced in `__post_init__` — the aggregate is always valid after construction.
-- Mutations return **new instances** — never modify state in-place.
-- One repository per aggregate root (protocol in `core/ports/`).
+- `@dataclass(frozen=True)` on all aggregate roots
+- All invariants enforced in `__post_init__` — aggregate is always valid after construction
+- Mutations return **new instances** (functional style)
+- One repository per aggregate root (protocol in `core/ports/`)
+- No direct references between aggregates — use IDs only
 
 ## Value Objects
 
-- `@dataclass(frozen=True, slots=True)` — no identity, equality is structural.
-- Validate all constraints in `__post_init__` with a `DomainValidationError`.
-- Place in `core/value_objects/`.
+- `@dataclass(frozen=True, kw_only=True, slots=True)` — no identity, structural equality
+- Validate all constraints in `__post_init__` with domain exception
+- Place in `core/value_objects/`
+- Self-validating on construction
 
 ## Domain Events
 
-- Named in **past tense**: `TranscriptionCompleted`, `RecordingStarted`.
-- `@dataclass(frozen=True, slots=True)` with only primitive/serializable fields.
-- Include `occurred_at: datetime` on every event.
-- Place in `core/events/`.
+- Named in **past tense**: `OrderPlaced`, `PaymentProcessed`
+- `@dataclass(frozen=True, kw_only=True, slots=True)` with only primitive fields
+- Include `occurred_at: datetime` on every event
+- Place in `core/events/`
 
 ## Repository Protocols
 
-- Protocols in `core/ports/` — use domain language, return domain objects.
-- Use keyword-only arguments (`*`) for all parameters.
-- Never return ORM models from protocol methods.
+- Protocols in `core/ports/` using domain language
+- Return domain objects, **never ORM models**
+- Keyword-only arguments (`*`) for all parameters
+- Methods express domain queries
 
 ## Ubiquitous Language
 
-Use domain terms consistently. Forbidden inside `core/`:
+Use domain terms consistently. Forbidden in `core/`:
 
 - "model" → use entity, aggregate, value object
-- "row" / "record" → use domain entity
-- "request" / "response" → use command, query, result
+- "row"/"record" → use domain entity
+- "request"/"response" → use command, query, DTO
+- "data"/"payload" → use domain-specific term
 
-## No Framework Imports
+## Framework Independence
 
-`core/` must have zero imports of `fastapi`, `sqlalchemy`, `httpx`, or any
-other infrastructure framework. Use `core/ports/` protocols for abstraction.
+`core/` must have **ZERO imports** from application frameworks (FastAPI, Django,
+Flask) or infrastructure libraries (SQLAlchemy, httpx, boto3).
 
-## Ekko Bounded Contexts
+**Allowed exception — serialization protocols**: Value objects MAY implement
+Pydantic's `__get_pydantic_core_schema__` / `__get_pydantic_json_schema__`
+dunder methods. These are **serialization protocol contracts** — analogous to
+`__repr__`, `__format__`, or `__json__` — that declare how to serialize the type
+at system boundaries without coupling domain logic to the framework.
 
-Contexts communicate via `application/` services, never direct domain imports:
+Keep this exception inside Core scalar/value-object modules and limit imports to
+schema hook types. Core ports MUST NOT inherit from or bind generics to
+`pydantic.BaseModel`.
 
-```text
-Audio Processing → Transcription → AI Pipeline → Conversation
-```
+Use stdlib `Protocol` contracts in `core/ports/` for all other abstraction needs.

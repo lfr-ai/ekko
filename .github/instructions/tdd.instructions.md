@@ -1,11 +1,11 @@
 ---
-description: Test-Driven Development workflow and test quality rules for Ekko
-applyTo: "tests/**/*.py"
+description: Test-Driven Development workflow and test quality rules
+applyTo: "**/tests/**/*.py"
 ---
 
 # TDD Instructions
 
-Apply these rules to all code in `tests/`.
+Apply these rules to all test code.
 
 ## The Three Laws
 
@@ -24,11 +24,11 @@ Follow `test_{method}_{scenario}_{expected}`:
 
 ```python
 # Good
-def test_transcription_with_no_entries_returns_empty_full_text() -> None: ...
-def test_language_with_unsupported_code_raises_validation_error() -> None: ...
+def test_order_with_zero_quantity_raises_validation_error() -> None: ...
+def test_service_with_valid_input_returns_result() -> None: ...
 
 # Bad
-def test_transcription() -> None: ...
+def test_order() -> None: ...
 def test_works() -> None: ...
 ```
 
@@ -36,22 +36,23 @@ def test_works() -> None: ...
 
 ```python
 @pytest.mark.unit         # Fast, no I/O — < 10 ms
-@pytest.mark.integration  # DB, API boundary
+@pytest.mark.integration  # DB, API, external services
 @pytest.mark.asyncio      # Async test functions
 @pytest.mark.slow         # Long-running (> 2s)
+@pytest.mark.property     # Hypothesis property-based
 ```
 
 ## Fakes over Mocks
 
-Use protocol-conforming fakes from `tests/mocks/`, not `MagicMock`:
+Use protocol-conforming fakes and factory-boy factories, not `MagicMock`:
 
 ```python
 # Good — type-safe, catches interface changes
-from tests.mocks.fake_transcription_repo import FakeTranscriptionRepository
-repo = FakeTranscriptionRepository()
+from tests.factories import OrderFactory
+order = OrderFactory()
 
-# Bad — invisible to type checker, doesn't catch protocol changes
-repo = MagicMock(spec=TranscriptionRepository)
+# Bad — invisible to type checker
+order = MagicMock(spec=Order)
 ```
 
 ## Bug Fixes
@@ -64,27 +65,27 @@ Every bug fix requires a **failing regression test first**:
 
 ## Contract Tests
 
-Every protocol in `core/ports/` must have a contract test suite in
-`tests/unit/core/ports/`. Wire it against all concrete implementations.
+Every protocol in `core/ports/` must have a contract test suite.
+Wire it against all concrete implementations.
 
 ## Arrange-Act-Assert
 
 Use blank lines to separate the three phases. No merged phases.
 
-```python
-def test_example() -> None:
-    # Arrange
-    repo = FakeTranscriptionRepository()
-    transcription = TranscriptionFactory()
-
     # Act
-    await repo.save(transcription=transcription)
-    result = await repo.get_by_id(transcription_id=transcription.id)
+    result = await service.evaluate(case)
 
     # Assert
-    assert result == transcription
+    assert result.outcome == "APPROVED"
 ```
 
-## Coverage
+## Coverage Targets
 
-Minimum 70% coverage. Run `task test:coverage` to check.
+| Layer | Minimum |
+|-------|---------|
+| Core | 90% |
+| Application | 80% |
+| Infrastructure | 60% |
+| Presentation | 70% |
+
+Run the project's coverage command to check.

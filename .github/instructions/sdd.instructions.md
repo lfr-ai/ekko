@@ -1,11 +1,23 @@
 ---
-description: Specification-Driven Development — scenario authoring rules for Ekko specs
-applyTo: "docs/specs/**/*.md"
+description: Specification-Driven Development — scenario authoring rules
+applyTo: "openspec/specs/**/*.md, openspec/changes/**/specs/**/*.md"
 ---
 
 # SDD Instructions
 
-Apply these rules to all files in `docs/specs/`.
+Apply these rules to all spec files in `docs/specs/` and `openspec/specs/`.
+
+## OpenSpec Integration
+
+This project uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for
+spec-driven development. The source of truth for system behavior lives in
+`openspec/specs/` organized by bounded context:
+
+Use OpenSpec slash commands to manage specs:
+- `/opsx:propose` — Start a new change with artifacts
+- `/opsx:apply` — Implement tasks from a change
+- `/opsx:verify` — Validate implementation matches specs
+- `/opsx:archive` — Finalize and merge delta specs
 
 ## Core Rule
 
@@ -17,22 +29,23 @@ A spec without a passing test is documentation rot.
 Use Given-When-Then with **concrete values**:
 
 ```markdown
-## Scenario: Submit 10-second English audio returns 202 with integer ID
+## Scenario: Valid order with available inventory is fulfilled
 
-**Given** a 10-second WAV audio file with English speech
-**When** the client POSTs the file to `POST /api/v1/transcriptions`
-**Then** the response status is `202 Accepted`
-**And** the response body contains `{"id": <integer>, "status": "pending"}`
+**Given** an order with product "WIDGET-001" and quantity 5
+**And** inventory has 10 units available
+**When** the fulfillment service processes the order
+**Then** the order status is "FULFILLED"
+**And** inventory is reduced to 5
 ```
 
 ## Concrete Values Required
 
 | Avoid | Use instead |
 |-------|-------------|
-| "some audio" | "a 10-second WAV file" |
-| "a valid request" | "a POST to /api/v1/transcriptions with a WAV file" |
+| "some data" | "an order with product WIDGET-001" |
+| "a valid request" | "a POST to /api/v1/orders with quantity=5" |
 | "an error is returned" | "the response status is 422 Unprocessable Entity" |
-| "the data is saved" | "a transcription record exists in the database with language = 'en'" |
+| "the data is saved" | "a record exists in DB with status=FULFILLED" |
 
 ## No Implementation Details
 
@@ -40,33 +53,29 @@ Specs describe WHAT, not HOW:
 
 ```markdown
 # Bad — describes implementation
-Given the AudioProcessor calls faster-whisper with chunk_size=512
+Given the service calls the external API with retry=3
 
 # Good — describes observable behavior
-Given a 10-second English WAV audio file
+Given an order with product WIDGET-001 and available inventory
 ```
 
 ## Scenario Naming
 
 Follow: `{Action} {context/input} {expected outcome}`
 
-- `Submit valid English audio returns transcription ID`
-- `Submit audio shorter than 500ms is rejected with 422`
-- `Delete non-existent transcription returns 404`
-
 ## File Organization
 
 One feature file per domain concept. Keep files small (≤ 10 scenarios).
-Organize under the correct bounded context directory.
+Organize under the correct domain directory.
 
 ## Spec → Test Link
 
 Every test that implements a scenario must cite the spec in its docstring:
 
 ```python
-async def test_submit_valid_audio_returns_id(...) -> None:
-    """Spec: transcription/transcription-creation.md
-    Scenario: Submit valid English audio and receive a transcription ID.
+async def test_valid_order_fulfilled(...) -> None:
+    """Spec: order-processing/fulfillment.md
+    Scenario: Valid order with available inventory is fulfilled.
     """
 ```
 
