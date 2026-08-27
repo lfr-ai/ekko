@@ -22,6 +22,7 @@ _EXPECTED_CONTRACTS = frozenset(
     {
         "Clean Architecture layers",
         "AI and Infrastructure are independent siblings",
+        "Presentation must not import persistence or provider SDKs",
         "Presentation must not reach into infrastructure or AI",
         "Core is framework-independent",
     }
@@ -38,8 +39,10 @@ _EXPECTED_LAYERS = (
     "config",
 )
 
+type ImportLinterContract = dict[str, str | list[str]]
 
-def _load_contracts() -> list[dict[str, object]]:
+
+def _load_contracts() -> list[ImportLinterContract]:
     data = tomllib.loads(_BACKEND_PYPROJECT.read_text(encoding="utf-8"))
     return data["tool"]["importlinter"]["contracts"]
 
@@ -55,7 +58,9 @@ def test_expected_contracts_are_defined() -> None:
 def test_layers_contract_covers_every_layer() -> None:
     """The layers contract lists all architectural layers, inner to outer."""
     layers_contract = next(c for c in _load_contracts() if c["type"] == "layers")
-    joined = " ".join(layers_contract["layers"])
+    layers = layers_contract["layers"]
+    assert isinstance(layers, list)
+    joined = " ".join(layers)
     for layer in _EXPECTED_LAYERS:
         assert f"ekko.{layer}" in joined
 

@@ -164,8 +164,8 @@ class TestIsExcludedContext:
 class TestParseFileAst:
     """Tests for AST-based file parsing."""
 
-    def test_detect_field_name_violation(self, tmp_path: Path) -> None:
-        """Detect hardcoded field names."""
+    def test_exclude_dictionary_field_keys(self, tmp_path: Path) -> None:
+        """Treat dictionary keys as structural access rather than magic values."""
         test_file = tmp_path / "test.py"
         test_file.write_text(
             dedent(
@@ -178,12 +178,8 @@ class TestParseFileAst:
 
         violations = _parse_file_ast(test_file)
 
-        # Should detect "id" and "name" as field name violations
         field_violations = [v for v in violations if v.category == ViolationCategory.FIELD_NAME]
-        assert len(field_violations) >= 2
-        literals = {v.literal for v in field_violations}
-        assert "id" in literals
-        assert "name" in literals
+        assert field_violations == []
 
     def test_detect_route_path_violation(self, tmp_path: Path) -> None:
         """Detect hardcoded route paths."""

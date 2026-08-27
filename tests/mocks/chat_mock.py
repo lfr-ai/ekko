@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from ekko.core.types import MaxTokens, ModelDeploymentName, Temperature
 
-_DEFAULT_MAX_TOKENS: MaxTokens = MaxTokens(1024)
-_DEFAULT_TEMPERATURE: Temperature = Temperature(0.0)
+_DEFAULT_MAX_TOKENS = MaxTokens(1024)
+_DEFAULT_TEMPERATURE = Temperature(0.0)
 
 
 class MockChatClient:
@@ -16,6 +16,9 @@ class MockChatClient:
         self.call_count = 0
         self.last_system_prompt: str | None = None
         self.last_user_prompt: str | None = None
+        self.last_model: ModelDeploymentName | None = None
+        self.last_max_completion_tokens: MaxTokens | None = None
+        self.last_temperature: Temperature | None = None
 
     def chat(
         self,
@@ -27,10 +30,12 @@ class MockChatClient:
         temperature: Temperature = _DEFAULT_TEMPERATURE,
     ) -> str:
         """Return mock response."""
-        _ = (model, max_completion_tokens, temperature)
         self.call_count += 1
         self.last_system_prompt = system_prompt
         self.last_user_prompt = user_prompt
+        self.last_model = model
+        self.last_max_completion_tokens = max_completion_tokens
+        self.last_temperature = temperature
         return self.response_text
 
     async def achat(
@@ -43,10 +48,12 @@ class MockChatClient:
         temperature: Temperature = _DEFAULT_TEMPERATURE,
     ) -> str:
         """Return mock response asynchronously."""
-        _ = (model, max_completion_tokens, temperature)
         self.call_count += 1
         self.last_system_prompt = system_prompt
         self.last_user_prompt = user_prompt
+        self.last_model = model
+        self.last_max_completion_tokens = max_completion_tokens
+        self.last_temperature = temperature
         return self.response_text
 
 

@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import (
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
 
-_TEST_DATABASE_URL: str = "sqlite+aiosqlite://"
+_TEST_DATABASE_URL = "sqlite+aiosqlite://"
 
 
 def _ensure_backend_src_on_path() -> None:
@@ -37,20 +37,20 @@ _ensure_backend_src_on_path()
 
 
 @pytest.fixture(scope="session", autouse=True)
-def _test_environment() -> Generator[None, None, None]:
+def _test_environment() -> Generator[None]:
     """Force deterministic environment for all root tests."""
-    from ekko.config.settings import get_settings
+    from ekko.config.runtime import get_config
 
     previous_environment = os.environ.get("EKKO_ENVIRONMENT")
     previous_disable_audio = os.environ.get("EKKO_DISABLE_AUDIO")
 
     os.environ["EKKO_ENVIRONMENT"] = "test"
     os.environ["EKKO_DISABLE_AUDIO"] = "true"
-    get_settings.cache_clear()
+    get_config.cache_clear()
 
     yield
 
-    get_settings.cache_clear()
+    get_config.cache_clear()
     if previous_environment is None:
         os.environ.pop("EKKO_ENVIRONMENT", None)
     else:
@@ -63,7 +63,7 @@ def _test_environment() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-async def test_async_engine() -> AsyncGenerator[AsyncEngine, None]:
+async def test_async_engine() -> AsyncGenerator[AsyncEngine]:
     """Create an in-memory SQLite async engine with test schema."""
     from ekko.infrastructure.db import models as _  # noqa: F401
     from ekko.infrastructure.db.base import Base
@@ -89,7 +89,7 @@ def test_session_factory(
 @pytest.fixture
 async def test_session(
     test_session_factory: async_sessionmaker[AsyncSession],
-) -> AsyncGenerator[AsyncSession, None]:
+) -> AsyncGenerator[AsyncSession]:
     """Provide async SQLAlchemy session for integration tests."""
     async with test_session_factory() as session:
         yield session
@@ -99,10 +99,15 @@ async def test_session(
 @pytest.fixture
 def integration_app(test_async_engine: AsyncEngine):
     """Create FastAPI app with in-memory SQLite DB engine injected."""
+    from ekko.application.services import ReadinessService
     from ekko.composition import create_app
+    from ekko.infrastructure.db.readiness import SQLAlchemyReadinessProbe
 
     app = create_app()
     app.state.db_engine = test_async_engine
+    app.state.readiness_service = ReadinessService(
+        database_probe=SQLAlchemyReadinessProbe(database_url=_TEST_DATABASE_URL),
+    )
     app.state.session_factory = async_sessionmaker(
         test_async_engine,
         class_=AsyncSession,

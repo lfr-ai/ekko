@@ -36,7 +36,9 @@ from tests.fixtures.graphql_fixtures import (
     START_CONVERSATION_MUTATION,
 )
 
+from ekko.application.services import ReadinessService
 from ekko.core.enums import ServiceStatus
+from ekko.core.ports import DependencyStatus
 from ekko.presentation.graphql.extensions import (
     QueryTimingExtension,
     RequestContextExtension,
@@ -47,10 +49,16 @@ from ekko.presentation.graphql.schema import schema
 
 def _execute_sync_compat(*args: object, **kwargs: object) -> object:
     """Compatibility shim for async Strawberry schema execution in sync tests."""
-    return asyncio.run(schema.execute(*args, **kwargs))
+    return asyncio.run(schema.execute(*args, **kwargs))  # type: ignore[invalid-argument-type]
 
 
-schema.execute_sync = _execute_sync_compat  # type: ignore[method-assign]
+schema.execute_sync = _execute_sync_compat  # type: ignore[invalid-assignment]
+
+
+class _HealthyDatabaseProbe:
+    async def check(self) -> DependencyStatus:
+        """Return a healthy database dependency status."""
+        return DependencyStatus(name="database", healthy=True)
 
 
 def _make_context() -> dict:
@@ -139,7 +147,7 @@ class TestGraphQLSchemaStructure:
 
     def test_mutation_fields_exist(self) -> None:
         """Mutation type exposes expected fields."""
-        mutation_fields = schema.mutation.__strawberry_definition__.fields
+        mutation_fields = schema.mutation.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
 
         field_names = {field.python_name for field in mutation_fields}
         expected_fields = {
@@ -154,7 +162,7 @@ class TestGraphQLSchemaStructure:
 
     def test_subscription_fields_exist(self) -> None:
         """Subscription type exposes expected fields."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
 
         field_names = {field.python_name for field in subscription_fields}
         expected_fields = {"transcript_stream", "agent_status", "conversation_events"}
@@ -186,7 +194,7 @@ class TestGraphQLQueryExecution:
 
     def test_health_ready_query_without_db(self) -> None:
         """Health ready query handles missing database gracefully."""
-        # Execute without context (no db_engine)
+        # Execute without context (no readiness service)
         result = schema.execute_sync(HEALTH_READY_QUERY)
 
         assert result.errors is None
@@ -205,16 +213,10 @@ class TestGraphQLQueryExecution:
         assert "not configured" in db_dep["detail"]
 
     def test_health_ready_query_with_mock_db(self) -> None:
-        """Health ready query probes database connection."""
-        # Create mock database engine
-        mock_engine = Mock()
-        mock_conn = AsyncMock()
-        mock_engine.connect = Mock(return_value=mock_conn)
-        mock_conn.__aenter__ = AsyncMock(return_value=mock_conn)
-        mock_conn.__aexit__ = AsyncMock()
-        mock_conn.execute = AsyncMock()
-
-        context = {"db_engine": mock_engine}
+        """Health ready query maps application readiness status."""
+        context = {
+            "readiness_service": ReadinessService(database_probe=_HealthyDatabaseProbe()),
+        }
         result = schema.execute_sync(HEALTH_READY_QUERY, context_value=context)
 
         assert result.errors is None
@@ -504,25 +506,25 @@ class TestGraphQLSubscriptionStructure:
 
     def test_transcript_stream_subscription_exists(self) -> None:
         """Transcript stream subscription is defined."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
         field_names = {field.python_name for field in subscription_fields}
         assert "transcript_stream" in field_names
 
     def test_agent_status_subscription_exists(self) -> None:
         """Agent status subscription is defined."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
         field_names = {field.python_name for field in subscription_fields}
         assert "agent_status" in field_names
 
     def test_conversation_events_subscription_exists(self) -> None:
         """Conversation events subscription is defined."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
         field_names = {field.python_name for field in subscription_fields}
         assert "conversation_events" in field_names
 
     def test_transcript_stream_has_source_parameter(self) -> None:
         """Transcript stream subscription accepts source parameter."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
         transcript_field = next(
             (f for f in subscription_fields if f.python_name == "transcript_stream"),
             None,
@@ -535,7 +537,7 @@ class TestGraphQLSubscriptionStructure:
 
     def test_conversation_events_has_id_parameter(self) -> None:
         """Conversation events subscription requires conversation_id."""
-        subscription_fields = schema.subscription.__strawberry_definition__.fields
+        subscription_fields = schema.subscription.__strawberry_definition__.fields  # type: ignore[unresolved-attribute]
         events_field = next(
             (f for f in subscription_fields if f.python_name == "conversation_events"),
             None,

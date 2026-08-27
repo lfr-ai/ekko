@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
 
 
 class MockTranscript:
@@ -28,8 +32,8 @@ class MockSTTAdapter:
         self.transcript_text = transcript_text
         self._running = False
         self._queues: dict[str, asyncio.Queue[bytes]] = {}
-        self.on_transcript = None
-        self.output_queue = None
+        self.on_transcript: Callable[[MockTranscript], object | Awaitable[object]] | None = None
+        self.output_queue: asyncio.Queue[MockTranscript] | None = None
 
     async def start(self) -> None:
         """Start the mock STT service."""
@@ -71,6 +75,7 @@ class MockSTTAdapter:
 class FailingSTTAdapter(MockSTTAdapter):
     """Mock STT adapter that simulates failures."""
 
-    async def accept_bytes(self, _queue_name: str, _data: bytes) -> None:
+    async def accept_bytes(self, queue_name: str, _data: bytes) -> None:
         """Simulate STT failure."""
+        del queue_name
         raise RuntimeError("STT processing failed")
