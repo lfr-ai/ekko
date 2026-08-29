@@ -1,384 +1,401 @@
 ---
 name: python-conventions
-description: Python standards for typing, logging, and maintainability.
-paths:
-  - "**/*.py"
+description: 'Enforces project Python coding standards including type hints, structured logging, keyword-only args, and forbidden patterns like Any or print(). Use when writing or reviewing Python code.'
 ---
 
-# Skill: Python Conventions
-
-## Technology Stack
-
-| Aspect | Standard |
-|--------|----------|
-| Language | Python 3.14 |
-| Package manager | `uv` |
-| Type checker | `ty` (Astral) |
-| Linter/formatter | Ruff |
-| Logging | `structlog` |
-| Settings | Pydantic `BaseSettings` |
-| ORM | SQLAlchemy 2.0+ async |
-| Enums | `ParseableEnum(StrEnum)` base class |
-| Dataclasses | `@dataclass(frozen=True, slots=True)` |
-
-## Non-Goals
-
-- Do NOT use `Any` in production type annotations
-- Do NOT use `print()` for logging or debugging
-- Do NOT use bare `dict[str, ...]` — use `BaseDict` / `JSONDict` aliases
-- Do NOT leave commented-out code blocks
-- Do NOT add compatibility wrappers for retired patterns
-
----
+# Python Conventions Skill
 
 ## Type Hints
 
-### Full Annotations
-
-Every function, method, and variable with non-obvious type must have explicit
-type annotations. No implicit `Any` from missing annotations.
+### Do
 
 ```python
-# Good
-def process_audio(
-    *,
-    buffer: bytes,
-    sample_rate: int,
-    channels: int,
-) -> TranscriptionResult:
-    ...
+# Builtin generics
+items: list[str]
+mapping: dict[str, int]
+pair: tuple[str, int]
+nullable: str | None
 
-# Bad — missing return type, implicit Any
-def process_audio(buffer, sample_rate, channels):
-    ...
-```
-
-### `Final` Constants
-
-Module-level constants must use `Final[type]`:
-
-```python
+# Final for constants
 from typing import Final
-
 MAX_RETRIES: Final[int] = 3
-DEFAULT_MODEL: Final[str] = "gpt-4o"
-SUPPORTED_FORMATS: Final[frozenset[str]] = frozenset({".wav", ".mp3", ".ogg"})
-```
 
-### `@final` Classes
-
-Use `@final` to seal classes that must not be subclassed:
-
-```python
+# @final for sealed classes/methods
 from typing import final
 
 @final
-@dataclass(frozen=True, slots=True)
-class AudioSegment:
-    """Immutable audio segment. Not intended for subclassing."""
-    data: bytes
-    duration_ms: int
+class ImmutableConfig: ...
 ```
 
-### No `Any`
+### Do NOT
 
-Never use `Any` in production code. Alternatives:
+```python
+# Never import generic aliases from typing
+from typing import List, Dict, Tuple, Optional, Union
 
-| Instead of `Any` | Use |
-|-------------------|-----|
-| Unknown type | `object` |
-| Generic container | `T = TypeVar("T")` with generics |
-| Callback signature | `Protocol` with `__call__` |
-| Mixed dict values | `JSONDict` alias |
-| Plugin interface | `Protocol` class |
+# Never use Any
+from typing import Any
+value: Any  # Use object instead
 
----
+# Never use cast
+from typing import cast
+typed_value = cast(str, value)
 
-## Naming Conventions
+# Never use string-literal forward references
+field: "AppConfig"
+```
 
-| Element | Convention | Example |
-|---------|-----------|---------|
-| Functions, methods | `snake_case` | `get_transcription()` |
-| Variables | `snake_case` | `audio_buffer` |
-| Classes | `PascalCase` | `TranscriptionService` |
-| Constants | `SCREAMING_SNAKE_CASE` | `MAX_BUFFER_SIZE` |
-| Type aliases | `PascalCase` | `type Transcription = list[TranscriptionEntry]` |
-| Protocols | `PascalCase` + `Protocol` suffix | `STTServiceProtocol` |
-| Private | `_leading_underscore` | `_parse_header()` |
-| Module files | `snake_case.py` | `audio_streamer.py` |
+When forward references are required, use `from __future__ import annotations`
+instead of quoted annotations.
 
----
+## Imports
+
+Pick one style **per package** and use it **everywhere** — never mix. Applies to
+classes *and* functions.
+
+### Direct — `from x import Y`
+`typing`, `collections.abc`, `typing_extensions`, `dataclasses`, `enum`,
+`pathlib`, `datetime`, `uuid`, `contextlib`; distinctive framework symbols
+(`pydantic.BaseModel`, `fastapi.FastAPI`); all first-party `myapp.*`.
+
+### Qualified — `import x` then `x.Y`
+Stdlib utility modules (`logging`, `os`, `sys`, `json`, `re`, `asyncio`,
+`hashlib`, `html`, `shutil`, `inspect`, `argparse`) and namespace-heavy
+third-party (`httpx`, `litellm`, `fitz`, `duckdb`; `numpy as np`, `polars as pl`).
+
+```python
+# Good: qualified — namespace kept, unambiguous at call site
+import logging
+import httpx
+
+_logger = logging.getLogger(__name__)
+handler: logging.Handler
+response: httpx.Response
+
+# Bad: direct import of utility-module symbols; keep logging qualified
+from logging import Filter, Handler, LogRecord   # ICN003 banned-from
+from logging.handlers import TimedRotatingFileHandler  # project policy ban
+from httpx import Response                        # ICN003 banned-from
+
+# Good: direct — distinctive symbols
+from pathlib import Path
+from pydantic import BaseModel
+```
+
+Tests/tools that require a first-party module object for monkeypatching,
+reloading, or package-surface assertions may use
+`import myapp.main as main_module`. This does not permit importing first-party
+symbols in mixed styles.
+
+Enforced by ruff `flake8-import-conventions` (`ICN`): `banned-from` +
+`aliases`. Basis: Google Style Guide §2.2 (qualified set) + PEP 8 pragmatism
+(direct set).
+
+## Package Exports (`__init__.py`)
+
+Every package `__init__.py` has a single-line module docstring.
+
+- **Namespace package** (no public surface): docstring only — no imports, no `__all__`.
+- **Re-export hub**: docstring + explicit `from … import …` + `__all__`. `__all__`
+  lists exactly the re-exported (and any locally-defined) public names — a bijection
+  with the imports — and stays isort-sorted.
+- Re-export via `from module import Name` + `__all__`, not redundant aliases.
+- No parentheses around single-name imports.
+
+Enforced by ruff `RUF022` (sorted `__all__`) + `F401` (import hygiene).
+
+## Domain Scalar Types
+
+Pick the lightest tier that fits; shared types live in `core/types.py`. Each tier
+has a fixed trigger:
+
+```python
+from typing import NewType, Self
+
+
+# Tier 1 - validated value object: enforce a boundary invariant in __new__.
+class MaxTokens(int):
+    def __new__(cls, value: int) -> Self:
+        if not 0 < value <= 1_000_000:
+            raise ValueError("'max_tokens' must be in (0, 1_000_000]")
+        return super().__new__(cls, value)
+
+
+# Tier 2 - structural alias: a recurring compound shape, no scalar invariant.
+type EmbeddingComponents = tuple[float, ...]
+type JSONDict = dict[str, object]
+
+# Tier 3 - decoupling alias: a core stand-in for an outer-layer enum value that
+# core must not import (application/infrastructure use the concrete enum).
+type ModelDeploymentName = str  # a ChatModel / EmbeddingModel value
+type StrategyName = str  # a RagStrategy value
+
+# Tier 4 - NewType: an opaque scalar id kept distinct for the checker, no invariant.
+UserId = NewType("UserId", int)
+
+# Tier 5 - bare primitive: local/measured/computed value, counts in arithmetic,
+# free text; a containing value object validates it.
+prompt_tokens: int
+system_prompt: str
+```
+
+- A constrained **input** you set (a limit) is a value object (`MaxTokens`); a
+  measured **output** you receive (a count) is a primitive validated by its
+  container. That is why `MaxTokens` is a value object while token counts are not.
+- Retrieval-specific application: `RetrievalQuery.max_context_tokens` is a
+    constrained input budget and should use `MaxTokens`; diagnostics counters
+    (`prompt_tokens`, `retrieved_chunks`) remain primitive `int` outputs.
+- An internal knob sourced only from a validated module constant (e.g.
+    `RAG_TOP_K: Final[int]`) does not cross a trust boundary and stays a bare
+    primitive; `top_k`, `chunk_size`, `chunk_overlap` are `int`, not value objects.
+- Never create a scalar type alias just for documentation (e.g.
+  `PromptContent = str`) — use a primitive or promote to `NewType`/a value object.
+- Add Pydantic hooks to a value object only when it is a model field (`Confidence`).
 
 ## Dataclasses
 
-Always use `@dataclass(frozen=True, slots=True)` for immutability and memory
-efficiency. The **only exception** is `Container`, which omits `slots=True`
-because `cached_property` requires `__dict__`.
+Use `frozen=True, kw_only=True, slots=True` for immutable classes; mutable
+classes may omit `frozen` but remain keyword-only:
 
 ```python
 from dataclasses import dataclass
 
-# Standard — immutable value object
-@dataclass(frozen=True, slots=True)
-class TranscriptionEntry:
-    """A single transcription segment with offset."""
-    text: str
-    offset: float
-
-# Exception — Container needs __dict__ for cached_property
-@dataclass
-class Container:
-    settings: BaseAppConfig
+@dataclass(frozen=True, kw_only=True, slots=True)
+class Config:
+    host: str
+    port: int
+    timeout: float = 30.0
 ```
 
----
+## Enums
+
+Always `@unique` and use `StrEnum`:
+
+```python
+from enum import StrEnum, unique
+
+@unique
+class Status(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+```
+
+## Logging
+
+Use Python stdlib `logging` with a module-scoped logger:
+
+```python
+import logging
+
+_logger = logging.getLogger(__name__)
+
+_logger.info("processing_request request_id=%s", request_id)
+_logger.error("validation_failed reason=%s", reason)
+_logger.exception("unexpected_error resource_id=%s", resource_id)
+```
+
+## Async SQLAlchemy
+
+Use async session and query patterns:
+
+```python
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy import select
+
+async def get_entity(session: AsyncSession, entity_id: int) -> Entity | None:
+    """Retrieve entity by ID."""
+    stmt = select(Entity).where(Entity.id == entity_id)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+async def create_entity(session: AsyncSession, data: dict) -> Entity:
+    """Create new entity."""
+    entity = Entity(**data)
+    session.add(entity)
+    await session.commit()
+    await session.refresh(entity)
+    return entity
+```
+
+## Exception Handling
+
+Specific catches with chaining:
+
+```python
+try:
+    result = process(data)
+except ValidationError as e:
+    logger.error("Validation failed for %s", data_id, exc_info=True)
+    raise ProcessingError("Invalid data") from e
+except DatabaseError as e:
+    raise StorageError("Database operation failed") from e
+```
+
+## Function Signatures
+
+Keyword-only args with `*` for 3+ params:
+
+```python
+def process_request(
+    request_id: int,
+    *,
+    validate: bool = True,
+    strict_mode: bool = False,
+    timeout: float = 30.0,
+) -> ProcessResult:
+    """Process request with configurable validation."""
+```
+
+## Docstrings (Google Convention)
+
+```python
+def validate_identifier(identifier: str) -> bool:
+    """Validate identifier format and checksum.
+
+    Args:
+        identifier: Identifier string to validate.
+
+    Returns:
+        True if identifier is valid.
+
+    Raises:
+        ValueError: If identifier format is invalid.
+    """
+```
+
+Rules:
+- NEVER start sentences with articles ("a", "an", "the")
+- NEVER start docstring summary with "Return", "Returns", "Response", "Request", or "Payload"
+- Use triple-quoted `"""..."""` for all docstrings, including single-line
+  summaries (enforced by ruff `D300` + the formatter)
+- Complete sentences with periods
+- Short, concise — avoid redundancy
+- Property docstrings use noun-phrase one-liners (no `Returns:` section)
+- Route handlers use one-liner docstrings when `description=` is present
+
+## `__init__` Methods
+
+`__init__` methods must NEVER annotate a return type:
+
+```python
+# Good
+def __init__(self, *, name: str):
+    self._name = name
+
+# Bad
+def __init__(self, *, name: str) -> None:
+    self._name = name
+```
 
 ## Pydantic Models
-
-Use `Annotated` + `Field` for validation metadata. Configure immutability via
-`model_config`:
 
 ```python
 from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
-class AudioConfig(BaseModel):
-    """Audio processing configuration."""
+class ItemModel(BaseModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
-    model_config = ConfigDict(frozen=True)
-
-    sample_rate: Annotated[int, Field(ge=8000, le=48000, description="Sample rate in Hz")]
-    channels: Annotated[int, Field(ge=1, le=2, description="Mono or stereo")]
-    format: Annotated[str, Field(pattern=r"^\.(wav|mp3|ogg)$")]
+    description: Annotated[
+        str | None,
+        Field(
+            default=None,
+            min_length=1,
+            max_length=500,
+            description="Item description",
+            examples=["Sample item"],
+        ),
+    ]
 ```
 
-For settings, extend `BaseAppConfig` (which inherits from `BaseSettings`):
+## Configuration & `from_config`
+
+`*Settings` = an environment-sourced facet that *owns* a cohesive group of
+prefixed env fields (e.g. `MYAPP_*`) — a `BaseSettings` subclass composed into
+the app config. `*Config` = a complete, assembled configuration (`AppConfig`, the
+environment classes) **or a consumer's structural view of it**.
+
+A component built from configuration exposes `from_config(cls, config: _XConfig)`
+where `_XConfig` is a private structural `Protocol` (same module) of only the
+fields it reads. It never imports the app config — the config satisfies `_XConfig`
+structurally (PEP 544).
 
 ```python
-from ekko.config.settings import BaseAppConfig
+# Good: consumer owns a compact structural view named _<Component>Config
+from typing import Protocol, Self
 
-class LocalConfig(BaseAppConfig):
-    """Local development settings."""
-    debug: bool = True
+class _EmailClientConfig(Protocol):
+    smtp_host: str
+    smtp_password: SecretStr
+
+class EmailClient:
+    @classmethod
+    def from_config(cls, config: _EmailClientConfig) -> Self:
+        return cls(host=config.smtp_host, password=config.smtp_password)
+
+# Bad: importing the concrete app config couples infrastructure to the config layer
+from myapp.config import AppConfig
+def from_config(cls, config: AppConfig) -> Self: ...
+
+# Bad: naming the consumer view *Settings (reserved for field-owning facets)
+class _EmailClientSettings(Protocol): ...
 ```
 
----
+## Naming Conventions
 
-## Logging
+| Entity | Convention | Example |
+|--------|-----------|---------|
+| Files | snake_case | `my_module.py` |
+| Classes | PascalCase | `OrderProcessor` |
+| Functions | snake_case | `process_order` |
+| Variables | snake_case | `order_count` |
+| Constants | UPPER_SNAKE_CASE | `MAX_RETRIES` |
+| Private | `_` prefix | `_internal_state` |
 
-Use `structlog` exclusively. Never use `print()` or bare `logging`.
+## Caching
+
+Prefer `@property` for computed attributes. Use `@cached_property` only when the
+class has a `__dict__` (never with `slots=True`) and the value is an expensive,
+effectively-immutable computation or a lazily-memoized singleton that must return
+the same instance on each access. To use `@cached_property` on a dataclass, omit
+`slots=True`.
 
 ```python
-import structlog
+from functools import lru_cache, cached_property
 
-log: structlog.stdlib.BoundLogger = structlog.get_logger()
+@lru_cache(maxsize=128)
+def expensive_computation(key: int) -> str: ...
 
-# Structured key-value context
-log.info("transcription_complete", duration_ms=elapsed, word_count=len(words))
-log.warning("retry_attempt", attempt=attempt, max_retries=MAX_RETRIES)
-log.error("pipeline_failed", stage="pii_scrub", error=str(exc))
+@dataclass(frozen=True, kw_only=True)  # no slots -> enables cached_property
+class Container:
+    @cached_property
+    def db_client(self) -> DbClient: ...  # expensive singleton, memoized once
 ```
 
-### Rules
-
-- Bind loggers at module level: `log = structlog.get_logger()`
-- Use snake_case keys in structured events
-- Include relevant context as keyword arguments
-- Use appropriate log levels: `debug`, `info`, `warning`, `error`, `critical`
-
----
-
-## Keyword-Only Arguments
-
-When a function has **3 or more parameters**, use the `*` separator to force
-keyword-only usage. This prevents positional argument bugs.
+## Retry Policies
 
 ```python
-# Good — keyword-only after *
-def create_transcription(
-    *,
-    audio_data: bytes,
-    model: str,
-    language: str,
-) -> Transcription:
-    ...
+from tenacity import retry, stop_after_attempt, wait_exponential
 
-# Also good — 2 params, no separator needed
-def add(a: int, b: int) -> int:
-    return a + b
-
-# Bad — 3+ params without * separator
-def create_transcription(audio_data: bytes, model: str, language: str) -> Transcription:
-    ...
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1.5, min=2, max=15),
+    reraise=True,
+)
+def call_api() -> dict[str, object]: ...
 ```
 
----
+## Package Management
 
-## Exception Handling
+Use the repository's `uv` environment for dependency management and commands:
 
-### Always Chain Exceptions
-
-Use `raise ... from original_error` to preserve the causal chain:
-
-```python
-try:
-    result = await client.transcribe(audio)
-except httpx.HTTPStatusError as exc:
-    raise TranscriptionError(
-        f"Transcription API returned {exc.response.status_code}"
-    ) from exc
+```bash
+uv add httpx
+uv add --dev pytest
+uv sync
+uv run pytest
 ```
-
-### Catch Specific Exceptions
-
-Never use bare `except:` or `except Exception:` without good reason:
-
-```python
-# Good
-try:
-    config = load_config(path)
-except FileNotFoundError as exc:
-    raise ConfigurationError(f"Config not found: {path}") from exc
-except json.JSONDecodeError as exc:
-    raise ConfigurationError(f"Invalid JSON in {path}") from exc
-
-# Bad
-try:
-    config = load_config(path)
-except Exception:
-    pass
-```
-
----
-
-## Docstrings
-
-Google-style docstrings. The `Raises:` section must **only** list exceptions
-raised directly in the function body (not exceptions from callees).
-
-```python
-def parse_audio_format(
-    *,
-    raw_format: str,
-    strict: bool,
-) -> AudioFormat:
-    """Parse a raw format string into a validated AudioFormat.
-
-    Args:
-        raw_format: The file extension or MIME type to parse.
-        strict: When True, reject unknown formats instead of
-            falling back to defaults.
-
-    Returns:
-        The validated AudioFormat value object.
-
-    Raises:
-        ValueError: If strict is True and the format is unrecognized.
-    """
-    ...
-```
-
----
-
-## Custom Type Selection
-
-Choose the least complex construct that enforces the intended semantics:
-
-1. Use a validated value object when invalid values must be rejected at runtime.
-2. Use `NewType` only for opaque identifiers that share a primitive representation
-    but must not be interchanged statically. `NewType` performs no runtime validation.
-3. Use a PEP 695 `type` alias for recurring compound shapes or transparent
-    architecture-decoupling names.
-4. Use `TypedDict` for mappings with known keys, and a frozen dataclass or
-    Pydantic model when the data has behavior, validation, or evolution needs.
-5. Use `Protocol` for behavioral structure and abstract collections such as
-    `Mapping` or `Sequence` for read-only inputs.
-6. Keep a bare primitive or container when a custom name adds no useful meaning.
-
-Use the project dictionary aliases only for genuinely open string-keyed shapes:
-
-```python
-from ekko.core.types import BaseDict, JSONDict
-
-# BaseDict is an open string-to-object mapping for framework metadata.
-# JSONDict is a recursively JSON-compatible dictionary.
-
-def build_metadata(*, source: str, timestamp: float) -> BaseDict:
-    return {"source": source, "timestamp": timestamp}
-```
-
----
-
-## String Constants
-
-Extract repeated strings into `Final[str]` constants or use registry constants
-from `core/registry_constants.py`:
-
-```python
-from typing import Final
-
-# Module-level constants
-DEFAULT_LANGUAGE: Final[str] = "en"
-TRANSCRIPTION_ROUTE: Final[str] = "/api/v1/transcriptions"
-
-# Or use generated registry constants
-from ekko.core.registry_constants import AUDIO_FORMAT_WAV
-```
-
-Never scatter raw string literals across the codebase.
-
----
-
-## Enums
-
-All string enums extend `ParseableEnum(StrEnum)` from `core/enums/base.py`.
-Use `@unique` and `auto()`:
-
-```python
-from enum import auto, unique
-
-from ekko.core.enums.base import ParseableEnum
-
-@unique
-class AudioFormat(ParseableEnum):
-    """Supported audio formats."""
-    WAV = auto()
-    MP3 = auto()
-    OGG = auto()
-
-# Case-insensitive parsing via inherited from_str()
-fmt = AudioFormat.from_str("wav")  # AudioFormat.WAV
-```
-
----
-
-## HTTP Status Codes
-
-Use `fastapi.status` constants, never raw integers:
-
-```python
-from fastapi import status
-
-@router.post("/transcriptions", status_code=status.HTTP_201_CREATED)
-async def create_transcription(...):
-    ...
-
-# Bad
-@router.post("/transcriptions", status_code=201)
-```
-
----
-
-## Quick Checklist
-
-- [ ] All functions have full type annotations (params + return)
-- [ ] No `Any` in production code
-- [ ] Constants use `Final[type]`
-- [ ] Dataclasses use `frozen=True, slots=True`
-- [ ] Functions with 3+ params use `*` separator
-- [ ] Exceptions chained with `from original_error`
-- [ ] Logging uses `structlog`, never `print()`
-- [ ] Docstrings follow Google style
-- [ ] String literals extracted to constants or registry
-- [ ] Enums extend `ParseableEnum` with `@unique` + `auto()`
-- [ ] Pydantic models use `Annotated + Field` and `ConfigDict(frozen=True)`
