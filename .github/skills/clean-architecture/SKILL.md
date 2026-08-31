@@ -14,6 +14,11 @@ core/ → application/ → infrastructure/ → composition/ → presentation/ �
 Inner layers have ZERO knowledge of outer layers.
 Outer layers depend on inner layers through imports.
 
+> **Layer names below are the Python backend convention.** The frontend applies
+> the same Dependency Rule with its own layers (`domain → application →
+> infrastructure → presentation`, plus `router`/`lib`); see the
+> `frontend-structure` skill for the React/TypeScript mapping.
+
 ## Dependency Rule
 
 The fundamental invariant: **source-code dependencies always point inward**.

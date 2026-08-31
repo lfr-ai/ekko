@@ -28,7 +28,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class Order:
-    "Order entity with lifecycle."
+    """Order entity with lifecycle."""
     order_id: str  # Identity
     customer_id: str
     status: OrderStatus
@@ -55,7 +55,7 @@ from __future__ import annotations
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class Money:
-    "Money value object with currency."
+    """Money value object with currency."""
     amount: Decimal
     currency: str
 
@@ -93,7 +93,7 @@ from __future__ import annotations
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class Order:
-    "Order aggregate root."
+    """Order aggregate root."""
     order_id: str
     customer_id: str
     status: OrderStatus
@@ -127,7 +127,7 @@ class Order:
 ```python
 @dataclass(frozen=True, kw_only=True, slots=True)
 class OrderPlaced:
-    "Domain event: order was placed."
+    """Domain event: order was placed."""
     order_id: str
     customer_id: str
     total: Decimal
