@@ -22,14 +22,14 @@ uv run pytest tests/
 uv run ruff check src/ tests/
 ```
 
-## Full CI-equivalent
+## Full completion gate
 
-Before commit, run the full gate:
+Run the project-owned gates instead of reconstructing them manually:
 
 ```bash
-uv run ruff check src/ tests/
 task test
-uv run ty check src tests scripts
+task check
+openspec validate --all
 ```
 
 ## Component-Specific Checks

@@ -4,10 +4,6 @@ description: >
   Specification-Driven Development. Covers Given-When-Then scenario
   authoring, executable specs, living documentation, and the spec-first workflow.
   Integrated with OpenSpec for artifact-guided changes.
-paths:
-  - "docs/specs/**/*.md"
-  - "openspec/specs/**/*.md"
-  - "openspec/changes/**/specs/**/*.md"
 ---
 
 # Skill: Specification-Driven Development (SDD)

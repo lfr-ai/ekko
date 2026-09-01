@@ -204,13 +204,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy import select
 
 async def get_entity(session: AsyncSession, entity_id: int) -> Entity | None:
-    "Retrieve entity by ID."
+    """Retrieve entity by ID."""
     stmt = select(Entity).where(Entity.id == entity_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
 async def create_entity(session: AsyncSession, data: dict) -> Entity:
-    "Create new entity."
+    """Create new entity."""
     entity = Entity(**data)
     session.add(entity)
     await session.commit()
@@ -244,7 +244,7 @@ def process_request(
     strict_mode: bool = False,
     timeout: float = 30.0,
 ) -> ProcessResult:
-    "Process request with configurable validation."
+    """Process request with configurable validation."""
 ```
 
 ## Docstrings (Google Convention)
@@ -267,8 +267,8 @@ def validate_identifier(identifier: str) -> bool:
 Rules:
 - NEVER start sentences with articles ("a", "an", "the")
 - NEVER start docstring summary with "Return", "Returns", "Response", "Request", or "Payload"
-- Single-line docstrings use a single `"` delimiter, not triple `"""`.
-  Reserve triple quotes for multi-line docstrings only.
+- Use triple-quoted `"""..."""` for all docstrings, including single-line
+  summaries (enforced by ruff `D300` + the formatter)
 - Complete sentences with periods
 - Short, concise — avoid redundancy
 - Property docstrings use noun-phrase one-liners (no `Returns:` section)

@@ -9,7 +9,7 @@ Apply DDD tactical patterns to all code in the core layer.
 
 ## Aggregates
 
-- `@dataclass(frozen=True)` on all aggregate roots
+- `@dataclass(frozen=True, kw_only=True, slots=True)` on all aggregate roots
 - All invariants enforced in `__post_init__` — aggregate is always valid after construction
 - Mutations return **new instances** (functional style)
 - One repository per aggregate root (protocol in `core/ports/`)

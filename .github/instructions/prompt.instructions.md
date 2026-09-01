@@ -107,7 +107,7 @@ Examples:
 import pytest
 
 def test_prompt_renders_with_valid_inputs():
-    "Prompt template renders with valid inputs."
+    """Prompt template renders with valid inputs."""
     result = template.format(
         input_data="Sample input",
         config="Default config"
@@ -115,7 +115,7 @@ def test_prompt_renders_with_valid_inputs():
     assert "Sample input" in result
 
 def test_prompt_has_correct_variables():
-    "Prompt template has correct input variables."
+    """Prompt template has correct input variables."""
     assert set(template.input_variables) == {"input_data", "config"}
 ```
 

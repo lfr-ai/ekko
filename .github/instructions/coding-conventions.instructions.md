@@ -95,6 +95,81 @@ applyTo: "**/*.py"
   - Good: `def __init__(self, *, name: str):`
   - Bad: `def __init__(self, *, name: str) -> None:`
 
+## Final and Override
+
+Make inheritance intent explicit and type-checkable with `typing.final` and
+`typing.override`. Import both from `typing` (never `typing_extensions`; the
+target is Python 3.13+).
+
+- **`@final` on classes** — decorate every **public** concrete leaf that is
+  logic- or invariant-bearing and not designed for subclassing: domain scalars
+  and value objects (`CPR`, `MaxTokens`, `Temperature`, `Confidence`,
+  `WorkerCount`), entities, services, orchestrators, concrete handlers, clients,
+  repositories, stores, managers, the composition container, public middleware and
+  logging filters/formatters, and per-environment config classes. Never decorate
+  an ABC, a `Protocol`, or a base intended for extension (`CaseHandlerBase`,
+  `_ConfiguredDTOModel`, `RepositoryBase`, a base DTO that is subclassed).
+- **`@final` on methods** — decorate a method subclasses must not override (for
+  example `CaseHandlerBase._query_ai_model`).
+- **`@override` on methods** — decorate a method that overrides one inherited from
+  a concrete or ABC base class: `@abstractmethod` implementations (the handlers'
+  `user_prompt`/`process`) and framework overrides (`logging.Filter.filter`,
+  `logging.Formatter.format`, `BaseHTTPMiddleware.dispatch`).
+- **Never use `@override` for**: `__init__`/`__new__`/`__post_init__` (constructor
+  machinery); a *new* `@abstractmethod` that introduces rather than overrides a
+  member; or a method that merely satisfies a structural `Protocol` port —
+  implementing a port fulfils an interface, it does not override behavior, so port
+  implementations (`ChatClient`, the repositories, the stores) stay undecorated.
+- **Skip `@final` on two orthogonal grounds** — (1) an internal (`_`-prefixed)
+  class already signals "implementation detail" and is not an extension point, so
+  `@final` is redundant noise (`_ExtraFormatter` — used only inside its own
+  module); and (2) a **pure data-shape type** — a DTO, enum, ORM model, or
+  `NamedTuple` (e.g. the public `Rectangle`) — owns no invariant or behavior to
+  protect, so it stays undecorated **whether public or internal**. The line is
+  *invariant/logic-bearing* vs *pure-shape*, not public vs internal: the value
+  object `MaxTokens` earns `@final`, the shape tuple `Rectangle` does not — though
+  both are public and unprefixed. `@final`'s value is the enforced "do not
+  subclass" contract on a public, behavior-bearing leaf.
+- **Order** — `@final` on the line above `class`; `@override` directly above `def`
+  (below `@property`/`@staticmethod`/`@classmethod` when stacked).
+
+## Naming and Module Layout
+
+Names encode intent and layer, so a reader predicts a class from its file and
+vice versa (PEP 8).
+
+- **Internal vs public** — a single leading underscore marks a **non-public**
+  module, class, function, or constant. Public API carries no leading underscore
+  and is declared in the module's `__all__`.
+  - Private modules: `_base.py`, `_metrics.py`, `_prompt_formatters.py`.
+  - Private classes: `_ErrorResponse`, `_ChatConfig`, `_ExtraFormatter`.
+  - Private helpers/constants: `_mask_cpr`, `_MAX_TOKENS_LIMIT`.
+  - A `from_config` view Protocol is always private (`_ChatConfig`,
+    `_OCRScannerConfig`) — see the configuration rules.
+  - **One public class per behavioral module** — modules that define a behavioral
+  unit (handler, client, port, repository, store, orchestrator, service, manager,
+  config, container) contain exactly **one** public class, and the filename is the
+  `snake_case` of that class's concept, so filename and class name correspond
+  (`diagnosis_date_handler.py` → `DiagnosisDateHandler`, `container.py` →
+  `Container`, `database_manager.py` → `DatabaseManager`). Private helpers that
+  support it (a `_XConfig` Protocol, a helper `NamedTuple`) live in the same module
+  with a `_` prefix.
+- **Class names carry the layer role as a suffix** — `Port`, `Client`,
+  `Repository`, `Store`, `Settings`, `Config`, `Handler`, `Orchestrator`,
+  `Service`, `Manager`. The suffix is dropped from the filename when the folder
+  already names the role (`ports/clients/chat.py` → `ChatPort`,
+  `repositories/case.py` → `CaseRepository`, `settings/database.py` →
+  `DatabaseSettings`) and kept when it aids readability (`*_handler.py`).
+- **Cohesive data types may share a module** — DTOs, enums, ORM models, and value
+  types group by theme, named for the theme, not one class per file
+  (`dtos/case/case.py`, `core/enums.py`, `persistence/orm/models.py`).
+- **Casing** — classes `PascalCase` with acronyms fully upper (`HTTPLogger`,
+  `OCRScannerClient`, `PDFExtractorClient`, `CPR`); modules and packages lowercase
+  `snake_case`; functions and variables `snake_case`; constants
+  `SCREAMING_SNAKE_CASE` (internal ones untyped); exceptions end in `Error`.
+- **Ubiquitous language** — use the exact domain nouns from `PROJECT.md`, never a
+  near-synonym (see the `consistency` skill).
+
 ## Custom Types (Domain Scalars)
 
 Pick the lightest tier that fits; define shared types in `core/types.py` (or a
@@ -104,7 +179,7 @@ never a judgment call:
 1. **Validated value object** — the value carries an enforceable invariant that
    must hold at a trust boundary (config, request, persistence). Validate in
    `__new__` (scalar subclass) or `__post_init__` (compound): `MaxTokens` (> 0,
-   ≤ 1_000_000), `Temperature` ([0, 2]), `Confidence` ([0, 1]), `CPR`. Add
+  ≤ 1_000_000), `Temperature` ([0, 2]), `Confidence` ([0, 1]), `CPR`. Add
    Pydantic hooks only when the type is a model field (`Confidence`).
 2. **Structural alias (`type`)** — names a recurring compound shape
    (dict/tuple/callable) with no scalar invariant: `EmbeddingComponents`,

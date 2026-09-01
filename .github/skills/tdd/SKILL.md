@@ -38,7 +38,7 @@ Write a test that:
 ```python
 @pytest.mark.unit
 def test_money_with_negative_amount_raises_validation_error() -> None:
-    "Money value object rejects negative amounts."
+    """Money value object rejects negative amounts."""
     with pytest.raises(ValueError, match="Amount cannot be negative"):
         Money(amount=Decimal("-1.00"), currency="USD")
 ```

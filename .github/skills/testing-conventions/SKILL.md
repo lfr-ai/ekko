@@ -35,17 +35,17 @@ tests/
 ## Test Template
 
 ```python
-"Tests for {module_name}."
+"""Tests for {module_name}."""
 
 import pytest
 from hypothesis import given, strategies as st
 
 
 class TestSymbol:
-    "Tests for Symbol."
+    """Tests for Symbol."""
 
     def test_method_happy_path(self) -> None:
-        "Method returns expected result for valid input."
+        """Method returns expected result for valid input."""
         # Arrange
         input_data = ...
 
@@ -56,7 +56,7 @@ class TestSymbol:
         assert result == expected
 
     def test_method_empty_input(self) -> None:
-        "Method handles empty input gracefully."
+        """Method handles empty input gracefully."""
         with pytest.raises(ValueError, match="cannot be empty"):
             Symbol().method("")
 
@@ -71,12 +71,12 @@ class TestSymbol:
     def test_method_parametrized(
         self, input_val: int, expected: str
     ) -> None:
-        "Method maps input to correct output."
+        """Method maps input to correct output."""
         assert Symbol().method(input_val) == expected
 
     @given(st.integers(min_value=0, max_value=100))
     def test_method_property(self, value: int) -> None:
-        "Method output is always non-negative."
+        """Method output is always non-negative."""
         result = Symbol().method(value)
         assert result >= 0
 ```
@@ -88,7 +88,7 @@ class TestSymbol:
 ```python
 @pytest.fixture
 def order_factory():
-    "Create test orders with sensible defaults."
+    """Create test orders with sensible defaults."""
     def _factory(**overrides) -> dict[str, object]:
         defaults = {
             "id": 1,
