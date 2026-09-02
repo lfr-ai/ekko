@@ -1,6 +1,6 @@
 ---
 paths:
-	- "**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
+  - "**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
 ---
 
 # JavaScript & TypeScript Conventions

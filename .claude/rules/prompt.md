@@ -1,6 +1,6 @@
 ---
 paths:
-  - "backend/src/ekko/ai/prompts/**/*.py"
+  - "**/prompts/**/*.py"
 ---
 
 # Prompt Template Rules

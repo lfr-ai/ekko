@@ -11,14 +11,14 @@ Dependencies always point inward. Never import from outer layers.
 
 | Layer | May Import From | NEVER From |
 |-------|----------------|------------|
-| `utils/` | stdlib ONLY | ALL other project layers |
-| `config/` | `utils/`, external libs | `presentation/`, `application/`, `core/` |
-| `core/` | `utils/`, `config/` | `infrastructure/`, `application/`, `presentation/` |
-| `infrastructure/` | `core/`, `config/`, `utils/` | `application/`, `presentation/` |
-| `ai/` | `core/`, `config/`, `utils/` | `infrastructure/`, `application/`, `presentation/` |
-| `application/` | `core/`, `infrastructure/`, `ai/`, `config/`, `utils/` | `presentation/` |
-| `composition/` | ALL inner layers | `presentation/` (except wiring) |
-| `presentation/` | `application/`, `core/`, `config/`, `utils/` | top layer |
+| `config/` | external libs, stdlib | `core/`, `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `core/` | `config/`, stdlib (+ Pydantic hooks) | `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `infrastructure/` | `core/`, `config/`, external libs | `ai/`, `application/`, `presentation/` |
+| `ai/` | `core/`, `config/` | `infrastructure/`, `application/`, `presentation/` |
+| `application/` | `core/`, `infrastructure/`, `ai/`, `config/` | `presentation/` |
+| `presentation/` | `application/`, `core/`, `config/` | `infrastructure/`, `ai/`, `composition/` |
+| `composition/` | all layers (DI wiring) | — |
+| `cli/` | `composition/`, `presentation/`, `config/` | entry point |
 
 ## Port / Adapter Pattern
 

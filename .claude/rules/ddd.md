@@ -1,48 +1,57 @@
 ---
-description: Domain-Driven Design quick rules for Ekko's core domain layer
 paths:
-  - "backend/src/ekko/core/**/*.py"
-  - "backend/src/ekko/application/**/*.py"
+  - "**/core/**/*.py"
 ---
 
-# DDD Rules
+# Domain-Driven Design Rules
 
-## Aggregates
+Apply these tactical DDD rules to the Core layer.
 
-- `@dataclass(frozen=True, slots=True)` — always immutable
-- Enforce invariants in `__post_init__` — aggregate is always valid
-- Mutations return new instances, never modify in-place
-- One repository protocol per aggregate root in `core/ports/`
+## Aggregates and Entities
+
+- Use `@dataclass(frozen=True, kw_only=True, slots=True)` for immutable domain objects.
+- Enforce invariants in `__post_init__`; construction must always produce a valid object.
+- Return new instances for state transitions.
+- Reference other aggregates by identifier, not object graph.
 
 ## Value Objects
 
-- `frozen=True, slots=True` — equality is structural (no identity field)
-- Validate all constraints in `__post_init__` with `DomainValidationError`
-- Place in `core/value_objects/`
+- Use validated scalar subclasses for scalar boundary invariants and frozen,
+  keyword-only dataclasses for compound values.
+- Validate every invariant at construction.
+- Keep value objects identity-free with structural equality.
+- Place compound domain values in `core/value_objects/` and shared scalar types
+  in `core/types.py` when they cross multiple Core contracts.
 
 ## Domain Events
 
-- Past-tense names: `TranscriptionCompleted`, `RecordingStarted`
-- `frozen=True, slots=True` with only primitive fields + `occurred_at: datetime`
-- Place in `core/events/`
+- Name events in past tense.
+- Use `@dataclass(frozen=True, kw_only=True, slots=True)`.
+- Include `occurred_at: datetime` and serializable fields only.
+- Place events in `core/events/`.
 
-## Repositories
+## Repository and Client Ports
 
-- Protocol in `core/ports/` — returns domain objects, never ORM models
-- Implementation in `infrastructure/db/repositories/`
-- Keyword-only arguments (`*`) on all methods
+- Define stdlib `Protocol` contracts in `core/ports/`.
+- Use domain language and keyword-only parameters.
+- Return domain objects or transport-neutral port records, never ORM models.
+- Infrastructure adapters implement these inward-facing contracts.
+
+## Framework Independence
+
+Core uses Python stdlib and other `myapp.core.*` modules only.
+
+**Narrow exception — value-object serialization protocols:** scalar/value objects
+may implement Pydantic `__get_pydantic_core_schema__` and
+`__get_pydantic_json_schema__` hooks. Keep those imports inside Core scalar/value-
+object modules and limit them to schema hook types. Core ports and domain behavior
+MUST remain framework-independent and MUST NOT inherit from or bind generics to
+`pydantic.BaseModel`.
 
 ## Ubiquitous Language
 
-Never use inside `core/`: "model" (ORM), "row", "record", "payload", "request".
-Use domain terms: entity, aggregate, entry, event, command, result.
-
-## No Framework Imports
-
-`core/` must have zero `fastapi`, `sqlalchemy`, or `httpx` imports.
-Use protocols in `core/ports/` for abstraction.
-
-## Context Boundaries
-
-Bounded contexts communicate via `application/` services only.
-Direct cross-context domain imports are a violation.
+- Prefer domain terms over persistence/framework vocabulary.
+- Do not expose ORM rows/models from Core.
+- `*Record` names are reserved for immutable, transport-neutral port snapshots;
+  they are not ORM records.
+- Prefer command/query/result over request/response inside domain behavior.

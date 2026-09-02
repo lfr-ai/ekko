@@ -1,7 +1,7 @@
 ---
 description: Test-Driven Development rules for all test files
 paths:
-  - "tests/**/*.py"
+  - "**/tests/**/*.py"
 ---
 
 # TDD Rules
@@ -22,10 +22,11 @@ paths:
 - `@pytest.mark.integration` — DB, API, external services
 - `@pytest.mark.asyncio` — async test functions
 - `@pytest.mark.slow` — > 2 seconds
+- `@pytest.mark.property` — Hypothesis property-based tests
 
 ## Fakes over Mocks
 
-Protocol-conforming fakes in `tests/mocks/`. No `MagicMock` on domain interfaces.
+Use factory-boy factories. No `MagicMock` on domain objects.
 
 ## Bug Fixes
 
@@ -34,7 +35,8 @@ Test + fix committed together in the same commit.
 
 ## Contract Tests
 
-Every `core/ports/` protocol has a contract test in `tests/unit/core/ports/`.
+Every `core/ports/` protocol has a contract test suite.
+Wire it against all concrete implementations.
 
 ## Arrange-Act-Assert
 
@@ -42,4 +44,9 @@ Three phases separated by blank lines. No merged phases.
 
 ## Coverage
 
-Minimum 70%. Run `task test:coverage` before marking a task complete.
+| Layer | Minimum |
+|-------|---------|
+| Core | 90% |
+| Application | 80% |
+| Infrastructure | 60% |
+| Presentation | 70% |

@@ -28,3 +28,27 @@ Write code for human brains. Working memory holds ~4 chunks simultaneously.
 
 6. **Comments for WHY** — code shows WHAT; comments explain intent, constraints,
    and non-obvious decisions.
+
+7. **Composition over deep inheritance** — inheritance beyond 2 levels forces
+   readers to hold an entire hierarchy in mind.
+
+8. **Self-descriptive values** — use enums and named constants over magic numbers
+   and arbitrary codes that require memorization.
+
+## Red Flags
+
+- A method whose name is longer than its implementation
+- Needing to read a callee's code to understand the caller
+- "Flipping back and forth" between methods to trace flow
+- A helper requiring more parameters than the code it replaces
+- An abstraction that forces unrelated code to change together
+
+## Validation
+
+Before completing code changes, verify:
+
+- No function requires holding more than ~4 concepts in working memory
+- Complex conditionals are extracted into named intermediates
+- Nesting depth ≤ 2 levels (use early returns)
+- No shallow methods that merely delegate without simplifying
+- Related code lives together (no entanglement across files)

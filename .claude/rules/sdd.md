@@ -1,43 +1,45 @@
 ---
-description: Specification-Driven Development rules for docs/specs/ scenario files
+description: Specification-Driven Development rules for OpenSpec scenario files
 paths:
-  - "docs/specs/**/*.md"
+  - "openspec/specs/**/*.md"
+  - "openspec/changes/**/specs/**/*.md"
 ---
 
 # SDD Rules
 
 ## Core Rule
 
-Every scenario in `docs/specs/` must have a corresponding passing automated test.
-A spec without a test is documentation rot.
+Every scenario in `docs/specs/` or `openspec/` specs must have a corresponding
+passing automated test. A spec without a test is documentation rot.
 
 ## Scenario Format
 
-Given-When-Then with concrete values (real numbers, real HTTP codes, real strings):
+Given-When-Then with concrete values:
 
 ```markdown
-## Scenario: Submit 10-second English audio returns 202 with integer ID
+## Scenario: Valid order with available inventory is fulfilled
 
-**Given** a 10-second WAV audio file with English speech
-**When** the client POSTs to `POST /api/v1/transcriptions`
-**Then** the response status is `202 Accepted`
-**And** the body contains `{"id": <integer>, "status": "pending"}`
+**Given** an order with product "WIDGET-001" and quantity 5
+**And** inventory has 10 units available
+**When** the fulfillment service processes the order
+**Then** the order status is "FULFILLED"
+**And** inventory is reduced to 5
 ```
 
 ## Prohibited in Specs
 
-- Vague inputs: "some audio", "a valid request"
-- Implementation details: "calls faster-whisper with chunk_size=512"
-- Vague outcomes: "an error is returned" (use the exact status code)
+- Vague inputs: "some data", "a valid request"
+- Implementation details: "calls API with retry=3"
+- Vague outcomes: "an error is returned" (use the exact status code/exception)
 
 ## Test Link
 
 Every implementing test cites the spec in its docstring:
 
 ```python
-async def test_submit_valid_audio_returns_id(...) -> None:
-    """Spec: transcription/transcription-creation.md
-    Scenario: Submit 10-second English audio returns 202 with integer ID.
+async def test_valid_order_fulfilled(...) -> None:
+    """Spec: order-processing/fulfillment.md
+    Scenario: Valid order with available inventory is fulfilled.
     """
 ```
 
