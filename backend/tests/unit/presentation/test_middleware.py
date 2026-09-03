@@ -112,4 +112,4 @@ class TestUserProfile:
     def test_frozen(self):
         profile = UserProfile(username="bob", roles=frozenset({"admin"}))
         with pytest.raises(dataclasses.FrozenInstanceError):
-            profile.username = "eve"  # type: ignore[misc]
+            profile.username = "eve"  # type: ignore[invalid-assignment]

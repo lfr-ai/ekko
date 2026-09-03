@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ekko.presentation.api.schemas.health import DependencyHealth, HealthResponse
+from ekko.presentation.api.schemas.health import DependencyHealth, ReadinessResponse
 
 
 @pytest.mark.unit
@@ -31,14 +31,13 @@ class TestDependencyHealth:
 
 
 @pytest.mark.unit
-class TestHealthResponse:
-    """Test HealthResponse schema."""
+class TestReadinessResponse:
+    """Test ReadinessResponse schema."""
 
     def test_construction_minimal(self) -> None:
         """Construct with required fields only."""
-        resp = HealthResponse(status="ok", environment="local")
-        assert resp.status == "ok"
-        assert resp.environment == "local"
+        resp = ReadinessResponse(status="healthy")
+        assert resp.status == "healthy"
         assert resp.dependencies == []
 
     def test_with_dependencies(self) -> None:
@@ -47,17 +46,16 @@ class TestHealthResponse:
             DependencyHealth(name="db", healthy=True),
             DependencyHealth(name="stt", healthy=False, detail="unavailable"),
         ]
-        resp = HealthResponse(status="degraded", environment="test", dependencies=deps)
+        resp = ReadinessResponse(status="degraded", dependencies=deps)
         assert len(resp.dependencies) == 2
         assert resp.dependencies[1].healthy is False
 
     def test_serialization(self) -> None:
         """Serialize complete response."""
-        resp = HealthResponse(
-            status="ok",
-            environment="local",
+        resp = ReadinessResponse(
+            status="healthy",
             dependencies=[DependencyHealth(name="db", healthy=True)],
         )
         data = resp.model_dump()
-        assert data["status"] == "ok"
+        assert data["status"] == "healthy"
         assert len(data["dependencies"]) == 1
