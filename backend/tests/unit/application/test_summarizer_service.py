@@ -28,7 +28,7 @@ class FailingPromptRegistryPort:
 
 @pytest.mark.unit
 def test_summarizer_basic():
-    svc = SummarizerService(gateway=DummyGateway(), prompt_registry=DummyPromptRegistryPort())
+    svc = SummarizerService(gateway=DummyGateway(), prompt_registry=DummyPromptRegistryPort())  # type: ignore[invalid-argument-type]
     chunks = ["This is a first chunk.", "Second chunk with more details."]
     s = svc.summarize(chunks)
     assert s.startswith("summary:")
@@ -37,7 +37,7 @@ def test_summarizer_basic():
 @pytest.mark.unit
 def test_summarizer_file_not_found_uses_fallback():
     gateway = DummyGateway()
-    svc = SummarizerService(gateway=gateway, prompt_registry=FailingPromptRegistryPort())
+    svc = SummarizerService(gateway=gateway, prompt_registry=FailingPromptRegistryPort())  # type: ignore[invalid-argument-type]
     chunks = ["Test chunk"]
 
     result = svc.summarize(chunks)

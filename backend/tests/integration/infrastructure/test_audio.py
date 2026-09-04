@@ -8,22 +8,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 if TYPE_CHECKING:
-    from ekko.config.settings import BaseAppConfig
+    from ekko.config.base import BaseAppConfig
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture
-def mock_audio_streamer():
-    """Mock AudioStreamer for testing."""
-    with patch("ekko.infrastructure.audio_streamer.audio_streamer_controller.AudioStreamer") as mock:
-        yield mock.return_value
 
 
 @pytest.mark.asyncio
 async def test_audio_controller_start_stop(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test starting and stopping the audio controller."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -57,7 +49,6 @@ async def test_audio_controller_start_stop(
 @pytest.mark.asyncio
 async def test_audio_controller_send_command(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test sending commands to audio streamer subprocess."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -97,7 +88,6 @@ async def test_audio_controller_send_command(
 @pytest.mark.asyncio
 async def test_audio_controller_device_check_no_change(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test device check when devices haven't changed."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -130,7 +120,6 @@ async def test_audio_controller_device_check_no_change(
 @pytest.mark.asyncio
 async def test_audio_controller_device_check_with_change(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test device check when devices have changed."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -176,7 +165,6 @@ async def test_audio_controller_device_check_with_change(
 @pytest.mark.asyncio
 async def test_audio_controller_get_device_names_fallback(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test fallback behavior when device names cannot be queried."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -199,7 +187,6 @@ async def test_audio_controller_get_device_names_fallback(
 @pytest.mark.asyncio
 async def test_audio_controller_get_device_names_json_error(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test fallback when device query returns invalid JSON."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -222,7 +209,6 @@ async def test_audio_controller_get_device_names_json_error(
 @pytest.mark.asyncio
 async def test_audio_controller_stop_timeout_graceful(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test graceful stop with timeout."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController
@@ -255,7 +241,6 @@ async def test_audio_controller_stop_timeout_graceful(
 @pytest.mark.asyncio
 async def test_audio_controller_stop_timeout_terminate(
     integration_settings: BaseAppConfig,
-    mock_audio_streamer: MagicMock,
 ) -> None:
     """Test forced termination when graceful stop times out."""
     from ekko.infrastructure.audio_streamer.audio_streamer_controller import AudioStreamerController

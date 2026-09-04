@@ -10,14 +10,26 @@ import importlib
 import json
 import re
 from pathlib import Path
+from typing import NotRequired, TypedDict
 
 import pytest
 
 from ekko.core import registry_constants
 
 
+class RegistryEntry(TypedDict):
+    """Naming registry entry used by generated-constant checks."""
+
+    description: str
+    label: NotRequired[str]
+    value: NotRequired[str]
+
+
+type RegistryDocument = dict[str, dict[str, RegistryEntry]]
+
+
 @pytest.fixture
-def registry_json() -> dict[str, object]:
+def registry_json() -> RegistryDocument:
     """Load the naming registry JSON for validation."""
     # Navigate from backend/tests/property to project root
     registry_path = Path(__file__).parent.parent.parent.parent / "registry" / "naming_registry.json"
@@ -38,7 +50,7 @@ def all_constants() -> dict[str, str]:
 @pytest.fixture
 def constants_by_category(
     all_constants: dict[str, str],
-    registry_json: dict[str, Any],
+    registry_json: RegistryDocument,
 ) -> dict[str, dict[str, str]]:
     """Group constants by category prefix using registry categories."""
     by_category: dict[str, dict[str, str]] = {}
@@ -183,7 +195,7 @@ class TestRegistryConstantsConsistency:
 
     def test_all_registry_entries_have_constants(
         self,
-        registry_json: dict[str, Any],
+        registry_json: RegistryDocument,
         all_constants: dict[str, str],
     ) -> None:
         """Each entry in the JSON registry should have a corresponding constant."""
@@ -200,7 +212,7 @@ class TestRegistryConstantsConsistency:
 
     def test_no_extra_constants_not_in_registry(
         self,
-        registry_json: dict[str, Any],
+        registry_json: RegistryDocument,
         all_constants: dict[str, str],
     ) -> None:
         """All constants should correspond to entries in the registry JSON."""
@@ -216,7 +228,7 @@ class TestRegistryConstantsConsistency:
 
     def test_category_names_match_registry_keys(
         self,
-        registry_json: dict[str, Any],
+        registry_json: RegistryDocument,
         all_constants: dict[str, str],
     ) -> None:
         """Every registry category should have at least one generated constant."""

@@ -4,7 +4,7 @@ from enum import StrEnum
 
 import pytest
 
-prompt_registry_module = pytest.importorskip("ekko.infrastructure.clients.prompt_registry")
+prompt_registry_module = pytest.importorskip("ekko.ai.prompts.registry_client")
 PromptRegistryClient = prompt_registry_module.PromptRegistryClient
 
 
@@ -17,9 +17,9 @@ class PromptId(StrEnum):
 class TestPromptRegistryClient:
     def test_load_known_prompt(self):
         """Client should return text for known prompt identifiers."""
-        from ekko.config.settings import get_settings
+        from ekko.config.runtime import get_config
 
-        settings = get_settings()
+        settings = get_config()
         client = PromptRegistryClient.from_config(settings)
         text = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)
         assert isinstance(text, str)
@@ -27,9 +27,9 @@ class TestPromptRegistryClient:
 
     def test_load_prompt_caches(self):
         """Subsequent loads for the same prompt return cached text."""
-        from ekko.config.settings import get_settings
+        from ekko.config.runtime import get_config
 
-        settings = get_settings()
+        settings = get_config()
         client = PromptRegistryClient.from_config(settings)
         text1 = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)
         text2 = client.load_prompt(PromptId.CONVERSATIONAL_SYSTEM)

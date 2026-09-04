@@ -41,7 +41,7 @@ def stub_prompt_registry(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_conversational_chain_basic():
     # Arrange
     client = MockChatClient(response="Hello, how can I help?")
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
 
     # Act
     response = await chain.run("Hi there")
@@ -60,7 +60,7 @@ async def test_conversational_chain_basic():
 async def test_conversational_chain_maintains_history():
     # Arrange
     client = MockChatClient(response="Response 1")
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
 
     # Act
     await chain.run("Message 1")
@@ -80,7 +80,7 @@ async def test_conversational_chain_maintains_history():
 async def test_conversational_chain_respects_max_history():
     # Arrange
     client = MockChatClient(response="Response")
-    chain = ConversationalChain(chat_client=client, max_history=2)
+    chain = ConversationalChain(chat_client=client, max_history=2)  # type: ignore[invalid-argument-type]
 
     # Act
     await chain.run("Message 1")
@@ -101,7 +101,7 @@ async def test_conversational_chain_respects_max_history():
 async def test_conversational_chain_clear_history():
     # Arrange
     client = MockChatClient(response="Response")
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
     await chain.run("Message 1")
     await chain.run("Message 2")
 
@@ -117,7 +117,7 @@ async def test_conversational_chain_clear_history():
 async def test_conversational_chain_builds_context_from_empty_history():
     # Arrange
     client = MockChatClient(response="Response")
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
 
     # Act
     context = chain._build_context()
@@ -131,7 +131,7 @@ async def test_conversational_chain_builds_context_from_empty_history():
 async def test_conversational_chain_injects_context_in_system_prompt():
     # Arrange
     client = MockChatClient(response="Response")
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
 
     # Act
     await chain.run("Test message")
@@ -146,7 +146,7 @@ async def test_conversational_chain_injects_context_in_system_prompt():
 def test_conversational_chain_default_max_history():
     # Arrange / Act
     client = MockChatClient()
-    chain = ConversationalChain(chat_client=client)
+    chain = ConversationalChain(chat_client=client)  # type: ignore[invalid-argument-type]
 
     # Assert
     assert chain.max_history == 20

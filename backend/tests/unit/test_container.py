@@ -1,7 +1,7 @@
 """Tests for the DI container."""
 
 from ekko.composition.container import Container
-from ekko.config.settings import BaseAppConfig
+from ekko.config.base import BaseAppConfig
 
 
 class TestContainer:

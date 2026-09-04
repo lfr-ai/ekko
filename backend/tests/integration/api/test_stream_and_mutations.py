@@ -1,14 +1,17 @@
-"""Integration tests for stream routes and GraphQL mutation flows."""
+"""Integration tests for canonical REST command endpoints."""
+
+from __future__ import annotations
 
 import pytest
+from fastapi import status
 
 pytestmark = pytest.mark.integration
 
 
 class _FakeStreamController:
-    """Test double for stream controller used in integration API tests."""
+    """Stream controller test double for composed API tests."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.commands: list[str] = []
         self.device_check_calls = 0
 
@@ -19,139 +22,39 @@ class _FakeStreamController:
         self.commands.append(command)
 
     async def stop(self) -> None:
-        return
+        """Complete the application-owned controller lifecycle."""
 
 
-def test_start_stream_when_graphql_first_mode_then_rest_route_is_not_exposed(integration_client) -> None:
-    """REST stream start route is disabled by default in GraphQL-first mode."""
-    response = integration_client.post("/start_stream")
-    assert response.status_code == 404
+def test_pii_anonymization_uses_rest(integration_client) -> None:
+    """Redact sensitive text through the canonical REST API."""
+    response = integration_client.post(
+        "/pii/anonymize",
+        json={"text": "Contact integration-test@example.com"},
+    )
 
-
-def test_pause_stream_when_graphql_first_mode_then_rest_route_is_not_exposed(integration_client) -> None:
-    """REST stream pause route is disabled by default in GraphQL-first mode."""
-    response = integration_client.post("/pause_stream")
-    assert response.status_code == 404
-
-
-def test_graphql_anonymize_text_when_pii_present_then_returns_redacted_payload(integration_client) -> None:
-    """Anonymize mutation should redact sensitive values in integration flow."""
-    mutation = {
-        "query": (
-            "mutation($input: AnonymizeTextInput!) { "
-            "anonymizeText(input: $input) { anonymizedText piiFound matchCount } "
-            "}"
-        ),
-        "variables": {
-            "input": {
-                "text": "Contact me at integration-test@example.com",
-            }
-        },
-    }
-
-    response = integration_client.post("/graphql", json=mutation)
-
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     payload = response.json()
-    assert "errors" not in payload
-    result = payload["data"]["anonymizeText"]
-    assert result["piiFound"] is True
-    assert result["matchCount"] >= 1
-    assert "integration-test@example.com" not in result["anonymizedText"]
+    assert payload["pii_found"] is True
+    assert payload["match_count"] == 1
+    assert "integration-test@example.com" not in payload["anonymized_text"]
 
 
-def test_graphql_control_stream_when_start_action_then_invokes_controller(integration_client) -> None:
-    """GraphQL stream control should call the same controller path as REST start."""
+def test_stream_commands_use_rest(integration_client) -> None:
+    """Start and pause audio through canonical REST commands."""
     controller = _FakeStreamController()
     integration_client.app.state.controller = controller
 
-    mutation = {
-        "query": ("mutation($command: StreamCommandInput!) { controlStream(command: $command) { active message } }"),
-        "variables": {"command": {"action": "start"}},
-    }
+    start_response = integration_client.post("/stream/start")
+    pause_response = integration_client.post("/stream/pause")
 
-    response = integration_client.post("/graphql", json=mutation)
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert "errors" not in payload
-    result = payload["data"]["controlStream"]
-    assert result["active"] is True
-    assert "started" in result["message"]
+    assert start_response.status_code == status.HTTP_200_OK
+    assert pause_response.status_code == status.HTTP_200_OK
     assert controller.device_check_calls == 1
-    assert controller.commands == ["start_stream"]
+    assert controller.commands == ["start_stream", "pause_stream"]
 
 
-def test_graphql_conversation_lifecycle_when_mutations_called_then_outputs_are_consistent(
-    integration_client,
-) -> None:
-    """Start/send/end mutation sequence should produce consistent conversation outputs."""
-    start_mutation = {"query": "mutation { startConversation { id isActive endedAt } }"}
-
-    start_response = integration_client.post("/graphql", json=start_mutation)
-
-    assert start_response.status_code == 200
-    start_payload = start_response.json()
-    assert "errors" not in start_payload
-
-    started = start_payload["data"]["startConversation"]
-    assert started["id"]
-    assert started["isActive"] is True
-    assert started["endedAt"] is None
-
-    conversation_id = started["id"]
-
-    send_mutation = {
-        "query": "mutation($input: SendMessageInput!) { sendMessage(input: $input) }",
-        "variables": {
-            "input": {
-                "conversationId": conversation_id,
-                "content": "Email me at lifecycle-test@example.com",
-                "role": "user",
-            }
-        },
-    }
-
-    send_response = integration_client.post("/graphql", json=send_mutation)
-
-    assert send_response.status_code == 200
-    send_payload = send_response.json()
-    assert "errors" not in send_payload
-    assert conversation_id in send_payload["data"]["sendMessage"]
-    assert "[EMAIL-REDACTED]" in send_payload["data"]["sendMessage"]
-
-    end_mutation = {
-        "query": (
-            "mutation($conversationId: String!) { "
-            "endConversation(conversationId: $conversationId) { id isActive endedAt } "
-            "}"
-        ),
-        "variables": {"conversationId": conversation_id},
-    }
-
-    end_response = integration_client.post("/graphql", json=end_mutation)
-
-    assert end_response.status_code == 200
-    end_payload = end_response.json()
-    assert "errors" not in end_payload
-    ended = end_payload["data"]["endConversation"]
-    assert ended["id"] == conversation_id
-    assert ended["isActive"] is False
-    assert ended["endedAt"] is not None
-
-
-def test_graphql_health_ready_when_db_injected_then_reports_database_healthy(integration_client_with_db) -> None:
-    """Readiness query should show healthy database dependency when DB engine is injected."""
-    query = {
-        "query": "query { healthReady { status dependencies { name healthy detail } } }",
-    }
-
-    response = integration_client_with_db.post("/graphql", json=query)
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert "errors" not in payload
-
-    dependencies = payload["data"]["healthReady"]["dependencies"]
-    db_dependency = next(dep for dep in dependencies if dep["name"] == "database")
-    assert db_dependency["healthy"] is True
+def test_retired_api_contracts_are_absent(integration_client) -> None:
+    """Keep removed compatibility endpoints out of the composed app."""
+    assert integration_client.post("/start_stream").status_code == status.HTTP_404_NOT_FOUND
+    assert integration_client.post("/pause_stream").status_code == status.HTTP_404_NOT_FOUND
+    assert integration_client.post("/graphql/graphql").status_code == status.HTTP_404_NOT_FOUND

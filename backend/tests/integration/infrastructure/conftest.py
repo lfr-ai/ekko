@@ -9,7 +9,7 @@ import pytest
 def ensure_logs_dir():
     """Ensure logs directory exists for STT tests."""
 
-    from ekko.config.settings import get_settings
+    from ekko.config.runtime import get_config
 
-    settings = get_settings()
+    settings = get_config()
     settings.logs_dir_path.mkdir(parents=True, exist_ok=True)

@@ -23,7 +23,7 @@ class TestConversation:
     def test_conversation_is_frozen(self):
         conv = Conversation()
         try:
-            conv.id = uuid.uuid4()  # type: ignore[misc]
+            conv.id = uuid.uuid4()  # type: ignore[invalid-assignment]
             pytest.fail("Should raise AttributeError")
         except AttributeError:
             pass

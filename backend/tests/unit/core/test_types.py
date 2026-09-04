@@ -2,9 +2,33 @@
 
 from __future__ import annotations
 
+from typing import TypeAliasType
+
 import pytest
 
-from ekko.core.types import Confidence, MaxTokens, Temperature
+from ekko.core.types import BaseDict, Confidence, JSONDict, MaxTokens, ModelDeploymentName, Temperature
+
+
+@pytest.mark.unit
+class TestTransparentAliases:
+    """Test PEP 695 aliases used for transparent boundary types."""
+
+    @pytest.mark.parametrize(
+        "alias",
+        [BaseDict, JSONDict, ModelDeploymentName],
+    )
+    def test_alias_is_type_alias_type(self, alias: TypeAliasType) -> None:
+        """Expose transparent aliases as runtime TypeAliasType objects."""
+        assert isinstance(alias, TypeAliasType)
+
+    def test_model_deployment_name_is_transparent_string_alias(self) -> None:
+        """Keep model deployment names interchangeable with strings."""
+        assert ModelDeploymentName.__value__ is str
+
+    def test_dictionary_aliases_have_distinct_value_contracts(self) -> None:
+        """Distinguish open object metadata from recursively JSON-compatible data."""
+        assert BaseDict.__value__ == dict[str, object]
+        assert JSONDict.__value__ != BaseDict.__value__
 
 
 @pytest.mark.unit
@@ -38,7 +62,7 @@ class TestMaxTokens:
     def test_float_raises(self) -> None:
         """Reject float input."""
         with pytest.raises(TypeError, match="must be an integer"):
-            MaxTokens(1.5)  # type: ignore[arg-type]
+            MaxTokens(1.5)  # type: ignore[invalid-argument-type]
 
     def test_boundary_one(self) -> None:
         """Accept minimum valid value."""
@@ -93,7 +117,7 @@ class TestTemperature:
     def test_string_raises(self) -> None:
         """Reject string input."""
         with pytest.raises(TypeError, match="must be a numeric value"):
-            Temperature("0.5")  # type: ignore[arg-type]
+            Temperature("0.5")  # type: ignore[invalid-argument-type]
 
     def test_is_float_subclass(self) -> None:
         """Return value that is float-compatible."""

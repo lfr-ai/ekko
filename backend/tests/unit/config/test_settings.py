@@ -3,21 +3,22 @@
 import pytest
 from pydantic import ValidationError
 
+from ekko.config.base import BaseAppConfig
 from ekko.config.enums import DatabaseBackend, Environment
-from ekko.config.settings import BaseAppConfig, get_settings
-from ekko.config.settings.dev import DevelopmentConfig
-from ekko.config.settings.local import LocalConfig
-from ekko.config.settings.prod import ProductionConfig
-from ekko.config.settings.test_env import TestingConfig
+from ekko.config.environments.dev import DevelopmentConfig
+from ekko.config.environments.local import LocalConfig
+from ekko.config.environments.prod import ProductionConfig
+from ekko.config.environments.test_env import TestingConfig
+from ekko.config.runtime import get_config
 
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch):
     """Remove EKKO_ENVIRONMENT so pydantic-settings uses class defaults."""
-    get_settings.cache_clear()
+    get_config.cache_clear()
     monkeypatch.delenv("EKKO_ENVIRONMENT", raising=False)
     yield
-    get_settings.cache_clear()
+    get_config.cache_clear()
 
 
 class TestBaseAppConfig:
@@ -48,14 +49,22 @@ class TestBaseAppConfig:
         assert cfg.database_backend == DatabaseBackend.SQLITE
         assert cfg.database_path.endswith(".db")
 
-    def test_graphql_security_defaults_present(self):
+    def test_graphql_defaults_present(self):
         cfg = BaseAppConfig()
-        assert cfg.graphql_batch_max_operations == 5
-        assert cfg.graphql_max_query_depth == 10
-        assert cfg.graphql_max_alias_count == 25
-        assert cfg.graphql_max_token_count == 2500
-        assert cfg.graphql_enable_legacy_ws_protocol is True
-        assert cfg.graphql_enable_sse_subscriptions is False
+        assert cfg.graphql_allow_get_queries is False
+        assert cfg.graphql_enable_ide is True
+
+    def test_prompt_version_set_defaults_to_experimental(self):
+        cfg = BaseAppConfig()
+
+        assert cfg.prompt_version_set == "experimental"
+
+    def test_prompt_version_set_environment_variable_overrides_default(self, monkeypatch):
+        monkeypatch.setenv("EKKO_PROMPT_VERSION_SET", "production")
+
+        cfg = BaseAppConfig()
+
+        assert cfg.prompt_version_set == "production"
 
 
 class TestEnvironmentConfigs:
@@ -81,14 +90,24 @@ class TestEnvironmentConfigs:
         assert cfg.environment == Environment.DEV
         assert cfg.database_backend == DatabaseBackend.SQLITE
 
+    def test_dev_uses_development_prompt_versions(self):
+        cfg = DevelopmentConfig()
+
+        assert cfg.prompt_version_set == "development"
+
     def test_prod_uses_sqlite_backend(self):
         cfg = ProductionConfig()
         assert cfg.environment == Environment.PROD
         assert cfg.database_backend == DatabaseBackend.SQLITE
 
-    def test_prod_disables_legacy_websocket_protocol(self):
+    def test_prod_uses_production_prompt_versions(self):
         cfg = ProductionConfig()
-        assert cfg.graphql_enable_legacy_ws_protocol is False
+
+        assert cfg.prompt_version_set == "production"
+
+    def test_prod_disables_graphql_ide(self):
+        cfg = ProductionConfig()
+        assert cfg.graphql_enable_ide is False
 
 
 class TestDatabaseUrls:
@@ -100,6 +119,6 @@ class TestDatabaseUrls:
 
 class TestGetSettings:
     def test_returns_base_app_config(self):
-        # get_settings is cached; just verify it returns the right type
-        s = get_settings()
+        # get_config is cached; just verify it returns the right type
+        s = get_config()
         assert isinstance(s, BaseAppConfig)

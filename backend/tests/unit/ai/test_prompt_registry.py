@@ -1,13 +1,13 @@
-"""Tests for prompt registry versioning and provisioning."""
+"""Tests for immutable prompt-registry resolution and repository integrity."""
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
 
-import ekko.ai.prompts.registry as prompt_registry
 from ekko.ai.prompts.registry import (
     EXPERIMENTAL_VERSION_SET,
     PROMPT_SOURCES,
@@ -16,224 +16,177 @@ from ekko.ai.prompts.registry import (
     get_prompt_text,
     get_prompt_version_info,
     get_prompt_versions,
-    provision_prompt,
 )
+from ekko.core.registry_constants import PROMPT_KEY_SUMMARY_CHUNKS
 
-PROMPT_KEY_SUMMARY_CHUNKS = "summary_chunks"
-PROMPT_KEY_SUMMARIZER_SYSTEM = "summarizer_system"
-PROMPT_KEY_CONVERSATIONAL_SYSTEM = "conversational_system"
+_PROMPT_ROOT = Path(__file__).resolve().parents[3] / "src" / "ekko" / "ai" / "prompts"
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PromptSettingsStub:
+    """Prompt settings required by the registry."""
+
     prompt_dir_path: Path
     prompt_version: str | None = None
     prompt_version_set: str = "production"
-    prompt_auto_provision: bool = True
+    prompt_auto_provision: bool = False
 
 
-@pytest.mark.unit
-def test_provision_prompt_creates_first_version(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    info = provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-    assert info.version == "v1.0"
-    assert info.is_new is True
-    assert info.file_path.exists()
-    assert info.file_path.read_text(encoding="utf-8") == "Prompt V1: {content}"
-
-
-@pytest.mark.unit
-def test_provision_prompt_creates_new_version_on_source_change(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    first = provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-    source_file.write_text("Prompt V2: {content}", encoding="utf-8")
-    second = provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-    assert first.version == "v1.0"
-    assert second.version == "v1.1"
-
-    versions = get_prompt_versions(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-    assert [version.version for version in versions] == ["v1.0", "v1.1"]
-
-
-@pytest.mark.unit
-def test_get_prompt_text_respects_selected_version(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-    source_file.write_text("Prompt V2: {content}", encoding="utf-8")
-    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-    selected = PromptSettingsStub(
-        prompt_dir_path=prompt_dir,
-        prompt_version="v1.0",
-        prompt_auto_provision=True,
+def _write_registry(*, prompt_dir: Path, version_sets: object) -> None:
+    """Write a temporary registry manifest."""
+    registry_dir = prompt_dir / "registry"
+    registry_dir.mkdir(parents=True, exist_ok=True)
+    (registry_dir / "prompt_registry.json").write_text(
+        json.dumps({"version_sets": version_sets}),
+        encoding="utf-8",
     )
-    text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=selected)
-    assert text == "Prompt V1: {content}"
 
 
 @pytest.mark.unit
-def test_get_prompt_text_raises_for_unknown_version(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+def test_checked_in_registry_has_no_runtime_active_set() -> None:
+    """Manifest describes available sets without selecting one."""
+    registry_path = _PROMPT_ROOT / "registry" / "prompt_registry.json"
 
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+
+    assert "active_version_set" not in registry
+    assert EXPERIMENTAL_VERSION_SET not in registry["version_sets"]
+
+
+@pytest.mark.unit
+def test_checked_in_schema_requires_complete_closed_version_sets() -> None:
+    """Schema rejects selection fields, experimental, partial sets, and unknown prompts."""
+    schema_path = _PROMPT_ROOT / "registry" / "prompt_registry_schema.json"
+
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    version_sets = schema["properties"]["version_sets"]
+    prompts = schema["$defs"]["version_set"]["properties"]["prompts"]
+
+    assert schema["required"] == ["version_sets"]
+    assert schema["additionalProperties"] is False
+    assert version_sets["propertyNames"] == {"not": {"const": EXPERIMENTAL_VERSION_SET}}
+    assert set(prompts["required"]) == set(PROMPT_SOURCES)
+    assert prompts["additionalProperties"] is False
+
+
+@pytest.mark.unit
+def test_checked_in_version_sets_resolve_complete_immutable_snapshots() -> None:
+    """Every checked-in set pins every known prompt to an existing snapshot."""
+    registry_path = _PROMPT_ROOT / "registry" / "prompt_registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+
+    missing_snapshots: list[Path] = []
+    for version_set in registry["version_sets"].values():
+        pins = version_set["prompts"]
+        assert set(pins) == set(PROMPT_SOURCES)
+        for prompt_key, version in pins.items():
+            snapshot = _PROMPT_ROOT / "versions" / prompt_key / version / f"{prompt_key}.prompt.md"
+            if not snapshot.is_file():
+                missing_snapshots.append(snapshot)
+
+    assert missing_snapshots == []
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("version_set", ["development", "production"])
+def test_get_prompt_text_with_checked_in_named_set_returns_pinned_snapshot(version_set: str) -> None:
+    """Named sets load their checked-in immutable prompt snapshots."""
     settings = PromptSettingsStub(
-        prompt_dir_path=prompt_dir,
-        prompt_version="v9",
-        prompt_auto_provision=True,
+        prompt_dir_path=_PROMPT_ROOT,
+        prompt_version_set=version_set,
+    )
+    expected_path = _PROMPT_ROOT / "versions" / "summary_chunks" / "v1.0" / "summary_chunks.prompt.md"
+
+    text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+    assert text == expected_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.unit
+def test_get_prompt_text_with_experimental_set_reads_editable_template(tmp_path: Path) -> None:
+    """Reserved experimental mode reads templates without a manifest entry."""
+    template = tmp_path / "templates" / "summary_chunks.prompt.md"
+    template.parent.mkdir(parents=True)
+    template.write_text("editable template", encoding="utf-8")
+    settings = PromptSettingsStub(
+        prompt_dir_path=tmp_path,
+        prompt_version_set=EXPERIMENTAL_VERSION_SET,
     )
 
-    with pytest.raises(PromptRegistryError):
+    text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+    assert text == "editable template"
+    assert not (tmp_path / "versions").exists()
+
+
+@pytest.mark.unit
+def test_get_prompt_text_with_unknown_set_raises_without_mutating_files(tmp_path: Path) -> None:
+    """A misspelled set fails instead of creating registry state."""
+    _write_registry(prompt_dir=tmp_path, version_sets={"production": {"prompts": {}}})
+    settings = PromptSettingsStub(prompt_dir_path=tmp_path, prompt_version_set="prodution")
+
+    with pytest.raises(PromptRegistryError, match="prodution"):
+        get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
+
+    assert not (tmp_path / "versions").exists()
+
+
+@pytest.mark.unit
+def test_get_prompt_text_with_incomplete_set_raises_actionable_error(tmp_path: Path) -> None:
+    """A partial immutable set is rejected before prompt resolution."""
+    _write_registry(
+        prompt_dir=tmp_path,
+        version_sets={
+            "production": {
+                "prompts": {PROMPT_KEY_SUMMARY_CHUNKS: "v1.0"},
+            },
+        },
+    )
+    settings = PromptSettingsStub(prompt_dir_path=tmp_path)
+
+    with pytest.raises(PromptRegistryError, match="exactly these prompts"):
         get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
 
 
 @pytest.mark.unit
-def test_get_active_prompt_versions_with_auto_provision_returns_versions(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    templates_dir = prompt_dir / "templates"
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    (templates_dir / "summary_chunks.prompt.md").write_text("summary", encoding="utf-8")
-    (templates_dir / "summarizer_system.prompt.md").write_text("system", encoding="utf-8")
-    (templates_dir / "conversational_system.prompt.md").write_text("convo", encoding="utf-8")
+def test_get_prompt_text_with_active_set_field_raises_manifest_error(tmp_path: Path) -> None:
+    """Legacy manifest-owned runtime selection is rejected."""
+    registry_dir = tmp_path / "registry"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "prompt_registry.json").write_text(
+        json.dumps({"version_sets": {}, "active_version_set": "production"}),
+        encoding="utf-8",
+    )
+    settings = PromptSettingsStub(prompt_dir_path=tmp_path)
 
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-    provision_prompt(prompt_key=PROMPT_KEY_CONVERSATIONAL_SYSTEM, settings=settings)
-
-    active_versions = get_active_prompt_versions(settings=settings)
-
-    assert active_versions[PROMPT_KEY_SUMMARY_CHUNKS].version == "v1.0"
-    assert active_versions[PROMPT_KEY_CONVERSATIONAL_SYSTEM].version == "v1.0"
+    with pytest.raises(PromptRegistryError, match="unsupported fields"):
+        get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
 
 
 @pytest.mark.unit
-def test_get_prompt_version_info_with_existing_version_returns_metadata(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+def test_prompt_version_inspection_derives_metadata_from_snapshots() -> None:
+    """Version inspection discovers immutable files without a mutable metadata ledger."""
+    settings = PromptSettingsStub(prompt_dir_path=_PROMPT_ROOT)
 
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
+    versions = get_prompt_versions(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
     version_info = get_prompt_version_info(
         prompt_key=PROMPT_KEY_SUMMARY_CHUNKS,
         version="v1.0",
         settings=settings,
     )
 
+    assert [item.version for item in versions] == ["v1.0"]
     assert version_info is not None
-    assert version_info.version == "v1.0"
+    assert version_info.file_path.is_file()
+    assert len(version_info.checksum) == 64
 
 
 @pytest.mark.unit
-def test_provision_prompt_with_stale_lock_raises_registry_error(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
+def test_get_active_prompt_versions_with_production_returns_all_pins() -> None:
+    """Active metadata reflects the environment-selected immutable set."""
+    settings = PromptSettingsStub(prompt_dir_path=_PROMPT_ROOT)
 
-    versions_dir = prompt_dir / "versions"
-    versions_dir.mkdir(parents=True, exist_ok=True)
-    lock_path = versions_dir / ".registry.lock"
-    lock_path.write_text("stale-lock", encoding="utf-8")
+    active_versions = get_active_prompt_versions(settings=settings)
 
-    monkeypatch.setattr(prompt_registry, "REGISTRY_LOCK_TIMEOUT_SECONDS", 0.01)
-    monkeypatch.setattr(prompt_registry, "REGISTRY_LOCK_POLL_INTERVAL_SECONDS", 0.005)
-
-    settings = PromptSettingsStub(prompt_dir_path=prompt_dir)
-    with pytest.raises(PromptRegistryError, match="Timed out waiting for prompt registry lock"):
-        provision_prompt(prompt_key=PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-
-
-@pytest.mark.unit
-def test_experimental_version_set_reads_from_source_directly(tmp_path: Path) -> None:
-    """Experimental mode always reads from template source, no versioning."""
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("experimental content", encoding="utf-8")
-
-    settings = PromptSettingsStub(
-        prompt_dir_path=prompt_dir,
-        prompt_version_set=EXPERIMENTAL_VERSION_SET,
-    )
-
-    text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
-    assert text == "experimental content"
-
-    # No version file should have been created.
-    versions_dir = prompt_dir / "versions"
-    assert not versions_dir.exists() or not list(versions_dir.rglob("*.prompt.md"))
-
-
-@pytest.mark.unit
-def test_named_version_set_pins_prompt_version_after_source_changes(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-
-    pinned_settings = PromptSettingsStub(
-        prompt_dir_path=prompt_dir,
-        prompt_version_set="production",
-        prompt_auto_provision=True,
-    )
-
-    first_text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=pinned_settings)
-    assert first_text == "Prompt V1: {content}"
-
-    source_file.write_text("Prompt V2: {content}", encoding="utf-8")
-    second_text = get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=pinned_settings)
-
-    assert second_text == "Prompt V1: {content}"
-
-
-@pytest.mark.unit
-def test_named_version_set_without_entry_and_auto_provision_disabled_raises(tmp_path: Path) -> None:
-    prompt_dir = tmp_path / "prompts"
-    prompt_dir.mkdir(parents=True, exist_ok=True)
-    source_file = prompt_dir / "templates" / "summary_chunks.prompt.md"
-    source_file.parent.mkdir(parents=True, exist_ok=True)
-    source_file.write_text("Prompt V1: {content}", encoding="utf-8")
-
-    strict_settings = PromptSettingsStub(
-        prompt_dir_path=prompt_dir,
-        prompt_version_set="production",
-        prompt_auto_provision=False,
-    )
-
-    with pytest.raises(PromptRegistryError, match="version set"):
-        get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=strict_settings)
+    assert set(active_versions) == set(PROMPT_SOURCES)
+    assert {info.version for info in active_versions.values()} == {"v1.0"}

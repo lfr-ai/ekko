@@ -18,7 +18,7 @@ def test_build_backtest_run_name_with_prompt_versions_includes_version_tokens() 
             version="v2",
             checksum="abc123",
             source_name="summary_prompt_chunks.txt",
-            file_path=__file__,
+            file_path=__file__,  # type: ignore[invalid-argument-type]
             created_at=datetime(2026, 1, 1, tzinfo=UTC),
             is_new=False,
         ),
@@ -27,7 +27,7 @@ def test_build_backtest_run_name_with_prompt_versions_includes_version_tokens() 
             version="v1",
             checksum="def456",
             source_name="templates.CONVERSATIONAL_SYSTEM",
-            file_path=__file__,
+            file_path=__file__,  # type: ignore[invalid-argument-type]
             created_at=datetime(2026, 1, 1, tzinfo=UTC),
             is_new=False,
         ),
@@ -55,7 +55,7 @@ def test_build_backtest_metadata_with_active_prompt_versions_returns_metadata(
             version="v3",
             checksum="sum-check",
             source_name="summary_prompt_chunks.txt",
-            file_path=__file__,
+            file_path=__file__,  # type: ignore[invalid-argument-type]
             created_at=datetime(2026, 1, 1, tzinfo=UTC),
             is_new=True,
         ),
@@ -75,7 +75,7 @@ def test_build_backtest_metadata_with_active_prompt_versions_returns_metadata(
     assert metadata["run_name"]
     assert metadata["dataset_label"] == "eval-dataset"
     assert metadata["model_label"] == "gpt-4o-mini"
-    assert metadata["prompt_versions"]["summary_chunks"]["version"] == "v3"
+    assert metadata["prompt_versions"]["summary_chunks"]["version"] == "v3"  # type: ignore[not-subscriptable]
 
 
 @pytest.mark.unit

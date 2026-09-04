@@ -62,7 +62,7 @@ async def test_user_update(test_db_session: AsyncSession) -> None:
     # Update user
     result = await test_db_session.execute(select(User).where(User.id == user_id))
     user_to_update = result.scalar_one()
-    user_to_update.full_name = "Updated Name"
+    user_to_update.full_name = "Updated Name"  # type: ignore[invalid-assignment]
     await test_db_session.commit()
 
     # Verify update
