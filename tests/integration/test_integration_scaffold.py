@@ -16,15 +16,11 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio
-async def test_db_engine_when_started_then_select_one_succeeds(
-    test_async_engine,
-) -> None:
-    """SQLite async engine should accept simple connectivity probes."""
-    # Arrange / Act
+async def test_db_engine_when_started_then_select_one_succeeds(test_async_engine) -> None:
+    """SQLite async engine accepts simple connectivity probes."""
     async with test_async_engine.connect() as connection:
         result = await connection.execute(text("SELECT 1"))
 
-    # Assert
     assert result.scalar_one() == 1
 
 
@@ -32,16 +28,13 @@ async def test_db_engine_when_started_then_select_one_succeeds(
 async def test_user_create_when_valid_payload_then_row_is_persisted(
     test_session: AsyncSession,
 ) -> None:
-    """User rows should persist through async ORM session."""
-    # Arrange
+    """User rows persist through the async ORM session."""
     user = User(username="integration_user", full_name="Integration User")
 
-    # Act
     test_session.add(user)
     await test_session.commit()
     await test_session.refresh(user)
 
-    # Assert
     assert user.id is not None
     assert user.username == "integration_user"
 
@@ -50,51 +43,38 @@ async def test_user_create_when_valid_payload_then_row_is_persisted(
 async def test_user_read_when_row_exists_then_query_returns_it(
     test_session: AsyncSession,
 ) -> None:
-    """Inserted rows should be queryable with SQLAlchemy select statements."""
-    # Arrange
+    """Inserted rows are queryable with SQLAlchemy select statements."""
     seeded_user = User(username="reader", full_name="Read Model")
     test_session.add(seeded_user)
     await test_session.commit()
 
-    # Act
     result = await test_session.execute(select(User).where(User.username == "reader"))
     loaded_user = result.scalar_one()
 
-    # Assert
     assert loaded_user.full_name == "Read Model"
 
 
-def test_health_when_containerized_app_running_then_returns_queue_details(
-    containerized_client,
-) -> None:
-    """REST health endpoint should be reachable in integration flow."""
-    # Arrange / Act
+def test_health_endpoint_reports_sqlite_state(containerized_client) -> None:
+    """REST health endpoint is reachable and reports SQLite state."""
     response = containerized_client.get("/health")
 
-    # Assert
     assert response.status_code == 200
     payload = response.json()
     assert isinstance(payload["ok"], bool)
-    assert "transcripts_queue_present" in payload["details"]
+    assert "sqlite_database_present" in payload["details"]
 
 
-def test_graphql_health_ready_when_db_injected_then_dependency_reports_healthy(
-    containerized_client,
-) -> None:
-    """GraphQL health_ready should report database as healthy with Testcontainer DB."""
-    # Arrange
-    query = {
-        "query": "query { healthReady { status dependencies { name healthy detail } } }",
-    }
+def test_prompt_catalog_graphql_returns_version_set(containerized_client) -> None:
+    """Prompt catalog GraphQL query returns the active version set and prompts."""
+    response = containerized_client.post(
+        "/graphql",
+        json={"query": "query { promptCatalog { versionSet prompts { key } } }"},
+    )
 
-    # Act
-    response = containerized_client.post("/graphql", json=query)
-
-    # Assert
     assert response.status_code == 200
     payload = response.json()
     assert "errors" not in payload
-
-    dependencies = payload["data"]["healthReady"]["dependencies"]
-    database_dependency = next(dep for dep in dependencies if dep["name"] == "database")
-    assert database_dependency["healthy"] is True
+    catalog = payload["data"]["promptCatalog"]
+    assert isinstance(catalog["versionSet"], str)
+    assert catalog["versionSet"]
+    assert isinstance(catalog["prompts"], list)

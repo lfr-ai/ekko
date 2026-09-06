@@ -12,13 +12,14 @@ import asyncio
 
 import pytest
 
+from ekko.core.types import MaxTokens, Temperature
 from tests.fixtures.audio.fixture_audio import (
     FIXTURE_AUDIO_1_SEC,
     FIXTURE_AUDIO_INVALID,
     FIXTURE_AUDIO_SHORT,
 )
 from tests.mocks.chat_mock import FailingChatClient, MockChatClient
-from tests.mocks.stt_mock import FailingSTTAdapter, MockSTTAdapter
+from tests.mocks.stt_mock import FailingSTTAdapter, MockSTTAdapter, MockTranscript
 
 # ── Happy Path Tests ─────────────────────────────────────────
 
@@ -37,7 +38,7 @@ class TestAudioPipelineHappyPath:
         stt_adapter = MockSTTAdapter(transcript_text=expected_transcript)
         chat_client = MockChatClient(response_text=expected_chat_response)
 
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -66,9 +67,9 @@ class TestAudioPipelineHappyPath:
     async def test_pipeline_with_callback(self) -> None:
         """Pipeline processes audio with transcript callback."""
         # Arrange
-        transcripts_received: list[object] = []
+        transcripts_received: list[MockTranscript] = []
 
-        def on_transcript(transcript: object) -> None:
+        def on_transcript(transcript: MockTranscript) -> None:
             transcripts_received.append(transcript)
 
         stt_adapter = MockSTTAdapter(transcript_text="Callback test transcript")
@@ -87,9 +88,9 @@ class TestAudioPipelineHappyPath:
     async def test_pipeline_with_async_callback(self) -> None:
         """Pipeline processes audio with async transcript callback."""
         # Arrange
-        transcripts_received: list[object] = []
+        transcripts_received: list[MockTranscript] = []
 
-        async def on_transcript_async(transcript: object) -> None:
+        async def on_transcript_async(transcript: MockTranscript) -> None:
             await asyncio.sleep(0.01)  # Simulate async work
             transcripts_received.append(transcript)
 
@@ -111,7 +112,7 @@ class TestAudioPipelineHappyPath:
         """Pipeline handles multiple concurrent audio streams."""
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="Multi-stream test")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -121,7 +122,7 @@ class TestAudioPipelineHappyPath:
         await stt_adapter.accept_bytes("stream_3", FIXTURE_AUDIO_1_SEC)
 
         # Collect transcripts
-        transcripts = []
+        transcripts: list[MockTranscript] = []
         for _ in range(3):
             transcript = await asyncio.wait_for(output_queue.get(), timeout=1.0)
             transcripts.append(transcript)
@@ -189,13 +190,15 @@ class TestLLMIntegration:
             system_prompt="System",
             user_prompt="User",
             model="custom-model",
-            max_completion_tokens=2048,
-            temperature=0.7,
-            top_p=0.9,
+            max_completion_tokens=MaxTokens(2048),
+            temperature=Temperature(0.7),
         )
 
         # Assert
         assert response == "Custom params response"
+        assert chat_client.last_model == "custom-model"
+        assert chat_client.last_max_completion_tokens == MaxTokens(2048)
+        assert chat_client.last_temperature == Temperature(0.7)
 
 
 # ── Response Validation Tests ────────────────────────────────
@@ -211,7 +214,7 @@ class TestResponseValidation:
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="Test input")
         chat_client = MockChatClient(response_text="Test output")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -235,7 +238,7 @@ class TestResponseValidation:
         expected_response = "This is the expected chat response."
         stt_adapter = MockSTTAdapter(transcript_text="Input text")
         chat_client = MockChatClient(response_text=expected_response)
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -256,7 +259,7 @@ class TestResponseValidation:
         """Transcript has expected structure."""
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="Structure test")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -326,7 +329,7 @@ class TestPipelineErrorHandling:
         # Using mock adapter which doesn't actually validate audio format
         # Real adapter would raise error for invalid audio
         stt_adapter = MockSTTAdapter(transcript_text="")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -342,7 +345,7 @@ class TestPipelineErrorHandling:
         """Pipeline handles empty audio streams."""
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -435,9 +438,9 @@ class TestIntegrationSmoke:
     async def test_complete_conversation_flow(self) -> None:
         """Complete conversation: audio → transcript → LLM → response."""
         # Arrange
-        conversation = []
+        conversation: list[tuple[str, str]] = []
 
-        def on_transcript(transcript: object) -> None:
+        def on_transcript(transcript: MockTranscript) -> None:
             conversation.append(("transcript", transcript.text))
 
         stt_adapter = MockSTTAdapter(transcript_text="Hello, what's your name?")
@@ -472,7 +475,7 @@ class TestIntegrationSmoke:
         """Pipeline processes short audio clips."""
         # Arrange
         stt_adapter = MockSTTAdapter(transcript_text="Short")
-        output_queue: asyncio.Queue[object] = asyncio.Queue()
+        output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
         stt_adapter.output_queue = output_queue
 
         # Act
@@ -495,14 +498,14 @@ class TestIntegrationSmoke:
         stt_adapter = MockSTTAdapter()
         chat_client = MockChatClient(response_text="Acknowledged")
 
-        responses = []
+        responses: list[str] = []
 
         # Act
         await stt_adapter.start()
 
         for i, msg in enumerate(messages):
             stt_adapter.transcript_text = msg
-            output_queue: asyncio.Queue[object] = asyncio.Queue()
+            output_queue: asyncio.Queue[MockTranscript] = asyncio.Queue()
             stt_adapter.output_queue = output_queue
 
             await stt_adapter.accept_bytes(f"stream_{i}", FIXTURE_AUDIO_1_SEC)
@@ -521,4 +524,3 @@ class TestIntegrationSmoke:
         assert len(responses) == 3
         assert all(r == "Acknowledged" for r in responses)
         assert chat_client.call_count == 3
-

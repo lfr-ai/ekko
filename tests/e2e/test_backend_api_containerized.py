@@ -1,7 +1,8 @@
-"""End-to-end tests for backend API behavior.
+"""End-to-end tests for the canonical backend API surface.
 
-These tests execute against an in-process FastAPI app with real lifespan
-startup/shutdown and an in-memory SQLite database for GraphQL readiness probes.
+Exercises the in-process FastAPI app with real lifespan startup/shutdown and an
+in-memory SQLite database. Health, readiness, PII, and stream control use REST;
+the prompt catalog is the single GraphQL read surface.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ pytestmark = [pytest.mark.e2e, pytest.mark.integration, pytest.mark.slow]
 
 
 class _FakeStreamController:
-    """Test double for stream controller used by stream route e2e tests."""
+    """Stream controller test double for REST command tests."""
 
     def __init__(self) -> None:
         self.commands: list[str] = []
@@ -25,166 +26,78 @@ class _FakeStreamController:
         self.commands.append(command)
 
     async def stop(self) -> None:
-        """Lifespan-compatible shutdown hook used by app teardown."""
+        """Complete the application-owned controller lifecycle."""
 
 
-def test_health_when_lifespan_started_then_reports_ok_payload(
-    containerized_client,
-) -> None:
-    """Health endpoint should return payload with operational details."""
-    # Arrange / Act
+def test_health_reports_sqlite_state(containerized_client) -> None:
+    """Health endpoint returns an operational payload including SQLite state."""
     response = containerized_client.get("/health")
 
-    # Assert
     assert response.status_code == 200
     payload = response.json()
     assert isinstance(payload["ok"], bool)
-    assert isinstance(payload["details"], dict)
-    assert isinstance(payload["details"]["transcripts_queue_present"], bool)
+    assert "sqlite_database_present" in payload["details"]
 
 
-def test_graphql_health_when_queried_then_returns_service_status(
-    containerized_client,
-) -> None:
-    """GraphQL health query should be available end-to-end."""
-    # Arrange
-    query = {"query": "query { health { status environment } }"}
+def test_ready_reports_database_dependency(containerized_client) -> None:
+    """Readiness endpoint reports the database dependency status over REST."""
+    response = containerized_client.get("/ready")
 
-    # Act
-    response = containerized_client.post("/graphql", json=query)
-
-    # Assert
     assert response.status_code == 200
     payload = response.json()
-    assert "errors" not in payload
-    assert payload["data"]["health"]["status"] in {"healthy", "degraded", "unhealthy"}
+    dependency = next(dep for dep in payload["dependencies"] if dep["name"] == "database")
+    assert dependency["healthy"] is True
 
 
-def test_graphql_health_ready_when_db_available_then_dependency_is_healthy(
-    containerized_client,
-) -> None:
-    """GraphQL readiness should report healthy database dependency with Testcontainer."""
-    # Arrange
-    query = {
-        "query": "query { healthReady { status dependencies { name healthy detail } } }",
-    }
+def test_pii_anonymize_redacts_email(containerized_client) -> None:
+    """PII anonymization endpoint redacts sensitive text over REST."""
+    response = containerized_client.post(
+        "/pii/anonymize",
+        json={"text": "Reach me at e2e-test@example.com"},
+    )
 
-    # Act
-    response = containerized_client.post("/graphql", json=query)
-
-    # Assert
     assert response.status_code == 200
     payload = response.json()
-    assert "errors" not in payload
-
-    dependencies = payload["data"]["healthReady"]["dependencies"]
-    database_dependency = next(dep for dep in dependencies if dep["name"] == "database")
-    assert database_dependency["healthy"] is True
+    assert payload["pii_found"] is True
+    assert payload["match_count"] >= 1
+    assert "e2e-test@example.com" not in payload["anonymized_text"]
 
 
-def test_graphql_anonymize_text_when_pii_present_then_returns_redacted_text(
-    containerized_client,
-) -> None:
-    """Anonymize mutation should redact PII in end-to-end API flow."""
-    # Arrange
-    mutation = {
-        "query": (
-            "mutation($input: AnonymizeTextInput!) { "
-            "anonymizeText(input: $input) { anonymizedText piiFound matchCount } }"
-        ),
-        "variables": {
-            "input": {
-                "text": "My email is integration@example.com and card is 4242 4242 4242 4242",
-            },
+def test_stream_commands_use_rest(containerized_client) -> None:
+    """Audio stream start and pause run through canonical REST commands."""
+    controller = _FakeStreamController()
+    containerized_client.app.state.controller = controller
+
+    start = containerized_client.post("/stream/start")
+    pause = containerized_client.post("/stream/pause")
+
+    assert start.status_code == 200
+    assert pause.status_code == 200
+    assert controller.device_check_calls == 1
+    assert controller.commands == ["start_stream", "pause_stream"]
+
+
+def test_retired_contracts_return_404(containerized_client) -> None:
+    """Removed compatibility endpoints stay absent from the composed app."""
+    assert containerized_client.post("/start_stream").status_code == 404
+    assert containerized_client.post("/pause_stream").status_code == 404
+    assert containerized_client.post("/graphql/graphql").status_code == 404
+
+
+def test_prompt_catalog_graphql_query(containerized_client) -> None:
+    """The prompt catalog is the single GraphQL read surface end-to-end."""
+    response = containerized_client.post(
+        "/graphql",
+        json={
+            "operationName": "PromptCatalog",
+            "query": "query PromptCatalog { promptCatalog { versionSet prompts { key } } }",
         },
-    }
+    )
 
-    # Act
-    response = containerized_client.post("/graphql", json=mutation)
-
-    # Assert
     assert response.status_code == 200
     payload = response.json()
     assert "errors" not in payload
-
-    data = payload["data"]["anonymizeText"]
-    assert data["piiFound"] is True
-    assert data["matchCount"] >= 1
-    assert "integration@example.com" not in data["anonymizedText"]
-
-
-def test_start_stream_when_graphql_first_mode_then_rest_route_is_not_exposed(
-    containerized_client,
-) -> None:
-    """REST stream start route should not be available in GraphQL-first mode."""
-    response = containerized_client.post("/start_stream")
-    assert response.status_code == 404
-
-
-def test_pause_stream_when_graphql_first_mode_then_rest_route_is_not_exposed(
-    containerized_client,
-) -> None:
-    """REST stream pause route should not be available in GraphQL-first mode."""
-    response = containerized_client.post("/pause_stream")
-    assert response.status_code == 404
-
-
-def test_graphql_conversation_lifecycle_when_mutations_called_then_state_transitions_are_valid(
-    containerized_client,
-) -> None:
-    """Conversation start/send/end mutations should produce consistent lifecycle outputs."""
-    # Arrange
-    start_mutation = {"query": ("mutation { startConversation { id startedAt endedAt isActive } }")}
-
-    # Act: start conversation
-    start_response = containerized_client.post("/graphql", json=start_mutation)
-
-    # Assert start
-    assert start_response.status_code == 200
-    start_payload = start_response.json()
-    assert "errors" not in start_payload
-    started = start_payload["data"]["startConversation"]
-    assert started["id"]
-    assert started["isActive"] is True
-    assert started["endedAt"] is None
-
-    conversation_id = started["id"]
-
-    # Act: send message
-    send_mutation = {
-        "query": ("mutation($input: SendMessageInput!) { sendMessage(input: $input) }"),
-        "variables": {
-            "input": {
-                "conversationId": conversation_id,
-                "content": "Hello from e2e",
-                "role": "user",
-            }
-        },
-    }
-    send_response = containerized_client.post("/graphql", json=send_mutation)
-
-    # Assert send
-    assert send_response.status_code == 200
-    send_payload = send_response.json()
-    assert "errors" not in send_payload
-    assert conversation_id in send_payload["data"]["sendMessage"]
-
-    # Act: end conversation
-    end_mutation = {
-        "query": (
-            "mutation($conversationId: String!) { "
-            "endConversation(conversationId: $conversationId) { id startedAt endedAt isActive } "
-            "}"
-        ),
-        "variables": {"conversationId": conversation_id},
-    }
-    end_response = containerized_client.post("/graphql", json=end_mutation)
-
-    # Assert end
-    assert end_response.status_code == 200
-    end_payload = end_response.json()
-    assert "errors" not in end_payload
-    ended = end_payload["data"]["endConversation"]
-    assert ended["id"] == conversation_id
-    assert ended["isActive"] is False
-    assert ended["endedAt"] is not None
+    catalog = payload["data"]["promptCatalog"]
+    assert isinstance(catalog["versionSet"], str)
+    assert catalog["versionSet"]
+    assert isinstance(catalog["prompts"], list)

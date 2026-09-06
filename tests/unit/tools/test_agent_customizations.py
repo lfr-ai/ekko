@@ -137,3 +137,62 @@ def test_validate_with_implicit_http_mcp_transport_reports_violation(tmp_path: P
     messages = [violation.message for violation in validate(root=tmp_path)]
 
     assert "HTTP MCP server 'context7' requires type 'http'" in messages
+
+
+@pytest.mark.unit
+def test_validate_with_mojibake_reports_violation(tmp_path: Path) -> None:
+    """Active guidance cannot contain corrupted UTF-8 punctuation."""
+    _write_valid_tree(tmp_path)
+    _write(
+        tmp_path / ".github/prompts/example.prompt.md",
+        "---\ndescription: Run an example task.\n---\n\nInput â€” output.\n",
+    )
+
+    messages = [violation.message for violation in validate(root=tmp_path)]
+
+    assert "contains likely UTF-8 mojibake" in messages
+
+
+@pytest.mark.unit
+def test_validate_with_project_token_in_portable_skill_reports_violation(tmp_path: Path) -> None:
+    """Portable skills cannot embed repository identity tokens."""
+    _write_valid_tree(tmp_path)
+    _write(
+        tmp_path / "PROJECT.md",
+        "- Agent portability tokens: `sample-app`, `sample-org`\n",
+    )
+    skill = "---\nname: example\ndescription: Use for sample-app tasks.\n---\n"
+    for skill_root in (".github/skills", ".claude/skills", ".agents/skills"):
+        _write(tmp_path / skill_root / "example/SKILL.md", skill)
+
+    messages = [violation.message for violation in validate(root=tmp_path)]
+
+    assert any("portable skill contains project token 'sample-app'" in message for message in messages)
+
+
+@pytest.mark.unit
+def test_validate_with_unknown_profile_capability_reports_violation(tmp_path: Path) -> None:
+    """Agentic profiles can reference only capabilities present in the repository."""
+    _write_valid_tree(tmp_path)
+    _write(
+        tmp_path / ".agents/agentic-setup/profiles.json",
+        json.dumps(
+            {
+                "profiles": {
+                    "shared": {
+                        "extends": [],
+                        "skills": ["missing-skill"],
+                        "agents": [],
+                        "instructions": [],
+                        "mcpServers": [],
+                        "optionalMcpServers": [],
+                        "assets": [],
+                    }
+                }
+            }
+        ),
+    )
+
+    messages = [violation.message for violation in validate(root=tmp_path)]
+
+    assert "profile 'shared' references unknown skill 'missing-skill'" in messages
