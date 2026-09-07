@@ -27,7 +27,7 @@ Presentation → Application → Core ← Infrastructure
 Dependencies always flow inward:
 
 ```text
-utils → config → core → infrastructure/ai → application → composition → presentation
+config → core → {ai | infrastructure} → application → presentation → composition → cli
 ```
 
 ## Responsibilities
@@ -57,7 +57,7 @@ utils → config → core → infrastructure/ai → application → composition 
 
 - Evaluate library choices against project constraints
 - Assess migration paths for dependency upgrades
-- Review AI pipeline architecture (CrewAI, LangChain, faster-whisper)
+- Review AI pipeline architecture (LiteLLM, PII anonymizer, Azure Speech)
 
 ## Output Format
 
