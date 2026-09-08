@@ -2,11 +2,9 @@
 name: dry-refactoring
 description: Guided workflow to eliminate copy-paste duplication detected by jscpd. Refactor clones using extract function, module, constant, or base class strategies.
 ---
-
 # dry-refactoring
 
-Guided workflow to eliminate copy-paste duplication in source code. Use after
-running jscpd to detect clones.
+Guided workflow to eliminate copy-paste duplication in source code. Use after running [jscpd](../jscpd/SKILL.md) to detect clones.
 
 ## Prerequisites
 
@@ -15,6 +13,8 @@ First, run jscpd to identify duplications:
 ```bash
 npx jscpd --reporters ai <path>
 ```
+
+See the **[jscpd](../jscpd/SKILL.md)** skill for full option reference.
 
 ## Workflow
 
@@ -31,23 +31,20 @@ npx jscpd --reporters ai <path>
 
 **Extract function** — when the duplicate is a block of logic:
 
-```python
-# Before: same block in two places
-# After: shared function called from both places
+```ts
+// Before: same block in two places
+// After: shared function called from both places
 ```
 
-**Extract module/utility** — when the duplicate spans multiple files in different
-domains:
+**Extract module/utility** — when the duplicate spans multiple files in different domains:
 
-```python
-# Move shared logic to a shared utility file and import it
+```ts
+// Move shared logic to a shared utility file and import it
 ```
 
-**Extract constant or config** — when the duplicate is repeated data or
-configuration.
+**Extract constant or config** — when the duplicate is repeated data or configuration.
 
-**Template/base class** — when the duplicate is structural (e.g., repeated class
-shape).
+**Template/base class** — when the duplicate is structural (e.g., repeated class shape).
 
 Always ensure:
 

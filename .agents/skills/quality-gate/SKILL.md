@@ -4,32 +4,84 @@ description: Run full validation suite before finalizing any change. Use after i
 disable-model-invocation: true
 effort: high
 argument-hint: "[scope: unit|full|check]"
-allowed-tools:
-  - Bash(task *)
-  - Bash(uv run *)
-  - Bash(python -m pytest *)
-  - Bash(python -m ruff *)
 ---
 
 # Quality Gate
 
 Run these validation steps in order. Fix any failures before proceeding.
+This project is managed by **uv** and **Task**: every command below must be run
+via `task` or `uv run`. Never invoke `pdm`, `poetry`, `pipenv`, `conda`, `pip`,
+or bare `python`/`pytest`.
 
-## Steps
+## Quick Validation
 
-1. **Unit tests**: `task test:unit`
-2. **Lint**: `task lint`
-3. **Type check**: `task typecheck`
+For fast feedback during development:
 
-## Full CI-equivalent
+```bash
+uv run pytest tests/
+uv run ruff check src/ tests/
+```
 
-For comprehensive validation run: `task check`
+## Full completion gate
 
-This runs: lint + test:unit + typecheck + xenon (cyclomatic complexity).
+Run the project-owned gates instead of reconstructing them manually:
+
+```bash
+task test
+task check
+openspec validate --all
+```
+
+## Component-Specific Checks
+
+```bash
+uv run pytest -m unit          # Unit tests only (fast)
+uv run pytest -m integration   # Integration tests (slower)
+uv run pytest -m property      # Property-based tests
+```
 
 ## On Failure
 
-- Fix all test failures before proceeding
-- Fix all lint errors (`uv run ruff check --fix .` auto-fixes most)
-- Fix all type errors
-- If xenon fails, reduce cyclomatic complexity of the flagged functions
+### Test Failures
+- Fix all failing tests before proceeding
+- Check test output for specific assertion failures
+- Review recent changes that may have broken tests
+- Run `uv run pytest -v` for verbose output
+
+### Lint Errors
+- Auto-fix most issues: `uv run ruff check --fix src/ tests/`
+- Review remaining manual fixes
+- Check for import order issues
+- Verify no unused imports
+
+### Type Errors
+- Fix type annotations
+- Add missing type hints
+- Resolve `Any` types
+- Check protocol implementations
+
+## Pre-Push Checklist
+
+Before pushing to remote:
+
+- [ ] All tests pass: `task test`
+- [ ] No lint errors: `uv run ruff check .`
+- [ ] Type check clean: `uv run ty check src tests scripts`
+- [ ] Pre-commit hooks pass: `uv run pre-commit run --all-files`
+- [ ] OpenSpec specs validated: `openspec validate --all`
+- [ ] Documentation updated if behavior changed
+- [ ] Environment template updated if new env vars added
+- [ ] No stray package-manager artifacts (`.pdm-python`, `poetry.lock`)
+
+## Quality Metrics
+
+Target coverage by layer:
+
+| Layer | Minimum Coverage |
+|-------|-----------------|
+| Core | 90% |
+| Application | 80% |
+| Infrastructure | 60% |
+| Presentation | 70% |
+
+Check coverage: `uv run pytest --cov=src --cov-report=term-missing`

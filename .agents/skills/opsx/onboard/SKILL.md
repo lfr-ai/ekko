@@ -71,13 +71,9 @@ Scan the codebase for small improvement opportunities. Look for:
 5. **Debug artifacts** - `console.log`, `console.debug`, `debugger` statements in non-debug code
 6. **Missing validation** - User input handlers without validation
 
-Also check recent git activity:
-```bash
-# Unix/macOS
-git log --oneline -10 2>/dev/null || echo "No git history"
-# Windows (PowerShell)
-# git log --oneline -10 2>$null; if ($LASTEXITCODE -ne 0) { echo "No git history" }
-```
+Also review recent project activity through IDE Source Control history or the
+GitNexus session/context. Use it only to spot small, recently touched areas;
+do not invoke shell version-control commands.
 
 ### Present Suggestions
 
