@@ -74,7 +74,7 @@ Both tools share skills from `.github/skills/` and path-scoped rules/instruction
 
 ## Related
 
-- **Claude Code agents**: `.claude/agents/` (9 agents: architect, code-reviewer, devops, frontend-reviewer, refactorer, researcher, sdd, tdd, test-writer)
+- **Claude Code agents**: `.claude/agents/` (13 agents: architect, code-reviewer, ddd, debug, deep-thinking, devops, frontend-reviewer, modernization, refactor, researcher, sdd, tdd, testing)
 - **Skills**: `.github/skills/` (shared between Claude Code and VS Code Copilot)
 - **Instructions**: `.github/instructions/` (auto-loaded by `applyTo:` patterns)
 - **Claude Code docs**: <https://code.claude.com/docs/en/sub-agents>

@@ -9,7 +9,7 @@ GitHub Copilot prompt files (`*.prompt.md`), discovered via
 |----------|---------|
 | `opsx/` | OpenSpec workflow: `/propose`, `/explore`, `/apply`, `/continue`, `/ff`, `/new`, `/onboard`, `/sync`, `/update`, `/verify`, `/archive`, `/bulk-archive` |
 | `gitnexus/` | GitNexus analysis: `/debug`, `/impact` |
-| _(top level)_ | Task prompts: `review`, `test`, `refactor`, `debug` |
+| _(top level)_ | Task prompts: `align-tests`, `review`, `test`, `refactor`, `debug` |
 
 ## Parity
 

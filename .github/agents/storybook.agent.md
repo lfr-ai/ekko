@@ -2,7 +2,7 @@
 name: Storybook
 description: Storybook specialist for component documentation, interaction tests, and UI review workflows.
 model: claude-sonnet-4-6
-tools: [vscode, read, edit, search, execute, web, agent, 'context7/*', 'gitnexus/*', 'shadcn/*']
+tools: [vscode, read, edit, search, execute, web, agent, 'context7/*', 'gitnexus/*']
 agents: ['*']
 ---
 
