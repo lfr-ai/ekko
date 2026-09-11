@@ -12,3 +12,13 @@ Example:
   - `specs/<domain>/spec.md` (delta specs)
 
 Archive completed changes under `openspec/changes/archive/`.
+
+## Current status
+
+- In-flight changes: none
+- Archived changes: see `openspec/changes/archive/README.md`
+
+## Quality gate before archive
+
+- Validate all artifacts in strict mode:
+  - `npx --yes @fission-ai/openspec@latest validate --all --strict`

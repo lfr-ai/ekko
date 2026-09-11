@@ -1,4 +1,4 @@
-# Proposal: Golden standard platform alignment
+# Proposal: Platform alignment
 
 ## Why
 

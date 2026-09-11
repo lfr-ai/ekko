@@ -23,7 +23,12 @@ To (re)generate OpenSpec tool integrations for this repository:
 ## Command syntax by tool
 
 - Claude/Codex style: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`
-- GitHub Copilot prompt files: `/opsx-propose`, `/opsx-apply`, `/opsx-archive`
+- GitHub Copilot prompt files: `/propose`, `/apply`, `/archive`
+
+## Current repository status
+
+- In-flight changes live in `openspec/changes/`
+- Completed changes are indexed in `openspec/changes/archive/README.md`
 
 ## Recommended flow (core profile)
 

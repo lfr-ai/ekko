@@ -1,8 +1,8 @@
-# Tasks: Golden standard platform alignment
+# Tasks: Platform alignment
 
 ## Completed foundation
 
-- [x] Audit current repo against the golden baseline
+- [x] Audit current repository against the approved platform baseline
 - [x] Add dedicated observability compose file
 - [x] Add OTel collector + Prometheus + Grafana provisioning configs
 - [x] Update Docker docs and env template

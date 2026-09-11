@@ -1,4 +1,4 @@
-# Design: Golden standard platform alignment
+# Design: Platform alignment
 
 ## Architecture impact
 

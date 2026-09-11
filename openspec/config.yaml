@@ -3,7 +3,7 @@ schema: ekko-production
 context: |
   Project: Ekko
   Architecture: Clean Architecture with strict dependency direction.
-  Backend stack: Python 3.12, FastAPI, SQLAlchemy async, Strawberry GraphQL.
+  Backend stack: Python 3.14, FastAPI, SQLAlchemy async, Strawberry GraphQL.
   Frontend stack: React 19, TypeScript, Vite, shadcn/ui, Tailwind CSS v4.
   Quality: Typed Python, behavior-first changes, tests and docs updated together.
 
