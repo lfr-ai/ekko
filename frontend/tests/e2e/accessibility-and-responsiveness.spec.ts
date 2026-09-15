@@ -6,9 +6,7 @@ test.describe("Accessibility and responsiveness", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Ekko Voice Assistant" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Prompt catalog" })).toBeVisible();
   });
 
   test("has no critical accessibility violations in app shell", async ({ page }) => {
@@ -44,19 +42,15 @@ test.describe("Accessibility and responsiveness", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Ekko Voice Assistant" }),
-    ).toBeVisible();
-    await expect(page.getByText("Local assistant runtime is active.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Prompt catalog" })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Include template content" })).toBeVisible();
   });
 
   test("keeps core homepage content visible on desktop viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Ekko Voice Assistant" }),
-    ).toBeVisible();
-    await expect(page.getByText("Local assistant runtime is active.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Prompt catalog" })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Include template content" })).toBeVisible();
   });
 });

@@ -1,0 +1,9 @@
+query PromptCatalog($includeContent: Boolean!) {
+  promptCatalog {
+    versionSet
+    prompts {
+      key
+      content @include(if: $includeContent)
+    }
+  }
+}

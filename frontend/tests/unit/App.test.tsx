@@ -1,23 +1,26 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/App";
 
 describe("App", () => {
-  it("renders home heading", async () => {
-    const queryClient = new QueryClient();
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>,
-    );
-
-    expect(await screen.findByText("Ekko Voice Assistant")).toBeInTheDocument();
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it("renders home summary text", async () => {
+  it("renders core homepage content", async () => {
     const queryClient = new QueryClient();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: { promptCatalog: { prompts: [], versionSet: "experimental" } },
+          }),
+          { headers: { "Content-Type": "application/json" }, status: 200 },
+        ),
+      ),
+    );
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -25,6 +28,7 @@ describe("App", () => {
       </QueryClientProvider>,
     );
 
-    expect(await screen.findByText(/Local assistant runtime is active\./i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Prompt catalog" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Active prompts" })).toBeInTheDocument();
   });
 });

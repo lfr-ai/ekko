@@ -6,7 +6,7 @@ test.describe("App shell", () => {
   });
 
   test("renders core layout and metadata", async ({ page }) => {
-    await expect(page).toHaveTitle("Ekko Frontend");
+    await expect(page).toHaveTitle("Ekko Prompt Catalog");
     await expect(page).toHaveURL(/\/$/);
 
     const lang = await page.locator("html").getAttribute("lang");
@@ -19,10 +19,8 @@ test.describe("App shell", () => {
   });
 
   test("renders primary homepage content", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Ekko Voice Assistant" }),
-    ).toBeVisible();
-    await expect(page.getByText("Local assistant runtime is active.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Prompt catalog" })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Include template content" })).toBeVisible();
   });
 
   test("has no top-level JavaScript runtime errors on load", async ({ page }) => {

@@ -1,6 +1,15 @@
-import { RouterProvider } from "react-router";
-import { appRouter } from "@/router/app-router";
+import { useState } from "react";
+import { loadPromptCatalog } from "@/infrastructure/graphql/prompt-catalog-client";
+import { PromptCatalogPage } from "@/presentation/pages/prompt-catalog-page";
 
 export function App(): React.JSX.Element {
-  return <RouterProvider router={appRouter} />;
+  const [includeContent, setIncludeContent] = useState(false);
+
+  return (
+    <PromptCatalogPage
+      includeContent={includeContent}
+      loadCatalog={loadPromptCatalog}
+      onIncludeContentChange={setIncludeContent}
+    />
+  );
 }
