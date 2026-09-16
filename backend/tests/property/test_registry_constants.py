@@ -289,7 +289,7 @@ class TestRegistryModuleIntegrity:
         """Registry constants module must be importable without errors."""
         try:
             importlib.reload(registry_constants)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001  # surface any reload failure in the assertion message
             pytest.fail(f"Failed to import registry_constants: {e}")
 
     def test_module_has_docstring(self) -> None:

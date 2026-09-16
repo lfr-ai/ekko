@@ -30,5 +30,5 @@ def test_transcript_bridge_roundtrip():
     # This test requires real audio infrastructure; skip if not available
     try:
         asyncio.run(run())
-    except Exception:
+    except Exception:  # noqa: BLE001  # skip on any infra failure, not just a known subset
         pytest.skip("Audio infrastructure not available for bridge test")

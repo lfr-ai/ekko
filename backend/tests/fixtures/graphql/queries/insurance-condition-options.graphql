@@ -1,7 +1,0 @@
-query InsuranceConditionOptions {
-  insuranceConditionOptions {
-    id
-    code
-    label
-  }
-}
