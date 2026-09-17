@@ -1,0 +1,123 @@
+name: Deploy Container Apps (ACR)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'azure/**'
+      - 'docker/Containerfile'
+      - 'backend/**'
+      - '.github/workflows/deploy-container-apps-acr.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+      projectName:
+        description: Project/resource prefix used by Bicep
+        required: true
+        default: ekko
+      imageTag:
+        description: Container image tag to build and deploy
+        required: true
+        default: set-at-dispatch
+      imageName:
+        description: Repository name inside ACR
+        required: true
+        default: ekko
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-container-apps-${{ github.event_name == 'push' && 'dev' || inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, Push, Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ github.event_name == 'push' && 'dev' || inputs.environment }}
+    env:
+      AZURE_LOCATION: swedencentral
+      DEPLOY_ENV: ${{ github.event_name == 'push' && 'dev' || inputs.environment }}
+      PROJECT_NAME: ${{ github.event_name == 'push' && 'ekko' || inputs.projectName }}
+      IMAGE_TAG: ${{ github.event_name == 'push' && github.sha || inputs.imageTag }}
+      IMAGE_NAME: ${{ github.event_name == 'push' && 'ekko' || inputs.imageName }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate deployment input
+        run: |
+          if [[ -z "$IMAGE_TAG" || "$IMAGE_TAG" == "set-at-dispatch" ]]; then
+            echo "Image tag must be explicit. Use immutable tags (for example: commit SHA)."
+            exit 1
+          fi
+
+          if [[ "$DEPLOY_ENV" == "prod" && "${IMAGE_TAG,,}" == "latest" ]]; then
+            echo "Refusing prod deployment with mutable image tag 'latest'."
+            exit 1
+          fi
+
+      - name: Derive registry and image coordinates
+        run: |
+          SANITIZED_PROJECT=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+          ACR_NAME=$(echo "${SANITIZED_PROJECT}-${DEPLOY_ENV}acr" | tr -d '-')
+          ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
+          IMAGE_REF="${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+          echo "ACR_NAME=$ACR_NAME" >> "$GITHUB_ENV"
+          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_ENV"
+          echo "IMAGE_REF=$IMAGE_REF" >> "$GITHUB_ENV"
+
+      - name: Validate Bicep compiles
+        run: az bicep build --file azure/iac/deploy.bicep
+
+      - name: Validate IaC changes (what-if)
+        run: |
+          az deployment sub what-if \
+            --location "$AZURE_LOCATION" \
+            --template-file azure/iac/deploy.bicep \
+            --parameters "azure/iac/parameters/$DEPLOY_ENV/deploy.$DEPLOY_ENV.bicepparam" \
+            --parameters projectName="$PROJECT_NAME" \
+            --parameters imageName="$IMAGE_NAME" \
+            --parameters imageTag="$IMAGE_TAG"
+
+      - name: Validate ACR exists
+        run: |
+          if ! az acr show --name "$ACR_NAME" --query name -o tsv >/dev/null; then
+            echo "ACR '$ACR_NAME' not found. Provision infrastructure first (azure/iac/deploy.bicep)."
+            exit 1
+          fi
+
+      - name: Build and push image to ACR
+        run: |
+          az acr login --name "$ACR_NAME"
+          docker build -f docker/Containerfile -t "$IMAGE_REF" .
+          docker push "$IMAGE_REF"
+
+      - name: Roll forward Container App to pushed image
+        run: |
+          az deployment sub create \
+            --location "$AZURE_LOCATION" \
+            --template-file azure/iac/deploy.bicep \
+            --parameters "azure/iac/parameters/$DEPLOY_ENV/deploy.$DEPLOY_ENV.bicepparam" \
+            --parameters projectName="$PROJECT_NAME" \
+            --parameters imageName="$IMAGE_NAME" \
+            --parameters imageTag="$IMAGE_TAG"
