@@ -11,7 +11,8 @@ shared constants across backend and frontend.
 ## Workflow
 
 1. Edit `registry/naming_registry.json` — add/modify entries
-2. Run `task registry:generate` — regenerates `backend/src/ekko/core/registry_constants.py`
+2. Run `task registry:generate` — regenerates the backend package's
+   `core/registry_constants.py` (see `PROJECT.md` for the exact path)
 3. Import generated constants in backend code
 
 ## Rules
@@ -20,4 +21,5 @@ shared constants across backend and frontend.
 - Backend enums reference registry keys
 - Never hardcode strings that exist in the registry
 - Run `task registry:generate` after every registry edit
-- Import from `ekko.core.registry_constants` — never duplicate values
+- Import from `<package>.core.registry_constants` (see `PROJECT.md` for
+  `<package>`) — never duplicate values

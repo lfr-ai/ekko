@@ -15,7 +15,7 @@ All commands work via `npx` — no global install required.
 npx gitnexus analyze
 ```
 
-Run from the project root. This parses all source files, builds the knowledge graph, and writes it to `.gitnexus/`.
+Run from the project root. This parses all source files, builds the knowledge graph, writes it to `.gitnexus/`, and refreshes the CLAUDE.md / AGENTS.md context block.
 
 | Flag           | Effect                                                           |
 | -------------- | ---------------------------------------------------------------- |
@@ -23,7 +23,7 @@ Run from the project root. This parses all source files, builds the knowledge gr
 | `--embeddings` | Enable embedding generation for semantic search (off by default) |
 | `--drop-embeddings` | Drop existing embeddings on rebuild. By default, an `analyze` without `--embeddings` preserves them. |
 
-**When to run:** First time in a project, after major code changes (new, renamed, or moved modules or folders), or when `gitnexus://repo/{name}/context` reports the index is stale. Use IDE Source Control or GitNexus session/context information to identify major completed changes, then run `analyze` manually to avoid blocking the agent for up to 120s and risking KuzuDB corruption on timeout.
+**When to run:** First time in a project, after major code changes (new, renamed, or moved modules or folders), or when `gitnexus://repo/{name}/context` reports the index is stale. In Claude Code, a PostToolUse hook detects staleness after a commit or merge and notifies the agent to run `analyze` itself — the hook only notifies, to avoid blocking the agent for up to 120s and risking KuzuDB corruption on timeout. In other runtimes, use IDE Source Control or GitNexus session/context information to identify major completed changes, then run `analyze` manually.
 
 ### status — Check index freshness
 
