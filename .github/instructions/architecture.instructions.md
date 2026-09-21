@@ -1,6 +1,6 @@
 ---
 description: Clean Architecture boundaries and dependency direction for Python source files
-applyTo: "backend/src/ekko/**/*.py"
+applyTo: "backend/src/**/*.py"
 ---
 
 # Architecture Instructions
@@ -38,7 +38,8 @@ config -> core -> {ai | infrastructure} -> application -> presentation -> compos
 
 - `@dataclass(frozen=True, slots=True)` for all domain entities (except `Container`)
 - `Final[type]` for module-level constants; `@final` for sealed classes
+- Protocols in `core/ports/` for all ports
 - `fastapi.status` constants, never raw HTTP integers
-- Enums in `core/enums/` (split by domain). Import via `from ekko.core.enums import X`
+- Enums in `core/enums/` (split by domain)
 - Concurrency primitives in `infrastructure/concurrency/`
 - Domain logic in `application/services/` or `core/`, never in route handlers
