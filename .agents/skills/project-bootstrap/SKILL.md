@@ -29,7 +29,7 @@ embedding them.
 ## 2. Copy the agent setup
 
 Copy `AGENTS.md`, `CLAUDE.md`, `.agents/`, `.github/`, `.claude/`, the configured
-MCP manifests, and `scripts/agents/verify_agent_config.py`.
+MCP manifests, and `tools/conventions/check_agent_customizations.py`.
 
 Then:
 

@@ -83,7 +83,8 @@ Keep these **flat** at the tree root:
 - Apply convention edits to every copy
   (`.github/instructions` ↔ `.claude/rules` ↔ `.agents/skills`); `AGENTS.md` is
   the canonical wording when copies disagree.
-- `scripts/agents/verify_agent_config.py` (pre-commit `agent-config-guard`) checks
+- `tools/conventions/check_agent_customizations.py` (pre-commit
+  `agent-customizations`) checks
   skill metadata/parity, portable-token leakage, agent rosters, instruction/rule
   scopes, hook parity and MCP parity — run it after any change.
 - Runtime hooks are mirrored across runtimes: `.github/hooks/*.json` and the

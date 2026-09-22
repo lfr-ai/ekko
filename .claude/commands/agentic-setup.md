@@ -63,7 +63,7 @@ If unsure, inspect `AGENTS.md`, `.agents/agentic-setup/profiles.json`, `PROJECT.
 
 ## Verify (both paths)
 
-- `uv run python scripts/agents/verify_agent_config.py` passes (skill/agent parity,
+- `uv run --project backend python tools/conventions/check_agent_customizations.py` passes (skill/agent parity,
   portability, instruction↔rule scopes, hooks, MCP names, profiles/catalogs).
 - `openspec validate --all` passes when specs exist.
 - A fresh agent can locate entry points, layers, tests, config, and the validation
