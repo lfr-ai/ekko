@@ -74,8 +74,8 @@ response: httpx.Response
 
 # Bad: direct import of utility-module symbols; keep logging qualified
 from logging import Filter, Handler, LogRecord   # ICN003 banned-from
-from logging.handlers import TimedRotatingFileHandler  # project policy ban
-from httpx import Response                        # ICN003 banned-from
+from logging.handlers import TimedRotatingFileHandler  # ICN003 banned-from
+from httpx import Response                        # convention, not yet banned-from
 
 # Good: direct — distinctive symbols
 from pathlib import Path
@@ -87,9 +87,10 @@ reloading, or package-surface assertions may use
 `import myapp.main as main_module`. This does not permit importing first-party
 symbols in mixed styles.
 
-Enforced by ruff `flake8-import-conventions` (`ICN`): `banned-from` +
-`aliases`. Basis: Google Style Guide §2.2 (qualified set) + PEP 8 pragmatism
-(direct set).
+Enforced for `logging`/`logging.handlers` by ruff `flake8-import-conventions`
+(`ICN`) `banned-from` (see `ruff.toml`); the rest of this convention is a
+code-review expectation, not yet machine-checked. Basis: Google Style Guide
+§2.2 (qualified set) + PEP 8 pragmatism (direct set).
 
 ## Package Exports (`__init__.py`)
 
