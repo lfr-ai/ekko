@@ -56,8 +56,9 @@ class TestMaxTokens:
 
     def test_bool_raises(self) -> None:
         """Reject boolean input."""
+        invalid_value = True
         with pytest.raises(TypeError, match="must be an integer"):
-            MaxTokens(True)  # type: ignore[arg-type]
+            MaxTokens(invalid_value)  # type: ignore[arg-type]
 
     def test_float_raises(self) -> None:
         """Reject float input."""
@@ -73,7 +74,7 @@ class TestMaxTokens:
         assert MaxTokens(1_000_000) == 1_000_000
 
     def test_is_int_subclass(self) -> None:
-        """Return value that is int-compatible."""
+        """Integer-compatible scalar value."""
         val = MaxTokens(512)
         assert isinstance(val, int)
         assert val + 1 == 513
@@ -111,8 +112,9 @@ class TestTemperature:
 
     def test_bool_raises(self) -> None:
         """Reject boolean input."""
+        invalid_value = True
         with pytest.raises(TypeError, match="must be a numeric value"):
-            Temperature(True)  # type: ignore[arg-type]
+            Temperature(invalid_value)  # type: ignore[arg-type]
 
     def test_string_raises(self) -> None:
         """Reject string input."""
@@ -120,7 +122,7 @@ class TestTemperature:
             Temperature("0.5")  # type: ignore[invalid-argument-type]
 
     def test_is_float_subclass(self) -> None:
-        """Return value that is float-compatible."""
+        """Float-compatible scalar value."""
         val = Temperature(1.0)
         assert isinstance(val, float)
 
@@ -153,8 +155,9 @@ class TestConfidence:
 
     def test_bool_raises(self) -> None:
         """Reject boolean input."""
+        invalid_value = True
         with pytest.raises(TypeError, match="must be a numeric value"):
-            Confidence(True)  # type: ignore[arg-type]
+            Confidence(invalid_value)  # type: ignore[arg-type]
 
     def test_int_accepted(self) -> None:
         """Accept integer 0 or 1."""
@@ -162,6 +165,6 @@ class TestConfidence:
         assert Confidence(1) == 1.0
 
     def test_is_float_subclass(self) -> None:
-        """Return value that is float-compatible."""
+        """Float-compatible scalar value."""
         val = Confidence(0.5)
         assert isinstance(val, float)

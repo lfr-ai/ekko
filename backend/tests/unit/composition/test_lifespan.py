@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pytest
 from fastapi import FastAPI
@@ -10,8 +11,11 @@ from fastapi import FastAPI
 from ekko.composition.lifespan import create_lifespan
 from ekko.config.base import BaseAppConfig
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-@dataclass(frozen=True, slots=True)
+
+@dataclass(frozen=True, kw_only=True, slots=True)
 class DisabledAudioContainer:
     """Container stub that exposes only disabled-audio settings."""
 
@@ -20,12 +24,13 @@ class DisabledAudioContainer:
     @property
     def audio_controller(self) -> object:
         """Reject unexpected audio-controller construction."""
-        raise AssertionError("audio controller must not be constructed when audio is disabled")
+        msg = "audio controller must not be constructed when audio is disabled"
+        raise AssertionError(msg)
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_lifespan_when_audio_disabled_skips_audio_and_stt_construction(tmp_path) -> None:
+async def test_create_lifespan_when_audio_disabled_skips_audio_and_stt_construction(tmp_path: Path) -> None:
     """Start the application without native audio or speech dependencies."""
     settings = BaseAppConfig(
         disable_audio=True,

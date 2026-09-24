@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 
 from ekko.core.exceptions import (
     AudioDeviceError,
@@ -36,14 +37,14 @@ class TestRequestValidationError:
     """Test RequestValidationError handler."""
 
     def test_returns_422(self, app: FastAPI, client: TestClient) -> None:
-        """Return 422 for validation errors."""
-        from pydantic import BaseModel
+        """Validation errors produce HTTP 422."""
 
         class Body(BaseModel):
             value: int
 
         @app.post("/test")
-        async def _endpoint(body: Body) -> dict:
+        async def _endpoint(body: Body) -> dict[str, object]:
+            _ = body
             return {}
 
         response = client.post("/test", json={"value": "not_int"})
@@ -56,11 +57,12 @@ class TestPromptNotFoundError:
     """Test PromptNotFoundError handler."""
 
     def test_returns_404(self, app: FastAPI, client: TestClient) -> None:
-        """Return 404 for missing prompts."""
+        """Missing prompts produce HTTP 404."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise PromptNotFoundError("prompt_v1 not found")
+            msg = "prompt_v1 not found"
+            raise PromptNotFoundError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -72,11 +74,12 @@ class TestConfigurationError:
     """Test ConfigurationError handler."""
 
     def test_returns_500_with_masked_message(self, app: FastAPI, client: TestClient) -> None:
-        """Return 500 and mask internal configuration details."""
+        """Configuration errors produce masked HTTP 500 responses."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise ConfigurationError("Missing EKKO_OPENAI_API_KEY")
+            msg = "Missing EKKO_OPENAI_API_KEY"
+            raise ConfigurationError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -88,11 +91,12 @@ class TestAudioDeviceError:
     """Test AudioDeviceError handler."""
 
     def test_returns_503(self, app: FastAPI, client: TestClient) -> None:
-        """Return 503 for audio device failures."""
+        """Audio device failures produce HTTP 503."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise AudioDeviceError("No capture device found")
+            msg = "No capture device found"
+            raise AudioDeviceError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
@@ -104,11 +108,12 @@ class TestSTTError:
     """Test STTError handler."""
 
     def test_returns_503(self, app: FastAPI, client: TestClient) -> None:
-        """Return 503 for STT service errors."""
+        """STT service errors produce HTTP 503."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise STTError("Whisper unavailable")
+            msg = "Whisper unavailable"
+            raise STTError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
@@ -120,11 +125,12 @@ class TestLLMError:
     """Test LLMError handler."""
 
     def test_returns_503(self, app: FastAPI, client: TestClient) -> None:
-        """Return 503 for LLM service errors."""
+        """LLM service errors produce HTTP 503."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise LLMError("Rate limited")
+            msg = "Rate limited"
+            raise LLMError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
@@ -136,11 +142,12 @@ class TestEkkoError:
     """Test generic EkkoError handler."""
 
     def test_returns_422_with_generic_message(self, app: FastAPI, client: TestClient) -> None:
-        """Return 422 and mask domain error internals."""
+        """Domain errors produce masked HTTP 422 responses."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise EkkoError("Internal domain logic detail")
+            msg = "Internal domain logic detail"
+            raise EkkoError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -152,11 +159,12 @@ class TestUnhandledException:
     """Test generic Exception handler."""
 
     def test_returns_500_with_generic_message(self, app: FastAPI, client: TestClient) -> None:
-        """Return 500 and mask unhandled exception details."""
+        """Unhandled exceptions produce masked HTTP 500 responses."""
 
         @app.get("/test")
         async def _endpoint() -> None:
-            raise RuntimeError("Something unexpected")
+            msg = "Something unexpected"
+            raise RuntimeError(msg)
 
         response = client.get("/test")
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

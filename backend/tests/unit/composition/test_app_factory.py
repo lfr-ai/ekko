@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 from fastapi import FastAPI
@@ -11,11 +12,14 @@ from starlette.staticfiles import StaticFiles
 
 from ekko.composition.app_factory import _mount_frontend
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 @pytest.mark.unit
 def test_mount_frontend_when_frozen_uses_pyinstaller_resource_directory(
     monkeypatch: pytest.MonkeyPatch,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     """Mount bundled frontend assets from PyInstaller's resource directory."""
     frontend_dir = tmp_path / "frontend"
