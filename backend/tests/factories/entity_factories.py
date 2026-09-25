@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 
 import factory
 
-from ekko.core.entities import AgentResult, Conversation, Message, Transcript
+from ekko.core.entities import Conversation, Message, Transcript
 from ekko.core.enums import MessageRole, TranscriptStatus
 
 
@@ -93,34 +93,7 @@ class TranscriptFactory(factory.Factory):
         return cls.create(confidence=confidence, **kwargs)
 
 
-class AgentResultFactory(factory.Factory):
-    """Factory for AgentResult entities."""
-
-    class Meta:
-        model = AgentResult
-
-    agent_name = factory.Faker("word")
-    task_name = factory.Faker("sentence", nb_words=3)
-    output = factory.Faker("paragraph")
-    raw_output = factory.Faker("text")
-    execution_time_seconds = factory.Faker("pyfloat", min_value=0.1, max_value=10.0)
-    created_at = factory.LazyFunction(lambda: datetime.now(UTC))
-
-    @classmethod
-    def fast_execution(cls, **kwargs):
-        """Create a result with fast execution time."""
-        execution_time = kwargs.pop("execution_time_seconds", 0.5)
-        return cls.create(execution_time_seconds=execution_time, **kwargs)
-
-    @classmethod
-    def slow_execution(cls, **kwargs):
-        """Create a result with slow execution time."""
-        execution_time = kwargs.pop("execution_time_seconds", 15.0)
-        return cls.create(execution_time_seconds=execution_time, **kwargs)
-
-
 __all__ = [
-    "AgentResultFactory",
     "ConversationFactory",
     "MessageFactory",
     "TranscriptFactory",

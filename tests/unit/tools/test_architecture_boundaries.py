@@ -1,22 +1,22 @@
 """Tests for the Clean Architecture boundary gate.
 
-The gate delegates to import-linter (contracts in ``backend/pyproject.toml``).
+The gate delegates to import-linter (contracts in ``backend/.importlinter``).
 These tests assert the contracts are declared and that the repository currently
 satisfies every contract.
 """
 
 from __future__ import annotations
 
+import configparser
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
 
 import pytest
 
 _ROOT = Path(__file__).resolve().parents[3]
 _CHECKER = _ROOT / "tools" / "security" / "check_architecture_boundaries.py"
-_BACKEND_PYPROJECT = _ROOT / "backend" / "pyproject.toml"
+_IMPORTLINTER = _ROOT / "backend" / ".importlinter"
 
 _EXPECTED_CONTRACTS = frozenset(
     {
@@ -41,10 +41,25 @@ _EXPECTED_LAYERS = (
 
 type ImportLinterContract = dict[str, str | list[str]]
 
+# import-linter INI options whose values are newline-separated module lists.
+_LIST_FIELDS = frozenset({"layers", "modules", "source_modules", "forbidden_modules"})
+
 
 def _load_contracts() -> list[ImportLinterContract]:
-    data = tomllib.loads(_BACKEND_PYPROJECT.read_text(encoding="utf-8"))
-    return data["tool"]["importlinter"]["contracts"]
+    parser = configparser.ConfigParser()
+    parser.read(_IMPORTLINTER, encoding="utf-8")
+    contracts: list[ImportLinterContract] = []
+    for section in parser.sections():
+        if not section.startswith("importlinter:contract:"):
+            continue
+        contract: ImportLinterContract = {}
+        for key, raw in parser[section].items():
+            if key in _LIST_FIELDS:
+                contract[key] = [item.strip() for item in raw.splitlines() if item.strip()]
+            else:
+                contract[key] = raw
+        contracts.append(contract)
+    return contracts
 
 
 @pytest.mark.unit

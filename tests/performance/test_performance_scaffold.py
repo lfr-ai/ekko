@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pytest
 
 from ekko.ai.pii.anonymizer import PIIAnonymizer
 from ekko.application.services import PromptCatalogService
-from ekko.core.enums import Prompt
 from ekko.presentation.graphql.schema import schema
+
+if TYPE_CHECKING:
+    from ekko.core.enums import Prompt
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

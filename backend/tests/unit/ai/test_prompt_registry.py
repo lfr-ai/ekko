@@ -22,7 +22,7 @@ from ekko.core.registry_constants import PROMPT_KEY_SUMMARY_CHUNKS
 _PROMPT_ROOT = Path(__file__).resolve().parents[3] / "src" / "ekko" / "ai" / "prompts"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class PromptSettingsStub:
     """Prompt settings required by the registry."""
 
