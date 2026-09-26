@@ -29,12 +29,14 @@ def test_backend_health_when_app_starts_then_reports_ok(e2e_client: TestClient) 
     assert isinstance(payload.get("details"), dict)
 
 
-def test_graphql_health_when_queried_then_returns_service_status(e2e_client: TestClient) -> None:
-    """GraphQL health query should be reachable end-to-end."""
-    query = {"query": "query { health { status environment } }"}
+def test_graphql_prompt_catalog_when_queried_then_returns_prompts(e2e_client: TestClient) -> None:
+    """Prompt catalog GraphQL query should be reachable end-to-end."""
+    query = {"query": "query { promptCatalog { versionSet prompts { key } } }"}
     response = e2e_client.post("/graphql", json=query)
 
     assert response.status_code == 200
     payload = response.json()
     assert "errors" not in payload
-    assert payload["data"]["health"]["status"] in {"healthy", "degraded", "unhealthy"}
+    catalog = payload["data"]["promptCatalog"]
+    assert isinstance(catalog["versionSet"], str)
+    assert isinstance(catalog["prompts"], list)

@@ -5,11 +5,7 @@ import pytest
 from ekko.application.services.summarizer_service import SummarizerService
 from ekko.core.exceptions import PIIPolicyViolationError
 from ekko.core.policies.pii_policy import PIIPolicyError, PIIPolicyOutcome
-
-try:
-    from ekko.core.ports import PromptRegistryError
-except ImportError:
-    from ekko.core.ports.external.prompt_registry import PromptRegistryError
+from ekko.core.ports import PromptRegistryError
 
 
 class DummyGateway:
