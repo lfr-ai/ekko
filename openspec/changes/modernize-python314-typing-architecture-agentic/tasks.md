@@ -92,7 +92,7 @@
 - [ ] 7.5 Correct all Clean Architecture skills/rules/prompts to the executable layer model and current directory names/adapters.
 - [ ] 7.6 Change SDD instruction/skill paths from obsolete spec roots to main and delta OpenSpec specs.
 - [ ] 7.7 Expand TDD/testing instruction scopes to both `backend/tests` and root `tests`.
-- [ ] 7.8 Narrow Keploy instructions so unrelated work does not load the complete record/replay workflow.
+- [x] 7.8 Superseded: Keploy record/replay tooling removed entirely (was unused scaffolding, never recorded a test case).
 - [ ] 7.9 Simplify prompt-file guidance to valid current frontmatter and tool identifiers.
 - [ ] 7.10 Remove agent-authored Git shell commands from agents, prompts, commands, and skills; document workspace-native alternatives.
 - [ ] 7.11 Correct Claude project `PYTHONPATH`, uv command policy, environment-file permissions, and stale plugin/tool permissions.

@@ -46,19 +46,6 @@ high-signal review outcomes.
 - AND style concerns already enforced by repository linters are not duplicated as primary review policy
 - AND review automation remains enabled with deterministic behavior
 
-### Requirement: Keploy usage is standardized through task wrappers
-
-The repository MUST expose Keploy through stable task entry points instead of
-ad hoc command usage.
-
-#### Scenario: Keploy record and replay are available via task commands
-
-- GIVEN the project task configuration
-- WHEN the developer lists platform tasks
-- THEN task entries exist for `keploy:record`, `keploy:test`, and `keploy:report`
-- AND the record/replay workflow targets the local backend runtime
-- AND the workflow can run with local-safe defaults for audio-disabled API capture
-
 ### Requirement: Structured logging provides basic observability
 
 The application MUST use structured JSON logging for operation timing and diagnostics.

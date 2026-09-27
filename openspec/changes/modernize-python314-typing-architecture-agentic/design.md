@@ -105,7 +105,7 @@ Sequence:
 2. Add missing skill frontmatter and correct stale runtime/type/architecture/spec/test guidance in the canonical skill tree.
 3. Align MCP declarations with an explicit supported baseline. Prefer configuring the required frontend servers only if they have reproducible commands and are actively used; otherwise narrow baseline claims.
 4. Remove prohibited Git-command guidance and replace it with IDE SCM context or GitNexus/workspace change detection.
-5. Fix test/spec instruction globs and narrow Keploy guidance to relevant requests/assets.
+5. Fix test/spec instruction globs. (Keploy record/replay tooling has since been removed entirely.)
 6. Prevent duplicate hook discovery and ensure PowerShell is guarded.
 7. Add a customization validator covering metadata, tool vocabulary, duplicate identities, stale paths, MCP capability references, canonical/mirror drift, and prohibited command guidance.
 8. Only after validation passes, stop VS Code from discovering Claude mirrors and remove unmanaged duplicate skill roots/legacy aliases that no supported client needs.
