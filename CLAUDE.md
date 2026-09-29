@@ -17,18 +17,38 @@ invocation and takes precedence over general model knowledge.
 
 ---
 
+## Default Working Method
+
+Apply this to every task unless the user explicitly asks for a lighter touch:
+
+**IMPORTANT!** You MUST be exhaustive and follow best practices. Consult, search,
+and fetch the web and relevant documentation. Make an extensive TODO/plan, then
+run a systematic walkthrough ensuring everything is addressed and considered —
+clean, aligned, consistent, up to date, and working. Keep cognitive load
+manageable and follow the existing structure, setup, and conventions. Enforce
+Clean Architecture and ensure alignment and consistency throughout the codebase.
+
+## Response Format
+
+End every response with a short `tldr;` section, placed **last** so it is easy to
+find. Keep it minimal and human-readable — only the most important information
+(key files touched, changes made, and any next step) as a few tight bullets, with
+no extra prose. Omit the `tldr;` only when the user explicitly requests otherwise.
+
+---
+
 ## 1. Project Overview
 
 **Ekko** is an AI-powered voice assistant platform that captures desktop audio,
-transcribes speech, runs AI pipelines (summarization, PII scrubbing, multi-agent
-orchestration), and presents results through a local web UI.
+transcribes speech, runs AI pipelines (summarization, PII scrubbing), and
+presents results through a local web UI.
 
 | Attribute | Value |
 | --- | --- |
-| Runtime | Python 3.12, FastAPI, Uvicorn |
-| ORM | SQLAlchemy 2.0+ async, dual backends: SQLite (local/test) and PostgreSQL (dev/prod) |
-| AI | LangChain, OpenAI, CrewAI, faster-whisper |
-| GraphQL | Strawberry GraphQL (subscriptions) |
+| Runtime | Python 3.14, FastAPI, Uvicorn |
+| ORM | SQLAlchemy 2.0+ async, SQLite via aiosqlite |
+| AI | LiteLLM, OpenAI, Azure Speech |
+| GraphQL | Strawberry GraphQL (single read-only query) |
 | Frontend | React 19, TypeScript, Vite 6 + SWC, shadcn/ui, Tailwind CSS v4 |
 | State | Zustand, TanStack React Query |
 | Backend pkg mgr | `uv` |
@@ -71,7 +91,6 @@ task db:migrate           # Run Alembic migrations
 task db:revision          # Create new Alembic migration
 task db:downgrade         # Rollback last migration
 task db:reset             # Delete SQLite DB and re-migrate
-task db:migrate:pg-to-sqlite   # Copy local PostgreSQL data into SQLite
 
 # Build & Deploy
 task build:exe            # Build standalone PyInstaller EXE
@@ -92,40 +111,42 @@ task test && task lint && task typecheck && task pre-commit
 
 ```text
 backend/src/ekko/
-├── core/                # Domain entities, value objects, interfaces (ports), exceptions
+├── core/                # Domain entities, value objects, ports, exceptions
 │   ├── entities/        # Domain entities
 │   ├── value_objects/   # Immutable value objects
-│   ├── interfaces/      # Port protocols (audio, chat, embedding, llm, pii)
+│   ├── ports/           # Port protocols (audio, chat, pii, prompts, repositories)
 │   ├── exceptions/      # Domain exception hierarchy
 │   ├── enums/           # Domain enumerations (base, ai, audio, messaging)
-│   ├── protocols.py     # Shared protocols
+│   ├── events.py        # Domain events
+│   ├── types.py         # Domain type aliases
 │   └── registry_constants.py  # Generated naming constants
 ├── application/         # DTOs, handlers, services, mappers
 │   ├── dtos/            # Data transfer objects
 │   ├── handlers/        # Application handlers
 │   ├── mappers/         # Entity <-> DTO mappers
-│   └── services/        # Orchestration services (chat, summarizer)
-├── infrastructure/      # Persistence (ORM, repos), clients, adapters
+│   └── services/        # Orchestration services (summarizer)
+├── infrastructure/      # Persistence (ORM), clients, adapters
 │   ├── adapters/        # Audio, STT adapters
+│   ├── audio_streamer/  # Audio streamer TCP server
+│   ├── clients/         # External service clients (chat, prompt registry)
 │   ├── concurrency/     # QueueManager, ThreadManager
-│   ├── db/              # SQLAlchemy engine, models (SQLite local/test + PostgreSQL dev/prod)
-│   ├── llm/             # LLM chat adapters
+│   ├── db/              # SQLAlchemy engine, models (SQLite via aiosqlite)
+│   ├── helpers/         # Retry policies
 │   └── stt/             # Speech-to-text transcriber
 ├── ai/                  # AI vertical
-│   ├── crewai/          # HMAS multi-agent system (YAML config)
 │   ├── chains/          # Conversational chains
-│   ├── embeddings/      # Embedding service
-│   ├── llm/             # LLM adapter
 │   ├── pii/             # PII anonymization (regex-based)
-│   └── prompts/         # Prompt templates
+│   └── prompts/         # Prompt registry, templates, and versioning
 ├── presentation/        # FastAPI routes, GraphQL, middleware, DI
 │   ├── api/             # REST routes, dependencies, middleware
-│   └── graphql/         # Strawberry schema, queries, mutations, subscriptions
+│   └── graphql/         # Strawberry schema, single read-only query
 ├── composition/         # DI container + app factory
-├── config/              # Pydantic BaseSettings, environment-based overrides
-│   └── settings/        # base.py, local.py, test_env.py + get_settings()
-├── cli/                 # CLI entry points
-└── utils/               # Cross-cutting: logger, helpers, types, validators
+├── config/              # Faceted settings + environment configs
+│   ├── settings/        # ConfiguredSettings base + per-domain facets (*Settings)
+│   ├── environments/    # Per-environment configs (local/dev/prod/test_env)
+│   ├── base.py          # BaseAppConfig (composes all settings facets)
+│   └── runtime.py       # Environment resolution + get_config() factory
+└── cli/                 # CLI entry points
 ```
 
 ### Frontend
@@ -171,23 +192,25 @@ registry/                # Naming registry (JSON -> generated constants)
 ### Dependency Direction
 
 ```text
-core -> utils -> config -> infrastructure -> application -> composition -> presentation -> main
+config -> core -> {ai | infrastructure} -> application -> presentation -> composition -> cli
 ```
 
 Dependencies always point **inward**. Outer layers depend on inner layers, never
-the reverse. The `core/` layer has zero framework imports.
+the reverse. The `core/` layer has zero framework imports. Enforced by
+import-linter contracts in `backend/.importlinter` (`task architecture`).
 
 ### Import Rules
 
 | Layer | May Import From | NEVER Imports From |
 | --- | --- | --- |
-| `utils/` | stdlib ONLY | ALL other project layers |
-| `config/` | `utils/`, external libs | `presentation/`, `application/`, `core/` |
-| `core/` | `utils/`, `config/` | `presentation/`, `application/`, `infrastructure/` |
-| `infrastructure/` | `core/`, `config/`, `utils/`, external libs | `presentation/`, `application/` |
-| `ai/` | `config/`, `utils/`, `core/` | `presentation/`, `application/`, `infrastructure/` |
-| `application/` | `core/`, `infrastructure/`, `ai/`, `config/`, `utils/` | `presentation/` |
-| `presentation/` | `application/`, `core/`, `config/`, `utils/` | (top layer) |
+| `config/` | external libs, stdlib | `core/`, `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `core/` | `config/`, stdlib (+ Pydantic hooks) | `infrastructure/`, `ai/`, `application/`, `presentation/` |
+| `infrastructure/` | `core/`, `config/`, external libs | `ai/`, `application/`, `presentation/` |
+| `ai/` | `core/`, `config/` | `infrastructure/`, `application/`, `presentation/` |
+| `application/` | `core/`, `infrastructure/`, `ai/`, `config/` | `presentation/` |
+| `presentation/` | `application/`, `core/`, `config/` | `infrastructure/`, `ai/`, `composition/` |
+| `composition/` | all layers (DI wiring) | — |
+| `cli/` | `composition/`, `presentation/`, `config/` | (entrypoint) |
 
 ### DI Pattern
 
@@ -206,12 +229,12 @@ These are non-negotiable. Every change must satisfy all of them.
 | 1 | **No `Any`** | No `Any` in production type annotations. Use `object`, generics, or `Protocol`. |
 | 2 | **Dictionary aliases** | Use `BaseDict` / `JSONDict` instead of bare `dict[str, ...]`. |
 | 3 | **Immutable dataclasses** | Always `@dataclass(frozen=True, slots=True)`. Exception: `Container`. |
-| 4 | **Typed docstrings** | Google-style. `Raises:` only for exceptions raised directly in the function body. |
+| 4 | **Typed docstrings** | Google-style with `"""` triple-double-quote delimiters. Imperative mood for functions/methods, noun phrase for classes. `Raises:` only for exceptions raised directly in the function body. |
 | 5 | **Dead code removal** | Remove dead code in the same change-set. No commented-out blocks. |
 | 6 | **No legacy shims** | No compatibility wrappers for retired patterns. |
 | 7 | **Architecture boundaries** | Clean Architecture import rules enforced (see section 4). |
 | 8 | **HTTP status constants** | Use `fastapi.status` instead of raw HTTP integers. |
-| 9 | **No `print()`** | Use `structlog` for all logging. |
+| 9 | **No `print()`** | Use stdlib `logging` with structured `extra={...}` for all logging. |
 | 10 | **Keyword-only args** | Use `*` separator when a function has 3+ parameters. |
 | 11 | **Exception chaining** | Always `raise NewError(...) from original_error`. |
 | 12 | **`Final` constants** | Use `Final[type]` for module-level constants; `@final` for sealed classes. |
@@ -295,11 +318,12 @@ task check               # lint + test:unit + typecheck + xenon
 
 | Aspect | Location |
 | --- | --- |
-| Settings factory | `ekko.config.settings.get_settings()` |
+| Config factory | `ekko.config.runtime.get_config()` |
 | Env var prefix | `EKKO_` (e.g. `EKKO_OPENAI_API_KEY`) |
-| Base config | `backend/src/ekko/config/settings/base.py` (`BaseAppConfig`) |
-| Local config | `backend/src/ekko/config/settings/local.py` (`LocalConfig`) |
-| Test config | `backend/src/ekko/config/settings/test_env.py` (`TestingConfig`) |
+| Settings facets | `backend/src/ekko/config/settings/*.py` (`*Settings` mixins on `ConfiguredSettings`) |
+| Aggregate config | `backend/src/ekko/config/base.py` (`BaseAppConfig`) |
+| Environment configs | `backend/src/ekko/config/environments/*.py` (`LocalConfig`, `DevelopmentConfig`, `ProductionConfig`, `TestingConfig`) |
+| Config consumers | `from_config(cls, config: _XConfig)` with a private structural `Protocol` per component |
 | Env selector | `EKKO_ENVIRONMENT` env var (defaults to `local`) |
 | Dotenv loading | `.env` -> `.env.{stage}` -> `.env.local` (last wins) |
 | Naming registry | `registry/naming_registry.json` -> `core/registry_constants.py` |
@@ -312,18 +336,16 @@ task check               # lint + test:unit + typecheck + xenon
 
 | Component | Location | Purpose |
 | --- | --- | --- |
-| CrewAI HMAS | `ai/crewai/` | Multi-agent orchestration (YAML config) |
 | PII scrubber | `ai/pii/` | Regex-based anonymization before LLM calls |
-| Chains | `ai/chains/` | LangChain conversational chains |
-| Embeddings | `ai/embeddings/` | Embedding service for RAG |
-| Prompts | `ai/prompts/` | Prompt template files |
-| LLM adapter | `ai/llm/` | LLM adapter layer |
-| STT | `infrastructure/stt/` | faster-whisper speech-to-text |
+| Chains | `ai/chains/` | Conversational chains (LiteLLM-backed) |
+| Prompts | `ai/prompts/` | Prompt registry, templates, and versioning |
+| Chat client | `infrastructure/clients/chat.py` | LiteLLM-based chat completion client |
+| STT | `infrastructure/stt/` | Azure Speech speech-to-text |
 
 ### AI Dependencies
 
 - `core/ports/` defines port protocols for all AI components.
-- `ai/` may import from `core/`, `config/`, `utils/` only.
+- `ai/` may import from `core/` and `config/` only.
 - `ai/` must NOT import from `application/`, `infrastructure/`, or `presentation/`.
 
 ---
@@ -340,169 +362,30 @@ When you need official library or framework documentation:
 
 ## 11. Customization Structure
 
-### Claude Code CLI (`.claude/`)
+Both runtimes share one source of truth on disk — this section used to mirror
+that structure as prose and drifted every time a skill, agent, or instruction
+was added, renamed, or removed. Discover the current roster directly instead:
 
-```text
-.claude/
-├── settings.json              # Project settings: permissions, hooks, env, plugins
-├── settings.local.json        # Personal overrides (gitignored)
-├── agents/
-│   ├── architect.md           # Architecture design (model: opus, effort: xhigh, read-only)
-│   ├── code-reviewer.md       # Code review (model: sonnet, read-only, effort: high)
-│   ├── devops.md              # Build/deploy/CI (model: sonnet)
-│   ├── frontend-reviewer.md   # Frontend review (model: sonnet, read-only)
-│   ├── refactorer.md          # Refactoring (model: inherit, isolation: worktree)
-│   ├── researcher.md          # Codebase exploration (model: haiku, read-only)
-│   ├── sdd.md                 # SDD Given-When-Then scenarios (model: sonnet)
-│   ├── tdd.md                 # TDD Red-Green-Refactor (model: sonnet)
-│   └── test-writer.md         # Test writing (model: sonnet, effort: high)
-├── commands/
-│   ├── commit.md              # Conventional commit from staged diff
-│   └── opsx/                  # OpenSpec workflow commands (11 total)
-│       ├── apply.md
-│       ├── archive.md
-│       ├── bulk-archive.md
-│       ├── continue.md
-│       ├── explore.md
-│       ├── ff.md
-│       ├── new.md
-│       ├── onboard.md
-│       ├── propose.md
-│       ├── sync.md
-│       └── verify.md
-├── hooks/
-│   ├── guard-destructive.sh   # PreToolUse: block dangerous commands (Unix)
-│   ├── guard-destructive.ps1  # PreToolUse: block dangerous commands (Windows)
-│   ├── stop-uncommitted-reminder.sh   # Stop: warn about uncommitted files (Unix)
-│   └── stop-uncommitted-reminder.ps1  # Stop: warn about uncommitted files (Windows)
-└── rules/
-    ├── architecture.md        # Scoped to backend/src/ekko/**/*.py
-    ├── python-conventions.md  # Scoped to **/*.py
-    ├── testing.md             # Scoped to tests/**/*.py
-    ├── frontend.md            # Scoped to frontend/src/**/*.{ts,tsx}
-    ├── shell.md               # Scoped to **/*.{sh,ps1}
-    ├── registry.md            # Scoped to registry/**
-    ├── ddd.md                 # Scoped to core/**/*.py + application/**/*.py
-    ├── tdd.md                 # Scoped to tests/**/*.py
-    ├── sdd.md                 # Scoped to docs/specs/**/*.md
-    ├── cognitive-load.md      # Scoped to **/*.py
-    └── docs-sync.md           # Scoped to **/*.{md,py,yml,yaml,toml,json}
-```
-
-### Claude Code Agents Reference
-
-| Agent | Model | Tools | Isolation | Effort | Permission Mode |
-| --- | --- | --- | --- | --- | --- |
-| `architect` | opus | Read, Grep, Glob, Bash | — | xhigh | plan |
-| `code-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
-| `devops` | sonnet | Read, Grep, Glob, Bash, Write, Edit | — | high | acceptEdits |
-| `frontend-reviewer` | sonnet | Read, Grep, Glob, Bash | — | high | acceptEdits |
-| `refactorer` | inherit | Read, Grep, Glob, Write, Edit, Bash | worktree | high | acceptEdits |
-| `researcher` | haiku | Read, Grep, Glob | — | medium | plan |
-| `test-writer` | sonnet | Read, Grep, Glob, Write, Edit, Bash | — | high | acceptEdits |
-| `tdd` | sonnet | Read, Write, Edit, Glob, Grep, Bash | — | high | acceptEdits |
-| `sdd` | sonnet | Read, Write, Edit, Glob, Grep, Bash | — | high | acceptEdits |
-
-**Usage**: Claude auto-delegates based on the `description` field. You can also
-invoke explicitly: `@code-reviewer review auth changes` or run a full session
-as an agent: `claude --agent code-reviewer`.
-
-### MCP Servers
-
-| Config file | Tool | Servers |
-| --- | --- | --- |
-| `.claude/mcp.json` | Claude Code CLI | context7, shadcn, gitnexus |
-| `.vscode/mcp.json` | VS Code Copilot | context7, shadcn, gitnexus |
-
-### VS Code Copilot (`.github/`)
-
-```text
-.github/
-├── copilot-instructions.md         # Global VS Code Copilot instructions
-├── agents/                         # Agent definitions (13 agents)
-│   ├── backend-python.agent.md     # Python backend specialist
-│   ├── frontend-react.agent.md     # React frontend specialist
-│   ├── testing.agent.md            # Testing strategies
-│   ├── database.agent.md           # SQLAlchemy, Alembic, repository pattern
-│   ├── security.agent.md           # OWASP, auth, vulnerability prevention
-│   ├── debug.agent.md              # Bug investigation mode
-│   ├── deep-thinking.agent.md      # Cross-cutting architecture analysis
-│   ├── modernization.agent.md      # Repo-wide modernization planning
-│   ├── ddd.agent.md                # DDD domain modeling expert
-│   ├── tdd.agent.md                # TDD Red-Green-Refactor specialist
-│   ├── sdd.agent.md                # SDD Given-When-Then scenarios
-│   ├── refactor.agent.md           # Code refactoring (Fowler's catalog)
-│   └── devops.agent.md             # CI/CD, Docker, infrastructure
-├── skills/                         # Skill packs (shared by Claude + Copilot)
-│   ├── clean-architecture/SKILL.md
-│   ├── python-conventions/SKILL.md
-│   ├── testing-conventions/SKILL.md
-│   ├── frontend-react-stack/SKILL.md
-│   ├── naming-registry/SKILL.md
-│   ├── gitnexus/SKILL.md
-│   ├── openspec/SKILL.md
-│   ├── quality-gate/SKILL.md
-│   ├── deploy-check/SKILL.md
-│   ├── dry-refactoring/SKILL.md
-│   ├── ddd/SKILL.md
-│   ├── tdd/SKILL.md
-│   └── sdd/SKILL.md
-├── instructions/                   # File-scoped instructions (auto-load via applyTo)
-│   ├── architecture.instructions.md        # backend/src/ekko/**/*.py
-│   ├── coding-conventions.instructions.md  # **/*.py
-│   ├── cognitive-load.instructions.md      # **/*.py
-│   ├── testing.instructions.md             # tests/**/*.py
-│   ├── shell.instructions.md               # **/*.{sh,ps1}
-│   ├── registry.instructions.md            # registry/**
-│   ├── update-docs-on-code-change.instructions.md  # **/*.{md,py,yml,yaml,toml,json}
-│   ├── ddd.instructions.md                 # backend/src/ekko/core/**/*.py
-│   ├── tdd.instructions.md                 # tests/**/*.py
-│   └── sdd.instructions.md                 # docs/specs/**/*.md
-├── hooks/                          # VS Code Copilot hooks
-│   ├── tool-guardian.json          # PreToolUse: block dangerous commands
-│   ├── dependency-license-checker.json  # Stop: license compliance
-│   └── scripts/                    # Hook implementation scripts
-│       ├── guard-tool.{sh,ps1}     # Block destructive commands
-│       └── check-licenses.{sh,ps1} # License compliance check
-├── prompts/                        # Reusable prompt templates
-│   ├── review.prompt.md
-│   ├── test.prompt.md
-│   ├── refactor.prompt.md
-│   ├── debug.prompt.md
-│   ├── opsx-apply.prompt.md
-│   ├── opsx-archive.prompt.md
-│   ├── opsx-bulk-archive.prompt.md
-│   ├── opsx-continue.prompt.md
-│   ├── opsx-explore.prompt.md
-│   ├── opsx-ff.prompt.md
-│   ├── opsx-new.prompt.md
-│   ├── opsx-onboard.prompt.md
-│   ├── opsx-propose.prompt.md
-│   ├── opsx-sync.prompt.md
-│   └── opsx-verify.prompt.md
-├── knowledge/
-│   └── EKKO_KNOWLEDGE_GRAPH.md     # Codebase knowledge graph
-└── CODEOWNERS
-```
-
-### Shared Skills (Claude Code + VS Code Copilot)
-
-| Skill | Scope |
+| Want to see... | Look at... |
 | --- | --- |
-| **Clean Architecture** | Layer boundaries, dependency rules |
-| **Python Conventions** | Naming, typing, Pydantic, logging |
-| **Testing Conventions** | Pytest fixtures, factories, coverage |
-| **Frontend React Stack** | React + TypeScript + Vite + shadcn/ui |
-| **Naming Registry** | Registry-first constant generation |
-| **GitNexus** | Graph-powered code intelligence |
-| **OpenSpec** | Spec-driven planning |
-| **Quality Gate** | Full validation suite before finalizing changes |
-| **Deploy Check** | Pre-deployment checklist and build verification |
-| **DDD** | Aggregates, value objects, domain events, repositories, bounded contexts |
-| **TDD** | Red-Green-Refactor cycle, acceptance TDD, contract testing, test pyramid |
-| **SDD** | Specification by Example, Given-When-Then, living documentation |
+| Claude Code CLI settings/hooks/commands | `.claude/settings.json`, `.claude/commands/`, `.claude/hooks/` |
+| Claude agents | `.claude/agents/*.md` |
+| Copilot agents | `.github/agents/*.agent.md` (see `.github/agents/README.md`) |
+| Skills (mirrored, byte-identical) | `.github/skills/`, `.claude/skills/`, `.agents/skills/` |
+| Instructions ↔ rules (paired, same scope) | `.github/instructions/*.instructions.md` ↔ `.claude/rules/*.md` |
+| Copilot hooks | `.github/hooks/*.json` |
+| Prompts ↔ commands | `.github/prompts/` (see its `README.md`) ↔ `.claude/commands/` |
+| MCP servers (kept in parity) | `.vscode/mcp.json`, `.claude/mcp.json`, `.mcp.json` |
 
----
+Validate parity and catch drift (stale paths, project-token leaks into
+portable skills, MCP mismatches) with:
+
+```bash
+uv run --project backend python tools/conventions/check_agent_customizations.py
+```
+
+See the `agent-config` skill for placement rules (skill vs instruction vs
+`AGENTS.md`) and the full three-tree parity contract.
 
 ## 12. Claude Code CLI vs VS Code Copilot
 
@@ -511,14 +394,14 @@ as an agent: `claude --agent code-reviewer`.
 | **Primary config** | `CLAUDE.md` (auto-loaded) | `.github/copilot-instructions.md` |
 | **Path-scoped rules** | `.claude/rules/*.md` (`paths:`) | `.github/instructions/*.md` (`applyTo:`) |
 | **Skills** | `.github/skills/` (shared, with `paths:` for auto-loading) | `.github/skills/` |
-| **Agents** | `.claude/agents/` (9 agents) | `.github/agents/` (13 agents) |
+| **Agents** | `.claude/agents/` (13 agents) | `.github/agents/` (17 agents) |
 | **Hooks** | `.claude/settings.json` hooks section | `.github/hooks/{tool-guardian,dependency-license-checker}.json` |
-| **Shell access** | Full terminal (task, git, uv, bun) | Limited via `@terminal` |
+| **Shell access** | Guarded terminal (task, uv, bun; Git commands denied) | Guarded terminal tools |
 | **File editing** | Direct read/write/edit tools | Inline editor suggestions |
 | **Multi-file refactors** | Native (reads full tree) | Manual or via Copilot Edits |
 | **Test execution** | Runs `task test` directly | Requires terminal passthrough |
 | **Git operations** | Full git CLI access | Via Source Control UI |
-| **MCP servers** | `.claude/mcp.json` | `.vscode/mcp.json` |
+| **MCP servers** | `.claude/mcp.json` (context7, gitnexus, playwright, shadcn) | `.vscode/mcp.json` (same 4, kept in parity) |
 
 Both tools share skill packs in `.github/skills/` and respect `AGENTS.md`
 for general conventions. `CLAUDE.md` provides CLI-specific overrides and
@@ -527,7 +410,7 @@ the authoritative instruction set for Claude Code sessions.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **voice-bot** (4237 symbols, 6530 relationships, 65 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ekko** (4341 symbols, 6584 relationships, 82 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -550,20 +433,20 @@ This project is indexed by GitNexus as **voice-bot** (4237 symbols, 6530 relatio
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/voice-bot/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/voice-bot/clusters` | All functional areas |
-| `gitnexus://repo/voice-bot/processes` | All execution flows |
-| `gitnexus://repo/voice-bot/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/ekko/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/ekko/clusters` | All functional areas |
+| `gitnexus://repo/ekko/processes` | All execution flows |
+| `gitnexus://repo/ekko/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 
 | Task | Read this skill file |
 |------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/cli/SKILL.md` |
 
 <!-- gitnexus:end -->

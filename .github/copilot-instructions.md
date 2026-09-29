@@ -54,9 +54,11 @@ no extra prose. Omit the `tldr;` only when the user explicitly requests otherwis
 
 ## Agentic + MCP baseline
 
-- Maintain parity for these MCP servers in `.vscode/mcp.json` and `.mcp.json`:
+- Maintain parity for these MCP servers in `.vscode/mcp.json` and `.claude/mcp.json`:
   - `context7`
   - `gitnexus`
+  - `playwright`
+  - `shadcn`
 - Keep VS Code settings aligned:
   - disable external MCP discovery providers under `"chat.mcp.discovery.enabled"`
   - `"chat.mcp.autoStart": true`

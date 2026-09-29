@@ -31,12 +31,9 @@
     "pydantic",
     "sqlalchemy",
     "alembic",
-    "asyncpg",
     "aiosqlite",
-    "psycopg",
-    "structlog",
     "crewai",
-    "langchain",
+    "litellm",
     "strawberry",
     "markdownlint",
     "yamllint",
@@ -59,7 +56,6 @@
     "gitnexus",
     "openspec",
     "opsx",
-    "keploy",
     "xenon",
     "commitizen"
   ]
