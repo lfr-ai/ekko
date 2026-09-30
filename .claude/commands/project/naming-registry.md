@@ -1,0 +1,1 @@
+Run the `project/naming-registry` skill from `.claude/skills/project/naming-registry/SKILL.md` to maintain the canonical full-stack naming registry.

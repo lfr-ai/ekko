@@ -9,12 +9,15 @@ Enforce the project's conventions across the entire codebase — align every mod
 to the naming, structure, clean-architecture, docstring, typing, cognitive-load,
 and minimalism rules the repo already defines.
 
-**Scope (optional):** If a scope is given (a layer — `config`, `core`, `ai`,
-`infrastructure`, `application`, `presentation`, `composition`, `cli` — or a path
-under the backend source package, see `PROJECT.md`), restrict the walkthrough to
-it. Otherwise cover the
-whole source package (named in `PROJECT.md`), then `scripts/`, migrations, and
-`tests/`.
+**Companion prompts (compose, don't overlap):** this prompt owns per-file source
+code-rule compliance. Cross-cutting *uniformity* — terminology and wording across
+docs and specs, structural parallelism, and three-tree agentic-setup parity — is
+`align-consistency`; test-suite alignment is `align-tests`.
+
+**Scope (optional):** If a scope is given (a layer — `core`, `application`,
+`infrastructure`, `composition`, `presentation` — or a path under `src/`),
+restrict the walkthrough to it. Otherwise cover the whole source package
+(named in `PROJECT.md`), then `scripts/`, migrations, and `tests/`.
 
 ## Non-negotiable constraints
 
@@ -39,8 +42,10 @@ whole source package (named in `PROJECT.md`), then `scripts/`, migrations, and
   inward only.
 - Inventory the public surface per layer: modules, classes, ports/protocols,
   DTOs, value objects, enums, handlers, repositories, routes.
-- Use `semantic_search`, `grep_search`, `file_search`; if GitNexus is available
-  use it for call-graph and impact context before any rename.
+- Use `semantic_search`, `grep_search`, `file_search` for discovery. Before
+  renaming or restructuring any exported symbol, run `gitnexus_impact` to
+  assess blast radius — this is a mandatory GitNexus Hard Requirement in
+  `AGENTS.md`, not an optional nicety.
 
 ## Phase 2 — Convention inventory (what to enforce)
 
@@ -133,13 +138,16 @@ Catalog every deviation, grouped by rule family:
 
 ## Phase 5 — Systematic walkthrough (execute, inward-out)
 
-Work layer-by-layer in dependency order — `config → core → {ai | infrastructure}
-→ application → presentation → composition → cli`, then `scripts/`,
-`backend/alembic/`, `tests/`. Per file, apply the Phase 2 checklist, and:
+Work layer-by-layer in dependency order — `core → application → infrastructure →
+composition → presentation → main`, then `scripts/`, `alembic/`, `tests/`. Per
+file, apply the Phase 2 checklist, and:
 
-- Use the language-server rename (not find/replace) for symbol renames; update
-  every call site and `__all__` in the same change-set.
+- Use `gitnexus_rename` (never find/replace) for every symbol rename — it
+  understands the call graph across mirrored trees; update every call site and
+  `__all__` in the same change-set.
 - Remove dead code (unused methods, constants, imports, stale helpers) as you go.
+- After renaming, moving, or adding a module/folder, refresh the code graph
+  (`task graph`) so code intelligence stays accurate for the next pass.
 - After each module or logical group, re-check just that file
   (`uv run ruff check <path>`, and `uv run ty check <path>` where practical).
 
@@ -164,12 +172,19 @@ Strip anything that restates a default or adds noise without safety:
 
 ## Phase 7 — Full validation (iterate until clean)
 
-Run `task lint`, `task typecheck`, `task test`, and `task check`. The final
-`task check` executes all configured pre-commit and agent-config parity guards.
+Run `task lint`, `task typecheck`, `task test`, and `task check` (the final
+`task check` runs `task guard` plus every configured pre-commit and agent-config
+parity guard). Then run `gitnexus_detect_changes()` to confirm only the intended
+symbols and execution flows changed — required before any task is considered
+closed.
 
+- Filesystem/class naming beyond ruff's symbol-level checks:
+  `uv run python .agents/skills/consistency/scripts/check_naming.py` and
+  `.../check_class_file_naming.py` (also run inside `task check`). Run
+  `openspec validate --all` when specs changed.
 - For `@override` completeness, run a one-off explicit-override check (mypy
-  `--enable-error-code explicit-override`, if available); `ty` does not flag a
-  *missing* `@override`.
+  `--enable-error-code explicit-override`); `ty` does not flag a *missing*
+  `@override`.
 - Introduce NO new `ty`/`ruff` diagnostics. Pre-existing baseline items unrelated
   to the change stay untouched unless the user asks otherwise.
 
@@ -181,6 +196,9 @@ Run `task lint`, `task typecheck`, `task test`, and `task check`. The final
 - Redundant defaults omitted; dead code and legacy shims removed.
 - Validation gates green (or only pre-existing, unrelated baseline noise remains —
   reported explicitly). Zero `git` commands run.
+- `gitnexus_detect_changes()` confirms no unexpected symbol or process impact.
+- Any durable lesson or recurring gotcha this pass surfaced is recorded in
+  `memories/` (decisions or lessons) before the task is reported done.
 
 ## Final report
 

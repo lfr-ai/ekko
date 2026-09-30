@@ -1,0 +1,1 @@
+Run the `project/deploy-check` skill from `.claude/skills/project/deploy-check/SKILL.md` for the requested deployment target. Follow its checklist and report command evidence; do not deploy external resources.

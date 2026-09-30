@@ -5,15 +5,15 @@ from __future__ import annotations
 import asyncio
 import logging
 from asyncio import Event, StreamReader, StreamWriter
-from typing import Final, Protocol
+from typing import Protocol
 
-from ekko.config.settings import get_settings
+from ekko.config.runtime import get_config
 from ekko.infrastructure.audio_streamer.audio_streamer import AudioStreamer
 
 _logger = logging.getLogger(__name__)
 
-_SYSTEM_AUDIO_PORT_OFFSET: Final[int] = 1
-_MICROPHONE_AUDIO_PORT_OFFSET: Final[int] = 2
+_SYSTEM_AUDIO_PORT_OFFSET = 1
+_MICROPHONE_AUDIO_PORT_OFFSET = 2
 
 
 class _AudioStream(Protocol):
@@ -38,8 +38,8 @@ async def _audio_send_loop(
                 break
             writer_sock.write(data)
             await writer_sock.drain()
-    except Exception as e:
-        _logger.debug("Audio send loop error", extra={"label": label, "error": str(e)})
+    except Exception as exc:  # noqa: BLE001  # send loop logs and exits on any stream error
+        _logger.debug("Audio send loop error", extra={"label": label, "error": str(exc)})
     finally:
         writer_sock.close()
         await writer_sock.wait_closed()
@@ -126,14 +126,14 @@ async def _ipc_handler(
             await writer.drain()
             writer.close()
             await writer.wait_closed()
-        except Exception as e2:
-            _logger.debug("Failed to close IPC writer", extra={"error": str(e2)})
+        except Exception as exc:  # noqa: BLE001  # best-effort error reply on a failed writer
+            _logger.debug("Failed to close IPC writer", extra={"error": str(exc)})
 
 
-async def main():
+async def main() -> None:
     """Run the TCP IPC server and audio streamer."""
     stop_event = Event()
-    settings = get_settings()
+    settings = get_config()
     audio_streamer = AudioStreamer(settings)
     await audio_streamer.start()  # Initialize audio streams (no output yet)
 

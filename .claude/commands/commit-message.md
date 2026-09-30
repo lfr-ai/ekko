@@ -30,8 +30,8 @@ message for the current change set.
 
 - **type** — one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
   `build`, `ci`, `chore`, `revert`.
-- **scope** — optional short noun for the area (`api`, `persistence`, `ai`,
-  `config`, `frontend`, …); omit when the change spans many.
+- **scope** — optional short noun for the area (`api`, `persistence`, `agents`,
+  `config`, …); omit when the change spans many.
 - **description** — imperative mood, lower case, no trailing period, ≤ ~72 chars.
 - **body** — optional; explain motivation and what changed, wrapped ~72 cols —
   not a line-by-line restatement of the diff.
