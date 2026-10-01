@@ -29,7 +29,7 @@ class TestConversationMapper:
 
 class TestMessageMapper:
     def test_maps_role(self):
-        msg = Message(role=MessageRole.ASSISTANT, content="Hi")
+        msg = Message(conversation_id=uuid.uuid4(), role=MessageRole.ASSISTANT, content="Hi")
         dto = message_to_dto(msg)
         assert dto.role == "assistant"
         assert dto.content == "Hi"

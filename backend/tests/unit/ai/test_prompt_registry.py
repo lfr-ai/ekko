@@ -121,11 +121,11 @@ def test_get_prompt_text_with_experimental_set_reads_editable_template(tmp_path:
 
 @pytest.mark.unit
 def test_get_prompt_text_with_unknown_set_raises_without_mutating_files(tmp_path: Path) -> None:
-    """A misspelled set fails instead of creating registry state."""
+    """An unconfigured set fails instead of creating registry state."""
     _write_registry(prompt_dir=tmp_path, version_sets={"production": {"prompts": {}}})
-    settings = PromptSettingsStub(prompt_dir_path=tmp_path, prompt_version_set="prodution")
+    settings = PromptSettingsStub(prompt_dir_path=tmp_path, prompt_version_set="staging")
 
-    with pytest.raises(PromptRegistryError, match="prodution"):
+    with pytest.raises(PromptRegistryError, match="staging"):
         get_prompt_text(PROMPT_KEY_SUMMARY_CHUNKS, settings=settings)
 
     assert not (tmp_path / "versions").exists()

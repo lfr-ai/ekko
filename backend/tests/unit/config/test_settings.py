@@ -8,7 +8,7 @@ from ekko.config.enums import DatabaseBackend, Environment
 from ekko.config.environments.dev import DevelopmentConfig
 from ekko.config.environments.local import LocalConfig
 from ekko.config.environments.prod import ProductionConfig
-from ekko.config.environments.test_env import TestingConfig
+from ekko.config.environments.test import TestConfig
 from ekko.config.runtime import get_config
 
 
@@ -74,7 +74,7 @@ class TestEnvironmentConfigs:
         assert cfg.environment == Environment.LOCAL
 
     def test_test_debug_off(self):
-        cfg = TestingConfig()
+        cfg = TestConfig()
         assert cfg.debug is False
 
     def test_local_uses_sqlite_backend(self):
@@ -82,7 +82,7 @@ class TestEnvironmentConfigs:
         assert cfg.database_backend == DatabaseBackend.SQLITE
 
     def test_test_uses_sqlite_backend(self):
-        cfg = TestingConfig()
+        cfg = TestConfig()
         assert cfg.database_backend == DatabaseBackend.SQLITE
 
     def test_dev_uses_sqlite_backend(self):

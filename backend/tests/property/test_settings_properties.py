@@ -5,9 +5,9 @@ from hypothesis import strategies as st
 
 from ekko.config.enums import Environment
 from ekko.config.environments.local import LocalConfig
-from ekko.config.environments.test_env import TestingConfig
+from ekko.config.environments.test import TestConfig
 
-ALL_CONFIG_CLASSES = [LocalConfig, TestingConfig]
+ALL_CONFIG_CLASSES = [LocalConfig, TestConfig]
 
 
 class TestSettingsInvariants:

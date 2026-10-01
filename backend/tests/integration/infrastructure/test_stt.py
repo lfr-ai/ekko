@@ -1,4 +1,4 @@
-"""Integration tests for STT adapter wiring and fallback behavior."""
+"""Integration tests for STT factory wiring and fallback behavior."""
 
 import asyncio
 from unittest.mock import patch
@@ -12,7 +12,7 @@ pytestmark = pytest.mark.integration
 @pytest.mark.asyncio
 async def test_create_azure_speech_stt_when_credentials_missing_then_returns_stub(integration_settings) -> None:
     """Factory should gracefully fall back to stub when key is not configured."""
-    from ekko.infrastructure.adapters.stt_adapter import _StubSTT, create_azure_speech_stt
+    from ekko.infrastructure.factories.stt_factory import _StubSTT, create_azure_speech_stt
 
     stt = create_azure_speech_stt(settings=integration_settings)
 
@@ -25,7 +25,7 @@ async def test_create_azure_speech_stt_when_credentials_missing_then_returns_stu
 
 def test_create_azure_speech_stt_when_sdk_unavailable_then_returns_stub(integration_settings) -> None:
     """Factory should return stub when Azure SDK is not available."""
-    from ekko.infrastructure.adapters.stt_adapter import _StubSTT, create_azure_speech_stt
+    from ekko.infrastructure.factories.stt_factory import _StubSTT, create_azure_speech_stt
 
     settings_with_key = integration_settings.model_copy(update={"azure_speech_key": SecretStr("fake-key")})
 
@@ -39,7 +39,7 @@ def test_create_azure_speech_stt_when_sdk_and_credentials_present_then_returns_r
     integration_settings,
 ) -> None:
     """Factory should build AzureSpeechSTT when requirements are present."""
-    from ekko.infrastructure.adapters.stt_adapter import create_azure_speech_stt
+    from ekko.infrastructure.factories.stt_factory import create_azure_speech_stt
 
     settings_with_key = integration_settings.model_copy(update={"azure_speech_key": SecretStr("fake-key")})
 

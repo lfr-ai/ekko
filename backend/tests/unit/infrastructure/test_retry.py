@@ -14,37 +14,37 @@ from ekko.infrastructure.helpers.retry import (
 
 class TestIsRetryableHttpError:
     def test_retryable_500(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(500, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is True
 
     def test_retryable_502(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(502, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is True
 
     def test_retryable_503(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(503, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is True
 
     def test_retryable_504(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(504, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is True
 
     def test_non_retryable_400(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(400, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is False
 
     def test_non_retryable_404(self):
-        request = Request("GET", "http://test")
+        request = Request("GET", "https://example.com")
         response = Response(404, request=request)
         exc = HTTPStatusError("err", request=request, response=response)
         assert _is_retryable_http_error(exc) is False
@@ -112,7 +112,7 @@ class TestApiRetryDecorator:
             if call_count < 3:
                 raise RateLimitError(
                     message="rate limited",
-                    response=Response(429, request=Request("POST", "http://test")),
+                    response=Response(429, request=Request("POST", "https://example.com")),
                     body=None,
                 )
             return "ok"

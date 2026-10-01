@@ -30,14 +30,18 @@ class TestConversation:
 
 
 class TestMessage:
+    def test_message_without_conversation_id_is_rejected(self):
+        with pytest.raises(TypeError, match="conversation_id"):
+            Message()
+
     def test_default_message(self):
-        msg = Message()
+        msg = Message(conversation_id=uuid.uuid4())
         assert msg.role == MessageRole.USER
         assert msg.content == ""
         assert isinstance(msg.id, uuid.UUID)
 
     def test_message_with_role(self):
-        msg = Message(role=MessageRole.ASSISTANT, content="Hello")
+        msg = Message(conversation_id=uuid.uuid4(), role=MessageRole.ASSISTANT, content="Hello")
         assert msg.role == MessageRole.ASSISTANT
         assert msg.content == "Hello"
 

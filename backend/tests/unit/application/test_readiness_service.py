@@ -54,3 +54,26 @@ async def test_check_database_with_unhealthy_probe_preserves_diagnostic_detail()
     result = await service.check_database()
 
     assert result == expected
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_check_redis_without_probe_reports_healthy_not_configured() -> None:
+    """Treat an absent Redis probe as healthy — it is an optional dependency."""
+    service = ReadinessService(database_probe=None)
+
+    result = await service.check_redis()
+
+    assert result == DependencyStatus(name="redis", healthy=True, detail="not configured")
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_check_redis_with_unhealthy_probe_preserves_diagnostic_detail() -> None:
+    """Unhealthy Redis status preserves its diagnostic detail."""
+    expected = DependencyStatus(name="redis", healthy=False, detail="connection refused")
+    service = ReadinessService(database_probe=None, redis_probe=FakeReadinessProbe(status=expected))
+
+    result = await service.check_redis()
+
+    assert result == expected
