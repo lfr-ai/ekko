@@ -1,0 +1,41 @@
+"""Celery application factory for myapp background tasks."""
+
+from typing import Protocol
+
+from celery import Celery
+
+
+class _CeleryConfig(Protocol):
+    """Structural view of the settings a Celery app reads."""
+
+    broker_url: str
+    result_backend: str
+    result_expires_seconds: int
+
+
+def create_celery_app(config: _CeleryConfig) -> Celery:
+    """Build the configured Celery application.
+
+    Args:
+        config (_CeleryConfig): Broker and result settings from the app config.
+
+    Returns:
+        Celery: Application with tasks autodiscovered from 'myapp.tasks'.
+    """
+    app = Celery("myapp")
+    app.conf.update(
+        broker_url=config.broker_url,
+        result_backend=config.result_backend,
+        result_expires=config.result_expires_seconds,
+        task_serializer="json",
+        result_serializer="json",
+        accept_content=["json"],
+        enable_utc=True,
+        timezone="UTC",
+        task_acks_late=True,
+        task_reject_on_worker_lost=True,
+        worker_prefetch_multiplier=1,
+        broker_connection_retry_on_startup=True,
+    )
+    app.autodiscover_tasks(["myapp.tasks"])
+    return app

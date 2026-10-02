@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test",
+      "detail": "Run the fast test tier (task test)",
+      "type": "shell",
+      "command": "task test",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "check (pre-commit)",
+      "detail": "Run all pre-commit hooks (task check)",
+      "type": "shell",
+      "command": "task check",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "format",
+      "detail": "Format the repo (task format)",
+      "type": "shell",
+      "command": "task format",
+      "group": "build",
+      "presentation": { "reveal": "silent", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "lint",
+      "detail": "Lint the repo (task lint)",
+      "type": "shell",
+      "command": "task lint",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "typecheck",
+      "detail": "Static type checks (task typecheck)",
+      "type": "shell",
+      "command": "task typecheck",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "architecture",
+      "detail": "Verify layer boundaries (task architecture)",
+      "type": "shell",
+      "command": "task architecture",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "guard",
+      "detail": "Agent-config + convention + hygiene guards (task guard)",
+      "type": "shell",
+      "command": "task guard",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "test: current file",
+      "detail": "Run tests scoped to the active editor file",
+      "type": "shell",
+      "command": "task test:path -- \"${relativeFile}\"",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "start",
+      "detail": "Start the application (task start)",
+      "type": "shell",
+      "command": "task start",
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

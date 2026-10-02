@@ -126,29 +126,11 @@ Use concrete examples and domain language.
 For changes, use `/opsx:propose` to scaffold delta specs.
 
 ### Step 2: Turn Scenarios into Failing Tests
-Map each scenario to a pytest test with scenario text in docstring.
-
-```python
-@pytest.mark.integration
-async def test_valid_order_fulfilled(
-    fulfillment_service,
-    order_factory,
-    inventory_factory,
-) -> None:
-    """Spec: order-processing/fulfillment.md
-    Scenario: Valid order with available inventory is fulfilled.
-    """
-    # Given
-    order = order_factory(product="WIDGET-001", quantity=5)
-    inventory_factory(product="WIDGET-001", available=10)
-
-    # When
-    result = await fulfillment_service.process(order)
-
-    # Then
-    assert result.status == "FULFILLED"
-    assert result.inventory_remaining == 5
-```
+Map each scenario to one automated test in the repository's declared framework.
+The test name or documentation cites the spec path and exact scenario title;
+its arrange/act/assert sections correspond to Given/When/Then. Use
+`testing-conventions` for Python or `frontend/testing`/`frontend/playwright` for a
+frontend boundary.
 
 ### Step 3: Implement
 Write the minimal code to make the spec/test pass.
