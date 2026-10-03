@@ -11,8 +11,12 @@ import asyncio
 import sys
 from pathlib import Path
 
+_DEFAULT_HOST = "127.0.0.1"
+_DEFAULT_PORT = 8800
+
 
 async def send(host: str, port: int, queue: str, data: bytes) -> None:
+    """Send a payload to the TCP queue server."""
     _reader, writer = await asyncio.open_connection(host, port)
     try:
         writer.write(queue.encode("utf-8") + b"\n")
@@ -23,10 +27,11 @@ async def send(host: str, port: int, queue: str, data: bytes) -> None:
         await writer.wait_closed()
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
+    """Parse arguments and send a payload to the queue server."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8800)
+    parser.add_argument("--host", default=_DEFAULT_HOST)
+    parser.add_argument("--port", type=int, default=_DEFAULT_PORT)
     parser.add_argument("--queue", required=True)
     parser.add_argument("--file", help="File to send; if omitted reads stdin")
     args = parser.parse_args(argv)

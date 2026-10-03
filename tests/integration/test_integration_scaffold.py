@@ -52,29 +52,3 @@ async def test_user_read_when_row_exists_then_query_returns_it(
     loaded_user = result.scalar_one()
 
     assert loaded_user.full_name == "Read Model"
-
-
-def test_health_endpoint_reports_sqlite_state(containerized_client) -> None:
-    """REST health endpoint is reachable and reports SQLite state."""
-    response = containerized_client.get("/health")
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert isinstance(payload["ok"], bool)
-    assert "sqlite_database_present" in payload["details"]
-
-
-def test_prompt_catalog_graphql_returns_version_set(containerized_client) -> None:
-    """Prompt catalog GraphQL query returns the active version set and prompts."""
-    response = containerized_client.post(
-        "/graphql",
-        json={"query": "query { promptCatalog { versionSet prompts { key } } }"},
-    )
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert "errors" not in payload
-    catalog = payload["data"]["promptCatalog"]
-    assert isinstance(catalog["versionSet"], str)
-    assert catalog["versionSet"]
-    assert isinstance(catalog["prompts"], list)

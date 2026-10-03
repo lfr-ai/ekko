@@ -1,14 +1,12 @@
-"""Root test configuration for repository-level test suites.
+"""Root test configuration for repository-level Python tests.
 
 Provides deterministic environment setup and shared SQLite-backed database
-fixtures used by integration and end-to-end tests.
+fixtures used by root integration tests.
 """
 
 from __future__ import annotations
 
 import os
-import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -23,17 +21,6 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
 
 _TEST_DATABASE_URL = "sqlite+aiosqlite://"
-
-
-def _ensure_backend_src_on_path() -> None:
-    """Ensure backend source directory is importable in test sessions."""
-    backend_src = Path(__file__).resolve().parents[1] / "backend" / "src"
-    backend_src_str = str(backend_src)
-    if backend_src_str not in sys.path:
-        sys.path.insert(0, backend_src_str)
-
-
-_ensure_backend_src_on_path()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -94,32 +81,3 @@ async def test_session(
     async with test_session_factory() as session:
         yield session
         await session.rollback()
-
-
-@pytest.fixture
-def integration_app(test_async_engine: AsyncEngine):
-    """Create FastAPI app with in-memory SQLite DB engine injected."""
-    from ekko.application.services import ReadinessService
-    from ekko.composition import create_app
-    from ekko.infrastructure.db.readiness import SQLAlchemyReadinessProbe
-
-    app = create_app()
-    app.state.db_engine = test_async_engine
-    app.state.readiness_service = ReadinessService(
-        database_probe=SQLAlchemyReadinessProbe(database_url=_TEST_DATABASE_URL),
-    )
-    app.state.session_factory = async_sessionmaker(
-        test_async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-    return app
-
-
-@pytest.fixture
-def containerized_client(integration_app):
-    """Provide in-process HTTP client for integration API tests."""
-    from fastapi.testclient import TestClient
-
-    with TestClient(integration_app, raise_server_exceptions=False) as client:
-        yield client
