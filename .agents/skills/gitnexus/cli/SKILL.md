@@ -5,17 +5,17 @@ description: "Use when the user needs to run GitNexus CLI commands like analyze/
 
 # GitNexus CLI Commands
 
-All commands work via `npx` — no global install required.
+All commands work via `bunx` — no global install required.
 
 ## Commands
 
 ### analyze — Build or refresh the index
 
 ```bash
-npx gitnexus analyze
+bunx gitnexus analyze
 ```
 
-Run from the project root. This parses all source files, builds the knowledge graph, writes it to `.gitnexus/`, and refreshes the CLAUDE.md / AGENTS.md context block.
+Run from the project root. This parses all source files, builds the knowledge graph, and writes it to `.gitnexus/`.
 
 | Flag           | Effect                                                           |
 | -------------- | ---------------------------------------------------------------- |
@@ -23,12 +23,16 @@ Run from the project root. This parses all source files, builds the knowledge gr
 | `--embeddings` | Enable embedding generation for semantic search (off by default) |
 | `--drop-embeddings` | Drop existing embeddings on rebuild. By default, an `analyze` without `--embeddings` preserves them. |
 
-**When to run:** First time in a project, after major code changes (new, renamed, or moved modules or folders), or when `gitnexus://repo/{name}/context` reports the index is stale. In Claude Code, a PostToolUse hook detects staleness after a commit or merge and notifies the agent to run `analyze` itself — the hook only notifies, to avoid blocking the agent for up to 120s and risking KuzuDB corruption on timeout. In other runtimes, use IDE Source Control or GitNexus session/context information to identify major completed changes, then run `analyze` manually.
+**When to run:** First time in a project, after major code changes (new,
+renamed, or moved modules or folders), or when
+`gitnexus://repo/{name}/context` reports the index is stale. No lifecycle hook
+runs this automatically because analysis can take long enough to block an agent
+session or leave the index inconsistent if interrupted.
 
 ### status — Check index freshness
 
 ```bash
-npx gitnexus status
+bunx gitnexus status
 ```
 
 Shows whether the current repo has a GitNexus index, when it was last updated, and symbol/relationship counts. Use this to check if re-indexing is needed.
@@ -36,7 +40,7 @@ Shows whether the current repo has a GitNexus index, when it was last updated, a
 ### clean — Delete the index
 
 ```bash
-npx gitnexus clean
+bunx gitnexus clean
 ```
 
 Deletes the `.gitnexus/` directory and unregisters the repo from the global registry. Use before re-indexing if the index is corrupt or after removing GitNexus from a project.
@@ -49,7 +53,7 @@ Deletes the `.gitnexus/` directory and unregisters the repo from the global regi
 ### wiki — Generate documentation from the graph
 
 ```bash
-npx gitnexus wiki
+bunx gitnexus wiki
 ```
 
 Generates repository documentation from the knowledge graph using an LLM. Requires an API key (saved to `~/.gitnexus/config.json` on first use).
@@ -66,7 +70,7 @@ Generates repository documentation from the knowledge graph using an LLM. Requir
 ### list — Show all indexed repos
 
 ```bash
-npx gitnexus list
+bunx gitnexus list
 ```
 
 Lists all repositories registered in `~/.gitnexus/registry.json`. The MCP `list_repos` tool provides the same information.
