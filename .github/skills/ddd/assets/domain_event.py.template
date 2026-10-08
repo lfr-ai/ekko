@@ -1,0 +1,19 @@
+"""Domain event template — copy into core/events/, rename to a past-tense fact.
+
+A domain event records something that already happened. It is the mechanism
+for eventual consistency between aggregates (see
+references/aggregate-boundary-checklist.md, section 5) — never a command.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class ReplaceMeEventHappened:
+    """Something significant that already occurred in the domain."""
+
+    aggregate_id: str
+    occurred_at: datetime

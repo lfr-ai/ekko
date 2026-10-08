@@ -1,0 +1,33 @@
+"""Entity template — copy into core/entities/, rename, and fill in fields.
+
+An entity has identity that persists over time; two entities with identical
+attributes but different IDs are NOT equal. Keep it framework-free (stdlib
+only) and immutable — model a state change as a new instance, not mutation.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class ReplaceMeEntity:
+    """One-line noun-phrase description of what this entity represents."""
+
+    entity_id: str
+    status: str
+    created_at: datetime
+
+    def __post_init__(self):  # noqa: ANN204
+        """Enforce invariants that must hold for every instance."""
+        if not self.entity_id:
+            raise ValueError("entity_id must not be empty")
+
+    def with_status(self, *, status: str) -> ReplaceMeEntity:
+        """Return a new instance with an updated status (no in-place mutation)."""
+        return ReplaceMeEntity(
+            entity_id=self.entity_id,
+            status=status,
+            created_at=self.created_at,
+        )

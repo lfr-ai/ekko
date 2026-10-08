@@ -1,5 +1,5 @@
 ---
-name: ponytail
+name: minimalism
 description: >
   Forces the laziest solution that actually works, simplest, shortest, most
   minimal. Channels a senior dev who has seen everything: question whether the
@@ -23,7 +23,9 @@ code is the code never written.
 
 ACTIVE EVERY RESPONSE. No drift back to over-building. Still active if
 unsure. Off only: "stop ponytail" / "normal mode". Default: **full**.
-Switch: `/ponytail lite|full|ultra`.
+Switch by saying `ponytail lite|full|ultra`, with Copilot
+`/ponytail-minimalism lite|full|ultra`, or with Claude
+`/ponytail:minimalism lite|full|ultra`.
 
 ## The ladder
 
