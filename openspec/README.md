@@ -12,13 +12,13 @@ This repository uses OpenSpec for behavior-first planning of non-trivial work.
 
 ## Runtime and setup
 
-OpenSpec can be used without a global installation:
+OpenSpec CLI commands use the pinned version declared in `Taskfile.yml`:
 
-- `npx --yes @fission-ai/openspec@latest validate --all --strict`
+- `task spec:validate`
 
 To (re)generate OpenSpec tool integrations for this repository:
 
-- `npx --yes @fission-ai/openspec@latest init . --tools github-copilot,claude,codex --profile core --force`
+- `task tools:openspec:init`
 
 ## Command syntax by tool
 
@@ -75,5 +75,4 @@ Review focuses on:
 
 Before archive (and in CI), validate OpenSpec artifacts with strict mode:
 
-- `npx --yes @fission-ai/openspec@latest validate --all --strict`
-- `npx --yes @fission-ai/openspec@latest schema validate ekko-production`
+- `task tools:openspec:validate`

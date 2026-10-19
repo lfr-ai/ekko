@@ -21,4 +21,4 @@ Archive completed changes under `openspec/changes/archive/`.
 ## Quality gate before archive
 
 - Validate all artifacts in strict mode:
-  - `npx --yes @fission-ai/openspec@latest validate --all --strict`
+  - `task spec:validate`

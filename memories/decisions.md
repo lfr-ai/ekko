@@ -11,3 +11,9 @@ that established it instead of re-arguing it here.
 - Skills are canonical under `.agents/skills/` and mirrored byte-identically to
   `.github/skills/` and `.claude/skills/`; every instruction pairs with a
   `.claude/rules/` file of equal scope — see the `agent-config` skill.
+- Keep shared Copilot policy in [`AGENTS.md`](../AGENTS.md), with
+  [`copilot-instructions.md`](../.github/copilot-instructions.md) as a pointer.
+  Host keybindings are user-scoped; the example is
+  [`keybindings.example.jsonc`](../.vscode/keybindings.example.jsonc), while
+  container-only bindings are applied by
+  [`post-start.zsh`](../.devcontainer/post-start.zsh).

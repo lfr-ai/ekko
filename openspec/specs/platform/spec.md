@@ -302,7 +302,7 @@ Local Docker compose overrides MUST bind ports to loopback addresses only.
 
 ### Requirement: PII protection before model calls
 
-The system MUST scrub configured sensitive patterns before outbound LLM calls.
+The system MUST anonymize values matching configured sensitive patterns before outbound LLM calls.
 
 #### Scenario: Sensitive content is anonymized in outbound request content
 

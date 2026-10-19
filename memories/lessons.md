@@ -10,3 +10,8 @@ is stale (the cited file moved/deleted, or the underlying tool changed).
 - `backend/tests` and root `tests/` cannot be invoked in one pytest run (both
   ship a `conftest.py`, causing `ImportPathMismatchError`); run them from their
   respective directories separately.
+- Pytest 9 renamed `xfail_strict` to `strict_xfail` (the old name remains an
+  alias). Use the current name in both config files; verify with `pytest --help`
+  and the [pytest configuration reference](https://docs.pytest.org/en/stable/reference/reference.html#confval-strict_xfail).
+- Run naming guards against every source root in `PROJECT.md`; root-only
+  defaults can pass without scanning a backend under `backend/src`.

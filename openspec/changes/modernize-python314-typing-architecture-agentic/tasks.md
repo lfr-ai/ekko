@@ -150,6 +150,6 @@
 - [ ] 11.1 Test WASAPI loopback capture on representative supported Windows hardware.
 - [ ] 11.2 Test microphone capture and device selection/failure behavior.
 - [ ] 11.3 Test Azure Speech authentication, recognition, transcript callback delivery, and shutdown.
-- [ ] 11.4 Test configured LLM provider invocation, PII scrubbing, retry/fallback, and structured telemetry.
+- [ ] 11.4 Test configured LLM provider invocation, PII anonymization, retry/fallback, and structured telemetry.
 - [ ] 11.5 Preserve the last verified Python 3.12 container digest and desktop artifact until promotion completes.
 - [ ] 11.6 Promote Python 3.14 only after all repository and hardware-dependent gates pass; otherwise execute the documented atomic rollback.
