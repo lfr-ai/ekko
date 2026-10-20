@@ -1,6 +1,6 @@
 """Tests for API middleware stack."""
 
-import dataclasses
+from dataclasses import FrozenInstanceError
 
 import pytest
 from fastapi import FastAPI, Request
@@ -111,5 +111,5 @@ class TestUserProfile:
 
     def test_frozen(self):
         profile = UserProfile(username="bob", roles=frozenset({"admin"}))
-        with pytest.raises(dataclasses.FrozenInstanceError):
+        with pytest.raises(FrozenInstanceError):
             profile.username = "eve"  # type: ignore[invalid-assignment]

@@ -1,7 +1,7 @@
 """Tests for core domain entities."""
 
-import uuid
 from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -14,7 +14,7 @@ class TestConversation:
         conv = Conversation()
         assert conv.is_active()
         assert conv.ended_at is None
-        assert isinstance(conv.id, uuid.UUID)
+        assert isinstance(conv.id, UUID)
 
     def test_conversation_with_ended_at_is_inactive(self):
         conv = Conversation(ended_at=datetime.now(UTC))
@@ -23,7 +23,7 @@ class TestConversation:
     def test_conversation_is_frozen(self):
         conv = Conversation()
         try:
-            conv.id = uuid.uuid4()  # type: ignore[invalid-assignment]
+            conv.id = uuid4()  # type: ignore[invalid-assignment]
             pytest.fail("Should raise AttributeError")
         except AttributeError:
             pass
@@ -35,13 +35,13 @@ class TestMessage:
             Message()
 
     def test_default_message(self):
-        msg = Message(conversation_id=uuid.uuid4())
+        msg = Message(conversation_id=uuid4())
         assert msg.role == MessageRole.USER
         assert msg.content == ""
-        assert isinstance(msg.id, uuid.UUID)
+        assert isinstance(msg.id, UUID)
 
     def test_message_with_role(self):
-        msg = Message(conversation_id=uuid.uuid4(), role=MessageRole.ASSISTANT, content="Hello")
+        msg = Message(conversation_id=uuid4(), role=MessageRole.ASSISTANT, content="Hello")
         assert msg.role == MessageRole.ASSISTANT
         assert msg.content == "Hello"
 
@@ -68,7 +68,7 @@ class TestFactoryUsage:
 
         assert conversation.is_active()
         assert conversation.ended_at is None
-        assert isinstance(conversation.id, uuid.UUID)
+        assert isinstance(conversation.id, UUID)
 
     def test_conversation_factory_ended_trait(self, conversation_factory):
         """ConversationFactory.ended() creates a completed conversation."""

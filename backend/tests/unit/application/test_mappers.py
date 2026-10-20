@@ -1,7 +1,7 @@
 """Tests for application-layer mappers."""
 
-import uuid
 from datetime import UTC, datetime
+from uuid import uuid4
 
 from ekko.application.mappers import (
     conversation_to_dto,
@@ -14,7 +14,7 @@ from ekko.core.enums import MessageRole
 
 class TestConversationMapper:
     def test_active_conversation(self):
-        conv = Conversation(id=uuid.uuid4(), started_at=datetime.now(UTC))
+        conv = Conversation(id=uuid4(), started_at=datetime.now(UTC))
         dto = conversation_to_dto(conv)
         assert dto.is_active
         assert dto.ended_at is None
@@ -22,14 +22,14 @@ class TestConversationMapper:
 
     def test_ended_conversation(self):
         now = datetime.now(UTC)
-        conv = Conversation(id=uuid.uuid4(), started_at=now, ended_at=now)
+        conv = Conversation(id=uuid4(), started_at=now, ended_at=now)
         dto = conversation_to_dto(conv)
         assert not dto.is_active
 
 
 class TestMessageMapper:
     def test_maps_role(self):
-        msg = Message(conversation_id=uuid.uuid4(), role=MessageRole.ASSISTANT, content="Hi")
+        msg = Message(conversation_id=uuid4(), role=MessageRole.ASSISTANT, content="Hi")
         dto = message_to_dto(msg)
         assert dto.role == "assistant"
         assert dto.content == "Hi"

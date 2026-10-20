@@ -1,136 +1,119 @@
-"""Tests for infrastructure retry utilities."""
+"""Tests for infrastructure retry policies."""
 
+from __future__ import annotations
+
+import httpx
+import litellm
 import pytest
-from httpx import HTTPStatusError, Request, Response
-from openai import RateLimitError
 
-from ekko.infrastructure.helpers.retry import (
-    _RETRYABLE_HTTP_STATUS_CODES,
-    _is_retryable_http_error,
-    api_retry,
-    http_retry,
-)
+from ekko.infrastructure.helpers.retry import api_retry, http_retry
 
 
-class TestIsRetryableHttpError:
-    def test_retryable_500(self):
-        request = Request("GET", "https://example.com")
-        response = Response(500, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is True
+class TestHttpRetry:
+    """Test retries for transient HTTP failures."""
 
-    def test_retryable_502(self):
-        request = Request("GET", "https://example.com")
-        response = Response(502, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is True
-
-    def test_retryable_503(self):
-        request = Request("GET", "https://example.com")
-        response = Response(503, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is True
-
-    def test_retryable_504(self):
-        request = Request("GET", "https://example.com")
-        response = Response(504, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is True
-
-    def test_non_retryable_400(self):
-        request = Request("GET", "https://example.com")
-        response = Response(400, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is False
-
-    def test_non_retryable_404(self):
-        request = Request("GET", "https://example.com")
-        response = Response(404, request=request)
-        exc = HTTPStatusError("err", request=request, response=response)
-        assert _is_retryable_http_error(exc) is False
-
-    def test_non_http_error(self):
-        assert _is_retryable_http_error(ValueError("random")) is False
-
-
-class TestRetryableStatusCodeSet:
-    def test_expected_codes(self):
-        assert 500 in _RETRYABLE_HTTP_STATUS_CODES
-        assert 502 in _RETRYABLE_HTTP_STATUS_CODES
-        assert 503 in _RETRYABLE_HTTP_STATUS_CODES
-        assert 504 in _RETRYABLE_HTTP_STATUS_CODES
-        assert 400 not in _RETRYABLE_HTTP_STATUS_CODES
-        assert 401 not in _RETRYABLE_HTTP_STATUS_CODES
-
-
-class TestHttpRetryDecorator:
-    def test_retries_on_connection_error(self):
+    @pytest.mark.unit
+    def test_retryable_status_retries_until_success(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr("tenacity.nap.time.sleep", lambda _seconds: None)
         call_count = 0
 
         @http_retry
-        def flaky():
+        def flaky_request() -> str:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ConnectionError("refused")
+                request = httpx.Request("GET", "https://example.com")
+                response = httpx.Response(503, request=request)
+                raise httpx.HTTPStatusError(
+                    "service unavailable",
+                    request=request,
+                    response=response,
+                )
             return "ok"
 
-        result = flaky()
+        result = flaky_request()
+
         assert result == "ok"
         assert call_count == 3
 
-    def test_raises_after_max_attempts(self):
-        @http_retry
-        def always_fails():
-            raise TimeoutError("timeout")
-
-        with pytest.raises(TimeoutError):
-            always_fails()
-
-    def test_no_retry_on_non_retryable(self):
+    @pytest.mark.unit
+    def test_non_retryable_status_raises_without_retry(self) -> None:
+        request = httpx.Request("GET", "https://example.com")
+        response = httpx.Response(400, request=request)
         call_count = 0
 
         @http_retry
-        def bad_request():
+        def invalid_request() -> str:
             nonlocal call_count
             call_count += 1
-            raise ValueError("not retryable")
+            raise httpx.HTTPStatusError(
+                "bad request",
+                request=request,
+                response=response,
+            )
 
-        with pytest.raises(ValueError, match="not retryable"):
-            bad_request()
+        with pytest.raises(httpx.HTTPStatusError, match="bad request"):
+            invalid_request()
+
         assert call_count == 1
 
+    @pytest.mark.unit
+    def test_timeout_raises_after_max_attempts(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr("tenacity.nap.time.sleep", lambda _seconds: None)
 
-class TestApiRetryDecorator:
-    def test_retries_on_rate_limit(self):
+        @http_retry
+        def timed_out() -> str:
+            raise TimeoutError("timeout")
+
+        with pytest.raises(TimeoutError, match="timeout"):
+            timed_out()
+
+
+class TestApiRetry:
+    """Test retries for LiteLLM provider failures."""
+
+    @pytest.mark.unit
+    def test_transient_provider_error_retries_until_success(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr("tenacity.nap.time.sleep", lambda _seconds: None)
         call_count = 0
 
         @api_retry
-        def rate_limited():
+        def rate_limited() -> str:
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise RateLimitError(
-                    message="rate limited",
-                    response=Response(429, request=Request("POST", "https://example.com")),
-                    body=None,
+                raise litellm.RateLimitError(
+                    message="temporarily unavailable",
+                    llm_provider="openai",
+                    model="gpt-4o",
                 )
             return "ok"
 
         result = rate_limited()
+
         assert result == "ok"
         assert call_count == 3
 
-    def test_retries_on_connection_error(self):
+    @pytest.mark.unit
+    def test_non_transient_error_is_not_retried(self) -> None:
         call_count = 0
 
         @api_retry
-        def connection_issue():
+        def invalid_request() -> str:
             nonlocal call_count
             call_count += 1
-            if call_count < 2:
-                raise ConnectionError("network")
-            return "recovered"
+            raise ValueError("invalid input")
 
-        result = connection_issue()
-        assert result == "recovered"
+        with pytest.raises(ValueError, match="invalid input"):
+            invalid_request()
+
+        assert call_count == 1

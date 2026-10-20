@@ -9,13 +9,11 @@ tests/
 ├── conftest.py           # Root test configuration and shared fixtures
 ├── factories/            # Factory-boy factories for test data generation
 ├── fixtures/             # Pre-built domain entity instances
-├── mocks/                # Reusable mock objects
 ├── utils/                # Test utilities and assertion helpers
 ├── unit/                 # Fast, isolated unit tests
 ├── integration/          # Database, API, external service integration tests
 ├── property/             # Property-based tests (Hypothesis)
 ├── performance/          # Benchmark and timing tests
-├── e2e/                  # End-to-end tests
 └── database/             # Migration and ORM model tests
 ```
 
@@ -28,7 +26,6 @@ Use pytest markers to categorize tests:
 - `@pytest.mark.property` - Property-based tests with Hypothesis
 - `@pytest.mark.performance` - Benchmark and timing tests
 - `@pytest.mark.slow` - Tests that take >1 second
-- `@pytest.mark.e2e` - End-to-end system tests
 
 ## Factory Usage
 
@@ -39,17 +36,18 @@ The `tests/factories/` directory contains Factory-boy factories for generating t
 - `ConversationFactory` - Generate conversation entities
 - `MessageFactory` - Generate message entities
 - `TranscriptFactory` - Generate transcript entities
-- `AgentResultFactory` - Generate agent result entities
 
 ### Basic Usage
 
 ```python
 from tests.factories import ConversationFactory, MessageFactory
 
+
 def test_conversation_creation(conversation_factory):
     """Test creating a conversation with factory."""
     conversation = conversation_factory.create()
     assert conversation.is_active()
+
 
 def test_multiple_messages(message_factory):
     """Test creating multiple messages."""
@@ -77,10 +75,6 @@ system_msg = MessageFactory.system_message(content="Instructions")
 completed = TranscriptFactory.completed(text="Final transcript")
 failed = TranscriptFactory.failed()
 low_conf = TranscriptFactory.low_confidence(confidence=0.3)
-
-# Agent results with execution times
-fast = AgentResultFactory.fast_execution(execution_time_seconds=0.5)
-slow = AgentResultFactory.slow_execution(execution_time_seconds=15.0)
 ```
 
 ### Override Defaults
@@ -92,8 +86,7 @@ from tests.factories import ConversationFactory
 import uuid
 
 conversation = ConversationFactory.create(
-    id=uuid.UUID("12345678-1234-5678-1234-567812345678"),
-    summary="Custom summary"
+    id=uuid.UUID("12345678-1234-5678-1234-567812345678"), summary="Custom summary"
 )
 ```
 
@@ -128,6 +121,7 @@ from tests.fixtures import (
     ALL_TRANSCRIPT_FIXTURES,
 )
 
+
 def test_with_static_fixture():
     """Test using pre-built fixture data."""
     assert ACTIVE_CONVERSATION.is_active()
@@ -138,8 +132,14 @@ def test_with_static_fixture():
 ## Running Tests
 
 ```bash
-# All tests
+# Full backend suite (run from backend/)
+uv run python -m pytest tests/
+
+# Fast backend, repository, and frontend unit suites (run from repository root)
 task test
+
+# Full backend, repository, and frontend unit suites
+task test:all
 
 # Unit tests only (fast)
 task test:unit
@@ -153,7 +153,7 @@ task test:property
 # Performance tests
 task test:performance
 
-# E2E tests
+# Browser E2E tests (Playwright)
 task test:e2e
 
 # With coverage
@@ -171,12 +171,6 @@ uv run python -m pytest -v tests/
 # Show print statements
 uv run python -m pytest -s tests/
 ```
-
-## Coverage Requirements
-
-- Core layer (`backend/src/ekko/core/`): >= 80%
-- Application layer (`backend/src/ekko/application/`): >= 80%
-- Other layers: Best effort
 
 ## Writing Good Tests
 

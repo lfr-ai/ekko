@@ -4,7 +4,7 @@ from enum import StrEnum
 
 import pytest
 
-prompt_registry_module = pytest.importorskip("ekko.ai.prompts.registry_client")
+prompt_registry_module = pytest.importorskip("ekko.ai.prompts.prompt_registry_client")
 PromptRegistryClient = prompt_registry_module.PromptRegistryClient
 
 

@@ -5,18 +5,18 @@ Provides pre-built transcript scenarios for consistent testing.
 
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
+from uuid import UUID
 
 from ekko.core.entities import Transcript
 from ekko.core.enums import TranscriptStatus
 
 # Sample conversation ID from conversations fixture
-SAMPLE_CONVERSATION_ID = uuid.UUID("12345678-1234-5678-1234-567812345678")
+SAMPLE_CONVERSATION_ID = UUID("12345678-1234-5678-1234-567812345678")
 
 # Various transcript status examples
 TRANSCRIPT_RECEIVED = Transcript(
-    id=uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+    id=UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
     conversation_id=SAMPLE_CONVERSATION_ID,
     text="Hello, how can I help you today?",
     source="microphone",
@@ -26,7 +26,7 @@ TRANSCRIPT_RECEIVED = Transcript(
 )
 
 TRANSCRIPT_COMPLETED = Transcript(
-    id=uuid.UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+    id=UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
     conversation_id=SAMPLE_CONVERSATION_ID,
     text="I need assistance with my project requirements.",
     source="microphone",
@@ -36,7 +36,7 @@ TRANSCRIPT_COMPLETED = Transcript(
 )
 
 TRANSCRIPT_LOW_CONFIDENCE = Transcript(
-    id=uuid.UUID("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+    id=UUID("cccccccc-cccc-cccc-cccc-cccccccccccc"),
     conversation_id=SAMPLE_CONVERSATION_ID,
     text="[unclear audio]",
     source="microphone",
@@ -46,7 +46,7 @@ TRANSCRIPT_LOW_CONFIDENCE = Transcript(
 )
 
 TRANSCRIPT_FAILED = Transcript(
-    id=uuid.UUID("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+    id=UUID("dddddddd-dddd-dddd-dddd-dddddddddddd"),
     conversation_id=SAMPLE_CONVERSATION_ID,
     text="",
     source="microphone",

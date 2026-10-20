@@ -60,7 +60,7 @@ class _FakePublishRedisClient:
 class _FakePubSub:
     """Fake ``redis.asyncio.Redis.pubsub()`` result: one queued message, then blocks."""
 
-    def __init__(self, messages: list[dict[str, object]]) -> None:
+    def __init__(self, messages: list[dict[str, object]]):
         self._messages = list(messages)
         self.subscribed_channels: list[str] = []
 
@@ -74,7 +74,7 @@ class _FakePubSub:
         ignore_subscribe_messages: bool,
         timeout: float | None,  # noqa: ASYNC109  # mirrors redis-py's own PubSub.get_message signature
     ) -> dict[str, object] | None:
-        """Return the next queued message, then block as a real idle subscription would."""
+        """Yield a queued message or block until a future one arrives."""
         if self._messages:
             return self._messages.pop(0)
         await asyncio.sleep(3600)
@@ -98,11 +98,11 @@ class _FakeRelayRedisClient:
     closed: bool = False
     pubsub_obj: _FakePubSub = field(init=False)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         self.pubsub_obj = _FakePubSub(self.messages)
 
     def pubsub(self) -> _FakePubSub:
-        """Return the fake pub/sub subscription."""
+        """Expose the fake pub/sub subscription."""
         return self.pubsub_obj
 
     async def aclose(self) -> None:

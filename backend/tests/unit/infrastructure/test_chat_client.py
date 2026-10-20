@@ -5,98 +5,33 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import SecretStr
 
+from ekko.config.enums import LLMProvider
+from ekko.config.settings.llm import LLMSettings
 from ekko.core.exceptions import LLMError
 from ekko.core.types import MaxTokens, Temperature
-from ekko.infrastructure.clients.chat import (
-    ChatClient,
-    _build_messages,
-    _build_model_name,
-    _build_provider_kwargs,
-)
+from ekko.infrastructure.clients.chat import ChatClient
 
 
 @pytest.fixture
-def mock_settings():
-    """Create mock settings for testing."""
-    settings = MagicMock()
-    settings.llm_provider = MagicMock()
-    settings.llm_provider.value = "openai"
-    settings.llm_provider.__eq__ = lambda self, other: self.value == other.value
-    settings.openai_api_key = MagicMock()
-    settings.openai_api_key.get_secret_value.return_value = "test-key"
-    settings.azure_openai_endpoint = None
-    settings.azure_openai_version = "2025-02-01-preview"
-    settings.azure_openai_key = None
-    return settings
-
-
-@pytest.fixture
-def openai_settings(mock_settings):
+def openai_settings() -> LLMSettings:
     """Create OpenAI-configured settings."""
-    from ekko.config.enums import LLMProvider
-
-    mock_settings.llm_provider = LLMProvider.OPENAI
-    return mock_settings
+    return LLMSettings(
+        llm_provider=LLMProvider.OPENAI,
+        openai_api_key=SecretStr("test-key"),
+    )
 
 
 @pytest.fixture
-def azure_settings(mock_settings):
+def azure_settings() -> LLMSettings:
     """Create Azure OpenAI-configured settings."""
-    from ekko.config.enums import LLMProvider
-
-    mock_settings.llm_provider = LLMProvider.AZURE_OPENAI
-    mock_settings.azure_openai_endpoint = "https://test.openai.azure.com/"
-    mock_settings.azure_openai_version = "2025-02-01-preview"
-    mock_settings.azure_openai_key = MagicMock()
-    mock_settings.azure_openai_key.get_secret_value.return_value = "azure-key"
-    return mock_settings
-
-
-class TestBuildModelName:
-    """Test model name prefix construction."""
-
-    @pytest.mark.unit
-    def test_openai_prefix(self, openai_settings) -> None:
-        result = _build_model_name(model="gpt-4o", settings=openai_settings)
-        assert result == "openai/gpt-4o"
-
-    @pytest.mark.unit
-    def test_azure_prefix(self, azure_settings) -> None:
-        result = _build_model_name(model="gpt-4o", settings=azure_settings)
-        assert result == "azure/gpt-4o"
-
-    @pytest.mark.unit
-    def test_already_prefixed_passthrough(self, openai_settings) -> None:
-        result = _build_model_name(model="anthropic/claude-3", settings=openai_settings)
-        assert result == "anthropic/claude-3"
-
-
-class TestBuildProviderKwargs:
-    """Test provider kwargs construction."""
-
-    @pytest.mark.unit
-    def test_openai_kwargs(self, openai_settings) -> None:
-        kwargs = _build_provider_kwargs(openai_settings)
-        assert kwargs == {"api_key": "test-key"}
-
-    @pytest.mark.unit
-    def test_azure_kwargs(self, azure_settings) -> None:
-        kwargs = _build_provider_kwargs(azure_settings)
-        assert kwargs["api_base"] == "https://test.openai.azure.com/"
-        assert kwargs["api_version"] == "2025-02-01-preview"
-        assert kwargs["api_key"] == "azure-key"
-
-
-class TestBuildMessages:
-    """Test message list construction."""
-
-    @pytest.mark.unit
-    def test_builds_system_and_user_messages(self) -> None:
-        messages = _build_messages(system_prompt="Be helpful.", user_prompt="Hello")
-        assert len(messages) == 2
-        assert messages[0] == {"role": "system", "content": "Be helpful."}
-        assert messages[1] == {"role": "user", "content": "Hello"}
+    return LLMSettings(
+        llm_provider=LLMProvider.AZURE_OPENAI,
+        azure_openai_endpoint="https://test.openai.azure.com/",
+        azure_openai_version="2025-02-01-preview",
+        azure_openai_key=SecretStr("azure-key"),
+    )
 
 
 class TestChatClientSync:
@@ -118,7 +53,13 @@ class TestChatClientSync:
         )
 
         assert result == "Hello world"
-        mock_litellm.completion.assert_called_once()
+        call_kwargs = mock_litellm.completion.call_args.kwargs
+        assert call_kwargs["model"] == "openai/gpt-4o"
+        assert call_kwargs["messages"] == [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "Say hello."},
+        ]
+        assert call_kwargs["api_key"] == "test-key"
 
     @pytest.mark.unit
     @patch("ekko.infrastructure.clients.chat.litellm")
@@ -152,6 +93,30 @@ class TestChatClientSync:
         call_kwargs = mock_litellm.completion.call_args[1]
         assert call_kwargs["temperature"] == 0.7
         assert call_kwargs["max_tokens"] == 2048
+
+    @pytest.mark.unit
+    @patch("ekko.infrastructure.clients.chat.litellm")
+    def test_chat_uses_azure_settings_for_azure_deployment(
+        self,
+        mock_litellm,
+        azure_settings,
+    ) -> None:
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "ok"
+        mock_litellm.completion.return_value = mock_response
+
+        ChatClient(settings=azure_settings).chat(
+            system_prompt="s",
+            user_prompt="u",
+            model="gpt-4o",
+        )
+
+        call_kwargs = mock_litellm.completion.call_args.kwargs
+        assert call_kwargs["model"] == "azure/gpt-4o"
+        assert call_kwargs["api_base"] == "https://test.openai.azure.com/"
+        assert call_kwargs["api_version"] == "2025-02-01-preview"
+        assert call_kwargs["api_key"] == "azure-key"
 
     @pytest.mark.unit
     def test_from_config_factory(self, openai_settings) -> None:

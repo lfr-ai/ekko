@@ -6,8 +6,8 @@ and controlled variation.
 
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
+from uuid import uuid4
 
 import factory
 
@@ -21,7 +21,7 @@ class ConversationFactory(factory.Factory):
     class Meta:
         model = Conversation
 
-    id = factory.LazyFunction(uuid.uuid4)
+    id = factory.LazyFunction(uuid4)
     started_at = factory.LazyFunction(lambda: datetime.now(UTC))
     ended_at = None
     summary = None
@@ -40,8 +40,8 @@ class MessageFactory(factory.Factory):
     class Meta:
         model = Message
 
-    id = factory.LazyFunction(uuid.uuid4)
-    conversation_id = factory.LazyFunction(uuid.uuid4)
+    id = factory.LazyFunction(uuid4)
+    conversation_id = factory.LazyFunction(uuid4)
     role = MessageRole.USER
     content = factory.Faker("sentence")
     created_at = factory.LazyFunction(lambda: datetime.now(UTC))
@@ -68,8 +68,8 @@ class TranscriptFactory(factory.Factory):
     class Meta:
         model = Transcript
 
-    id = factory.LazyFunction(uuid.uuid4)
-    conversation_id = factory.LazyFunction(uuid.uuid4)
+    id = factory.LazyFunction(uuid4)
+    conversation_id = factory.LazyFunction(uuid4)
     text = factory.Faker("sentence")
     source = "microphone"
     status = TranscriptStatus.RECEIVED

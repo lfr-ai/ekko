@@ -8,6 +8,7 @@ from ekko.core.enums import (
     DeploymentTarget,
     FeatureFlag,
     MessageRole,
+    Prompt,
     QueueName,
     RecognitionMode,
     STTProvider,
@@ -92,6 +93,12 @@ class TestEnumUniqueness:
 @pytest.mark.unit
 class TestParseableEnumFromStr:
     """Test ParseableEnum.from_str() for case-insensitive parsing and error handling."""
+
+    def test_from_str_prompt_name_case_expected_member(self) -> None:
+        """Prompt names use shared case-insensitive enum parsing."""
+        result = Prompt.from_str("SUMMARY_CHUNKS")
+
+        assert result == Prompt.SUMMARY_CHUNKS
 
     def test_from_str_valid_value(self):
         # Arrange / Act
