@@ -1,0 +1,132 @@
+"""Error-response contract template — copy into presentation/api/responses.py.
+
+One documented error envelope (`{"detail": "..."}`) reused across every route
+via `responses={status_code: ...}`, so OpenAPI/Swagger shows real examples
+instead of FastAPI's generic default. Pair with an
+`assets/exception_handlers.py.template` (see the `backend-structure` skill)
+that actually produces this envelope at runtime — this file only documents
+the contract shape for the OpenAPI schema.
+
+Every `description=` is the stdlib `http.HTTPStatus.<CODE>.phrase` (the RFC
+9110 reason phrase, e.g. "Too Many Requests") instead of a hand-typed
+synonym — one canonical source per status code instead of an ad hoc string
+that can drift from what the code actually means. `detail=` stays a
+descriptive, actionable client-facing message (via `StandardErrorDetail` in
+the real app; inlined here since this template has no enum yet) — except
+`CONTENT_TOO_LARGE`, whose `detail` also mirrors the same stdlib phrase
+because it is duplicated verbatim by the body-limit middleware's 413
+response and must never drift from it.
+"""
+
+from __future__ import annotations
+
+import http
+from typing import Annotated, Final
+
+from fastapi import status
+from pydantic import BaseModel, ConfigDict, Field
+
+JSONDict = dict[str, object]
+
+
+class _ErrorResponse(BaseModel):
+    """Standardized error response.
+
+    Attributes:
+        detail (str): Human-readable error detail.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    detail: Annotated[str, Field(description="Human-readable error detail")]
+
+
+def _build_error_response(*, description: str, detail: str) -> JSONDict:
+    """Build an OpenAPI error response object with a worked example.
+
+    Args:
+        description (str): Human-readable response description.
+        detail (str): Example error detail.
+
+    Returns:
+        JSONDict: OpenAPI response object.
+    """
+    return {
+        "description": description,
+        "model": _ErrorResponse,
+        "content": {
+            "application/json": {
+                "examples": {
+                    "default": {"summary": description, "value": {"detail": detail}}
+                }
+            }
+        },
+    }
+
+
+def build_success_response(
+    *, description: str, examples: dict[str, JSONDict]
+) -> JSONDict:
+    """Build an OpenAPI success response with named examples.
+
+    Args:
+        description (str): Human-readable response description.
+        examples (dict[str, JSONDict]): OpenAPI example objects, keyed by name.
+
+    Returns:
+        JSONDict: OpenAPI response object.
+    """
+    return {
+        "description": description,
+        "content": {"application/json": {"examples": examples}},
+    }
+
+
+NOT_FOUND_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.NOT_FOUND.phrase, detail="Resource not found"
+)
+
+CONTENT_TOO_LARGE_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.CONTENT_TOO_LARGE.phrase,
+    detail=http.HTTPStatus.CONTENT_TOO_LARGE.phrase,
+)
+
+UNPROCESSABLE_CONTENT_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.UNPROCESSABLE_CONTENT.phrase,
+    detail="Request validation error",
+)
+
+TOO_MANY_REQUESTS_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.TOO_MANY_REQUESTS.phrase,
+    detail="Too many requests; please try again later",
+)
+
+INTERNAL_SERVER_ERROR_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
+    detail="An unexpected error occurred",
+)
+
+BAD_GATEWAY_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.BAD_GATEWAY.phrase,
+    detail="An upstream external service returned an unusable result",
+)
+
+SERVICE_UNAVAILABLE_RESPONSE: Final[JSONDict] = _build_error_response(
+    description=http.HTTPStatus.SERVICE_UNAVAILABLE.phrase,
+    detail="Service temporarily unavailable",
+)
+
+# Spread into `FastAPI(responses=STANDARD_ERROR_RESPONSES)` once in the app
+# factory (FastAPI merges an app-level `responses=` into every router/route,
+# see `backend-structure`'s `app_factory.py.template`) for statuses ANY route
+# can produce: validation, rate-limiting, an oversized body, an unhandled
+# fault, or persistence being down. Keep resource-specific statuses (404, and
+# 502 unless every route calls an external client) on the individual route's
+# own `responses=` instead of duplicating them here.
+STANDARD_ERROR_RESPONSES: Final[dict[int, JSONDict]] = {
+    status.HTTP_413_CONTENT_TOO_LARGE: CONTENT_TOO_LARGE_RESPONSE,
+    status.HTTP_422_UNPROCESSABLE_CONTENT: UNPROCESSABLE_CONTENT_RESPONSE,
+    status.HTTP_429_TOO_MANY_REQUESTS: TOO_MANY_REQUESTS_RESPONSE,
+    status.HTTP_500_INTERNAL_SERVER_ERROR: INTERNAL_SERVER_ERROR_RESPONSE,
+    status.HTTP_503_SERVICE_UNAVAILABLE: SERVICE_UNAVAILABLE_RESPONSE,
+}

@@ -1,0 +1,40 @@
+"""Dependency alias template — copy into presentation/api/dependencies.py.
+
+Declare every shared Annotated dependency HERE, once, and reuse the alias in
+route signatures. Never inline `Depends(...)` in a handler signature.
+
+Presentation never imports the concrete composition container (Structural
+Presentation Boundary). `_DependencyProvider` is a PRIVATE structural Protocol
+naming only the dependencies routes need; the container satisfies it
+structurally (PEP 544) without this module importing it.
+"""
+
+from __future__ import annotations
+
+from typing import Annotated, Protocol
+
+from fastapi import Depends, Request
+
+
+class _DependencyProvider(Protocol):
+    """Application dependencies exposed to API providers."""
+
+    @property
+    def replace_me_service(self) -> object:
+        """Replace-me service or port."""
+        ...
+
+
+def _get_container(request: Request) -> _DependencyProvider:
+    """Return the request's app-scoped container from app.state."""
+    return request.app.state.container
+
+
+def _get_replace_me_service(
+    container: Annotated[_DependencyProvider, Depends(_get_container)],
+) -> object:
+    """Resolve the ReplaceMe service protocol from the container."""
+    return container.replace_me_service
+
+
+ReplaceMeServiceDep = Annotated[object, Depends(_get_replace_me_service)]

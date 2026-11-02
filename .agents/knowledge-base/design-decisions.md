@@ -8,9 +8,10 @@ separate deliberate database decision.
 
 ## GraphQL is selective
 
-GraphQL is retained where it teaches or provides transport value—especially the
-real-time transcript subscription. Operational health remains REST because
-platform probes need fixed, cacheable HTTP endpoints.
+GraphQL exposes only the read-only `promptCatalog` query — no mutations,
+subscriptions, or WebSocket transport. Live transcripts stream over REST SSE
+(`/transcripts/stream`), and operational health remains REST because platform
+probes need fixed, cacheable HTTP endpoints.
 
 ## Multi-runtime agent configuration
 

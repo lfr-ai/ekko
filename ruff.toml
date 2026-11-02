@@ -1,45 +1,61 @@
-target-version = "py312"
+target-version = "py314"
+required-version = ">=0.16.10"
 line-length = 120
 src = ["backend/src", "tests", "scripts"]
 exclude = [".venv", "backend/.venv", ".tox", "dist", "build", "node_modules"]
 
 [lint]
 select = [
-    "F",    # pyflakes
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "C90",  # mccabe complexity
-    "I",    # isort
-    "N",    # pep8-naming
-    "UP",   # pyupgrade
-    "S",    # flake8-bandit (security)
-    "B",    # flake8-bugbear
-    "A",    # flake8-builtins
-    "C4",   # flake8-comprehensions
-    "DTZ",  # flake8-datetimez
-    "T10",  # flake8-debugger
-    "T20",  # flake8-print
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "PIE",  # flake8-pie
-    "PT",   # flake8-pytest-style
-    "Q",    # flake8-quotes
-    "RSE",  # flake8-raise
-    "RET",  # flake8-return
-    "SLF",  # flake8-self
-    "SIM",  # flake8-simplify
-    "TID",  # flake8-tidy-imports
-    "TCH",  # flake8-type-checking
-    "ARG",  # flake8-unused-arguments
-    "PTH",  # flake8-use-pathlib
-    "ERA",  # eradicate
-    "PL",   # pylint
-    "TRY",  # tryceratops
-    "FLY",  # flynt
-    "PERF", # perflint
-    "FURB", # refurb
-    "LOG",  # flake8-logging
-    "RUF",  # ruff-specific
+    "F",     # pyflakes
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "C90",   # mccabe complexity
+    "I",     # isort
+    "N",     # pep8-naming
+    "D",     # pydocstyle (google convention; golden parity)
+    "UP",    # pyupgrade
+    "S",     # flake8-bandit (security)
+    "B",     # flake8-bugbear
+    "BLE",   # flake8-blind-except (golden parity)
+    "A",     # flake8-builtins
+    "C4",    # flake8-comprehensions
+    "DTZ",   # flake8-datetimez
+    "EM",    # flake8-errmsg (golden parity)
+    "T10",   # flake8-debugger
+    "T20",   # flake8-print
+    "ISC",   # flake8-implicit-str-concat
+    "ICN",   # flake8-import-conventions
+    "INP",   # flake8-no-pep420 — missing __init__.py (golden parity)
+    "PIE",   # flake8-pie
+    "PT",    # flake8-pytest-style
+    "Q",     # flake8-quotes
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "SLF",   # flake8-self
+    "SIM",   # flake8-simplify
+    "SLOT",  # flake8-slots (golden parity)
+    "TID",   # flake8-tidy-imports
+    "TC",    # flake8-type-checking
+    "ARG",   # flake8-unused-arguments
+    "PTH",   # flake8-use-pathlib
+    "ERA",   # eradicate
+    "PL",    # pylint
+    "TRY",   # tryceratops
+    "TD",    # flake8-todos (golden parity)
+    "FIX",   # flake8-fixme (golden parity)
+    "FLY",   # flynt
+    "PERF",  # perflint
+    "FURB",  # refurb
+    "LOG",   # flake8-logging
+    "G",     # flake8-logging-format (golden parity)
+    "ANN",   # flake8-annotations (ANN401 = no Any; golden parity)
+    "ASYNC", # flake8-async: async-safety (no blocking calls in async)
+    "FA",    # flake8-future-annotations
+    "FAST",  # FastAPI-specific rules (golden parity)
+    "FBT",   # flake8-boolean-trap
+    "PGH",   # pygrep-hooks: no blanket noqa / bare type-ignore
+    "YTT",   # flake8-2020 — sys.version misuse (golden parity)
+    "RUF",   # ruff-specific
 ]
 ignore = [
     "E203",    # whitespace before ':'
@@ -48,22 +64,31 @@ ignore = [
     "PLR0913", # too many arguments
     "PLR2004", # magic values
     "ISC001",  # conflicts with ruff format
+    "D105",    # magic-method docstrings optional (golden parity)
+    "D107",    # __init__ docstrings optional; documented on the class (golden parity)
 ]
 
 [lint.per-file-ignores]
 "tests/**/*.py" = [
     "S101",    # assert allowed in tests
     "S106",    # hardcoded test secrets
+    "D",       # docstrings not required in tests
+    "ANN",     # annotations not required in tests
+    "EM",      # inline exception messages fine in tests
     "ARG",     # unused args (fixtures)
     "PLR2004", # magic values
     "SLF001",  # private access in tests
     "T20",     # print in tests
     "PLC0415", # lazy imports in test fixtures
+    "FBT",     # tests deliberately exercise boolean inputs
+    "DTZ",     # naive datetimes acceptable in tests
+    "INP001",  # test packages need no __init__
 ]
 "backend/alembic/**/*.py" = [
     "ERA001", # commented-out code in migrations
     "I001",   # isort — alembic has its own convention
     "UP",     # pyupgrade — alembic templates need compat
+    "D",      # migrations need no docstrings
     "INP001", # namespace package
     "T20",    # print
 ]
@@ -87,9 +112,6 @@ ignore = [
 "backend/src/ekko/presentation/api/exception_handlers.py" = [
     "ARG001", # FastAPI exception handlers require request/exc params
 ]
-"backend/src/ekko/presentation/api/responses.py" = [
-    "UP040", # TypeAlias kept for Python 3.12 compat until min version is 3.13
-]
 "backend/src/ekko/presentation/api/routes/**/*.py" = [
     "PLC0415", # lazy DI imports in route handlers
     "S105",    # "bearer" token_type is not a password
@@ -106,12 +128,69 @@ ignore = [
 "backend/src/ekko/ai/**/*.py" = [
     "PLC0415", # lazy imports for optional AI deps
 ]
+"tools/**/*.py" = [
+    "D",       # internal tooling needs no docstrings
+    "ANN",     # internal tooling needs no annotations
+    "T20",     # CLI tools print user-facing output
+    "S603",    # trusted subprocess (fixed args, no shell)
+    "S607",    # trusted executable names
+    "PLC0415", # lazy imports in generator scripts
+]
+"scripts/**/*.py" = [
+    "D",    # internal scripts need no docstrings
+    "ANN",  # internal scripts need no annotations
+    "T20",  # CLI scripts print user-facing output
+    "S603", # trusted subprocess (fixed args, no shell)
+    "S607", # trusted executable names
+]
 
 [lint.isort]
 known-first-party = ["ekko"]
 
+[lint.flake8-annotations]
+mypy-init-return = true # allow omitting -> None on __init__
+
+[lint.flake8-boolean-trap]
+extend-allowed-calls = ["pydantic.Field"]
+
+[lint.flake8-bugbear]
+# FastAPI dependency callables are evaluated once at import; not mutable defaults.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+]
+
+[lint.flake8-tidy-imports.banned-api]
+"typing.cast".msg = "Do not use cast(); refactor the type boundary instead (repo convention)."
+
+[lint.flake8-import-conventions]
+# AGENTS.md Hard Rule 15: always `import logging` / `import logging.handlers`
+# and use module-qualified symbols; never `from logging import ...`.
+banned-from = ["logging", "logging.handlers"]
+
+[lint.flake8-type-checking]
+# Keep Pydantic/SQLAlchemy model imports at runtime, not in TYPE_CHECKING blocks.
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic_settings.BaseSettings",
+    "ekko.config.settings._shared.ConfiguredSettings",
+    "sqlalchemy.orm.DeclarativeBase",
+]
+
+[lint.flake8-unused-arguments]
+ignore-variadic-names = true # *args / **kwargs may be unused
+
+[lint.pylint]
+max-args = 8 # DI constructors carry several keyword-only deps
+
 [lint.pydocstyle]
 convention = "google"
+property-decorators = ["functools.cached_property"]
 
 [lint.mccabe]
 max-complexity = 12

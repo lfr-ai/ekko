@@ -28,8 +28,3 @@ directory = htmlcov
 
 [xml]
 output = coverage.xml
-
-[paths]
-source =
-    src/ekko
-    */ekko/src/ekko

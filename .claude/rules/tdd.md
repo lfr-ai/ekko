@@ -1,10 +1,14 @@
 ---
 description: Test-Driven Development rules for all test files
 paths:
-  - "**/tests/**/*.py"
+  - "tests/**/*.py"
 ---
 
-# TDD Rules
+# TDD Instructions
+
+Apply these rules to all test code. Cycle mechanics and guardrails live in the
+`tdd` skill; markers, factories, and fixture patterns live in
+`testing-conventions` — pull up both for deep patterns.
 
 ## The Three Laws
 
@@ -12,41 +16,18 @@ paths:
 2. No more test code than is sufficient to fail.
 3. No more production code than is sufficient to pass.
 
-## Test Naming
+## Rules
 
-`test_{method}_{scenario}_{expected}` — always descriptive, always specific.
+- Red-Green-Refactor: write failing test → minimal implementation → refactor.
+  Each cycle takes 1–5 minutes; break into smaller steps if taking longer.
+- Test names follow `test_{method}_{scenario}_{expected}`.
+- Every test carries a marker: `unit`, `integration`, `asyncio`, `slow`, `property`.
+- Use protocol-conforming fakes and factory-boy factories, not `MagicMock`.
+- Every bug fix requires a failing regression test first (RED → GREEN → commit
+  test and fix together).
+- Every protocol in `core/ports/` has a contract test suite wired against all
+  concrete implementations.
+- Separate Arrange-Act-Assert phases with blank lines; no merged phases.
 
-## Markers (required on every test)
-
-- `@pytest.mark.unit` — fast, no I/O, < 10 ms
-- `@pytest.mark.integration` — DB, API, external services
-- `@pytest.mark.asyncio` — async test functions
-- `@pytest.mark.slow` — > 2 seconds
-- `@pytest.mark.property` — Hypothesis property-based tests
-
-## Fakes over Mocks
-
-Use factory-boy factories. No `MagicMock` on domain objects.
-
-## Bug Fixes
-
-Every bug fix starts with a **failing regression test**.
-Test + fix committed together in the same commit.
-
-## Contract Tests
-
-Every `core/ports/` protocol has a contract test suite.
-Wire it against all concrete implementations.
-
-## Arrange-Act-Assert
-
-Three phases separated by blank lines. No merged phases.
-
-## Coverage
-
-| Layer | Minimum |
-|-------|---------|
-| Core | 90% |
-| Application | 80% |
-| Infrastructure | 60% |
-| Presentation | 70% |
+Coverage policy lives in the repository's coverage configuration and CI
+pipeline — do not duplicate numeric thresholds here (they drift).

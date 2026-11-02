@@ -1,0 +1,75 @@
+# Clean Architecture enforcement (import-linter). Run with:
+#   task architecture
+#   (equivalent to: cd backend && PYTHONPATH=src lint-imports --config .importlinter)
+# Ruff and ty are layer-unaware, so this file is the sole deterministic guard
+# for the Dependency Rule documented in the clean-architecture skill.
+#
+# include_external_packages is required: the two "forbidden" contracts below
+# constrain imports of external SDKs (alembic, litellm, openai, sqlalchemy,
+# fastapi, ...), which import-linter only analyses when external packages are
+# included in the import graph.
+[importlinter]
+root_package = ekko
+include_external_packages = True
+
+# Dependencies flow inward only. Higher layers may import lower layers; a lower
+# layer importing a higher one is a violation. `ai` and `infrastructure` sit at
+# the same level (siblings) and are kept apart by the independence contract.
+[importlinter:contract:clean-architecture-layers]
+name = Clean Architecture layers
+type = layers
+layers =
+    ekko.cli
+    ekko.composition
+    ekko.presentation
+    ekko.application
+    ekko.ai | ekko.infrastructure
+    ekko.core
+    ekko.config
+
+# `ai` and `infrastructure` are sibling verticals: neither may import the other.
+[importlinter:contract:ai-infrastructure-independence]
+name = AI and Infrastructure are independent siblings
+type = independence
+modules =
+    ekko.ai
+    ekko.infrastructure
+
+# Presentation is transport-only: it goes through the application layer and
+# core ports, never reaching directly into infrastructure or the AI vertical.
+[importlinter:contract:presentation-not-infrastructure-or-ai]
+name = Presentation must not reach into infrastructure or AI
+type = forbidden
+source_modules =
+    ekko.presentation
+forbidden_modules =
+    ekko.infrastructure
+    ekko.ai
+
+# Presentation must not import persistence or provider SDKs directly; it goes
+# through application services and core ports.
+[importlinter:contract:presentation-not-persistence-or-sdks]
+name = Presentation must not import persistence or provider SDKs
+type = forbidden
+source_modules =
+    ekko.presentation
+forbidden_modules =
+    alembic
+    litellm
+    openai
+    sqlalchemy
+
+# The domain core stays framework-independent (stdlib + pydantic hooks only).
+[importlinter:contract:core-framework-independent]
+name = Core is framework-independent
+type = forbidden
+source_modules =
+    ekko.core
+forbidden_modules =
+    fastapi
+    starlette
+    uvicorn
+    strawberry
+    sqlalchemy
+    litellm
+    openai

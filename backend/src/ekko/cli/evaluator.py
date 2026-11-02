@@ -12,15 +12,37 @@ from typing import Final
 from ekko.ai.prompts import PromptVersionInfo, get_active_prompt_versions
 
 DEFAULT_BACKTEST_PREFIX: Final[str] = "backtest"
-_MAX_SEGMENT_LENGTH: Final[int] = 48
-_MAX_RUN_NAME_LENGTH: Final[int] = 180
-_INVALID_SLUG_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
+_MAX_SEGMENT_LENGTH = 48
+_MAX_RUN_NAME_LENGTH = 180
+_INVALID_SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
 
 PROMPT_KEY_ALIASES: Final[dict[str, str]] = {
     "summary_chunks": "sum",
     "conversational_system": "conv",
 }
 NO_PROMPTS_SEGMENT: Final[str] = "noprompts"
+
+
+def _slugify(*, value: str, fallback: str) -> str:
+    lowered = value.strip().lower()
+    normalized = _INVALID_SLUG_PATTERN.sub("-", lowered).strip("-")
+    if not normalized:
+        normalized = fallback
+    return normalized[:_MAX_SEGMENT_LENGTH]
+
+
+def _build_prompt_version_segment(*, prompt_versions: dict[str, PromptVersionInfo]) -> str:
+    if not prompt_versions:
+        return NO_PROMPTS_SEGMENT
+
+    segments = []
+    for prompt_key, info in sorted(prompt_versions.items()):
+        alias = PROMPT_KEY_ALIASES.get(prompt_key, prompt_key)
+        alias_slug = _slugify(value=alias, fallback="prompt")
+        version_slug = _slugify(value=info.version, fallback="source")
+        segments.append(f"{alias_slug}{version_slug}")
+
+    return ".".join(segments)
 
 
 def build_backtest_run_name(
@@ -83,28 +105,6 @@ def build_backtest_metadata(
     }
 
 
-def _build_prompt_version_segment(*, prompt_versions: dict[str, PromptVersionInfo]) -> str:
-    if not prompt_versions:
-        return NO_PROMPTS_SEGMENT
-
-    segments = []
-    for prompt_key, info in sorted(prompt_versions.items()):
-        alias = PROMPT_KEY_ALIASES.get(prompt_key, prompt_key)
-        alias_slug = _slugify(value=alias, fallback="prompt")
-        version_slug = _slugify(value=info.version, fallback="source")
-        segments.append(f"{alias_slug}{version_slug}")
-
-    return ".".join(segments)
-
-
-def _slugify(*, value: str, fallback: str) -> str:
-    lowered = value.strip().lower()
-    normalized = _INVALID_SLUG_PATTERN.sub("-", lowered).strip("-")
-    if not normalized:
-        normalized = fallback
-    return normalized[:_MAX_SEGMENT_LENGTH]
-
-
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Evaluator utilities for backtest naming and metadata",
@@ -138,7 +138,13 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _emit_json(payload: object) -> None:
+    json.dump(payload, sys.stdout, indent=2)
+    sys.stdout.write("\n")
+
+
 def main(argv: list[str] | None = None) -> None:
+    """Run the evaluator CLI."""
     parser = _build_parser()
     args = parser.parse_args(argv)
     command = args.command or "run-name"
@@ -166,11 +172,6 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     parser.error(f"Unknown command: {command}")
-
-
-def _emit_json(payload: object) -> None:
-    json.dump(payload, sys.stdout, indent=2)
-    sys.stdout.write("\n")
 
 
 if __name__ == "__main__":

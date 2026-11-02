@@ -8,6 +8,8 @@ from ekko.infrastructure.db.base import Base
 
 
 class User(Base):
+    """Application user record."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

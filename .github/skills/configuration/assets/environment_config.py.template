@@ -1,0 +1,33 @@
+"""Per-environment configuration template — copy into
+configs/environments/<environment>.py, rename.
+
+Overrides only the fields that genuinely differ for this target: the env-file
+selection, plus any facet field whose value diverges from the shared default
+on `BaseAppConfig`/the facets it composes. Never re-declare a field with the
+exact value it already inherits — delete the line instead and let inheritance
+carry it.
+"""
+
+from __future__ import annotations
+
+from typing import final
+
+from pydantic_settings import SettingsConfigDict
+
+from replace_me.configs.base import BaseAppConfig
+from replace_me.configs.settings.paths import PROJECT_ROOT
+
+
+@final
+class ReplaceMeEnvironmentConfig(BaseAppConfig):
+    """Configuration for the replace-me environment."""
+
+    model_config = SettingsConfigDict(
+        env_file=(
+            PROJECT_ROOT / ".env",
+            PROJECT_ROOT / ".env.replace_me",
+        ),
+    )
+
+    # Only fields that genuinely differ from BaseAppConfig belong below —
+    # e.g. a stricter log level or a target-specific host/port.

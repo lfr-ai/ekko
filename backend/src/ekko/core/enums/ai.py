@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from enum import StrEnum, auto, unique
+from enum import auto, unique
 
 from ekko.core.enums.base import ParseableEnum
 
 
 @unique
-class Prompt(StrEnum):
+class Prompt(ParseableEnum):
     """Prompt template identifiers for AI pipeline stages.
 
     Members:

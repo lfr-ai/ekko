@@ -10,7 +10,7 @@ tasks:
     desc: "Run FastAPI app in reload mode"
     env:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
-      EKKO_DISABLE_AUDIO: "{{.EKKO_DISABLE_AUDIO | default \"false\"}}"
+      EKKO_DISABLE_AUDIO: '{{.EKKO_DISABLE_AUDIO | default "false"}}'
     cmds:
       - uv run uvicorn ekko.composition.app_factory:create_app --factory --reload --host 127.0.0.1 --port 8000
 
@@ -60,13 +60,6 @@ tasks:
     cmds:
       - uv run python -m pytest tests/performance/ -v --benchmark-only {{.CLI_ARGS}}
 
-  test:e2e:
-    desc: "Run end-to-end tests"
-    env:
-      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
-    cmds:
-      - uv run python -m pytest tests/e2e/ -v --tb=short {{.CLI_ARGS}}
-
   test:coverage:
     desc: "Run tests with coverage report"
     env:
@@ -92,9 +85,12 @@ tasks:
       - uv run ruff format --check src tests
 
   typecheck:
-    desc: "Run type checker"
+    desc: "Type check all maintained Python"
     cmds:
-      - uv run ty check src/ekko
+      - cmd: uv run python -m ty check src/ekko tests ../tests ../tools ../scripts ../registry alembic
+        platforms: [linux, darwin]
+      - cmd: .venv/Scripts/python.exe -m ty check src/ekko tests ../tests ../tools ../scripts ../registry alembic
+        platforms: [windows]
 
   xenon:
     desc: "Cyclomatic complexity gate"
@@ -128,6 +124,36 @@ tasks:
     cmds:
       - uv run alembic revision --autogenerate -m "{{.CLI_ARGS}}"
 
+  db:revision:empty:
+    desc: "Create an empty Alembic migration"
+    cmds:
+      - uv run alembic revision -m "{{.CLI_ARGS}}"
+
+  db:check:
+    desc: "Fail when ORM metadata and migration head differ"
+    cmds:
+      - uv run alembic check
+
+  db:current:
+    desc: "Show the current database revision"
+    cmds:
+      - uv run alembic current
+
+  db:history:
+    desc: "Show migration history"
+    cmds:
+      - uv run alembic history
+
+  db:upgrade:sql:
+    desc: "Render migration SQL without applying it"
+    cmds:
+      - uv run alembic upgrade head --sql
+
+  db:stamp:
+    desc: "Stamp a database revision without running migrations"
+    cmds:
+      - uv run alembic stamp "{{.CLI_ARGS}}"
+
   db:downgrade:
     desc: "Rollback last migration"
     cmds:
@@ -138,13 +164,6 @@ tasks:
     cmds:
       - uv run alembic downgrade base
       - uv run alembic upgrade head
-
-  db:migrate:pg-to-sqlite:
-    desc: "Copy data from PostgreSQL into local SQLite"
-    env:
-      PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
-    cmds:
-      - uv run python -m ekko.cli.postgres_to_sqlite {{.CLI_ARGS}}
 
   # ── Prompt Registry ───────────────────────────────────────
   prompts:provision:
@@ -188,49 +207,6 @@ tasks:
       PYTHONPATH: "{{.BACKEND_PYTHONPATH}}"
     cmds:
       - uv run python -m ekko.cli.evaluator metadata {{.CLI_ARGS}}
-
-  # ── Keploy Record/Replay ───────────────────────────────────
-  keploy:version:
-    desc: "Print Keploy CLI version"
-    cmds:
-      - keploy --version
-
-  keploy:record:
-    desc: "Record API traffic and generate Keploy test cases/mocks"
-    env:
-      EKKO_DISABLE_AUDIO: "true"
-      EKKO_ENVIRONMENT: "local"
-      EKKO_DATABASE_BACKEND: "sqlite"
-    cmds:
-      - >-
-        keploy record
-        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
-        --path .
-        --delay 10
-        {{.CLI_ARGS}}
-
-  keploy:test:
-    desc: "Replay Keploy test cases against the local backend"
-    env:
-      EKKO_DISABLE_AUDIO: "true"
-      EKKO_ENVIRONMENT: "local"
-      EKKO_DATABASE_BACKEND: "sqlite"
-    cmds:
-      - >-
-        keploy test
-        -c "uv run uvicorn ekko.composition.app_factory:create_app --factory --host 127.0.0.1 --port 8000"
-        --path .
-        --delay 10
-        --api-timeout 15
-        --ignore-ordering
-        --remove-unused-mocks
-        --skip-coverage
-        {{.CLI_ARGS}}
-
-  keploy:report:
-    desc: "Show Keploy test run summary"
-    cmds:
-      - keploy report --path . --summary {{.CLI_ARGS}}
 
   # ── Cleanup ──────────────────────────────────────────────────
   clean:

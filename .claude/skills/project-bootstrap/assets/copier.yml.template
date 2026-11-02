@@ -1,0 +1,51 @@
+_min_copier_version: "9.3.0"
+_subdirectory: template
+_templates_suffix: .jinja
+_answers_file: .copier-answers.yml
+_envops:
+  undefined: jinja2.StrictUndefined
+
+project_name:
+  type: str
+  help: Human-readable project name.
+  validator: >-
+    {% if not project_name.strip() %}
+    Project name cannot be empty.
+    {% endif %}
+
+project_slug:
+  type: str
+  help: Lowercase repository/package slug using letters, digits, and dashes.
+  default: "{{ project_name | lower | replace(' ', '-') }}"
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9-]*$')) %}
+    Use lowercase letters, digits, and dashes; start with a letter.
+    {% endif %}
+
+project_shape:
+  type: str
+  help: Select only capabilities the generated repository will use.
+  choices:
+    Backend only: backend
+    Frontend only: frontend
+    Full stack: fullstack
+  default: backend
+
+python_package:
+  type: str
+  help: Importable Python package name.
+  default: "{{ project_slug | replace('-', '_') }}"
+  when: "{{ project_shape in ['backend', 'fullstack'] }}"
+  validator: >-
+    {% if python_package and not (python_package | regex_search('^[a-z][a-z0-9_]*$')) %}
+    Use a lowercase Python identifier.
+    {% endif %}
+
+environment_prefix:
+  type: str
+  help: Uppercase environment-variable prefix including the trailing underscore.
+  default: "{{ project_slug | upper | replace('-', '_') }}_"
+  validator: >-
+    {% if not (environment_prefix | regex_search('^[A-Z][A-Z0-9_]*_$')) %}
+    Use uppercase letters, digits, and underscores with one trailing underscore.
+    {% endif %}

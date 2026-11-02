@@ -1,0 +1,64 @@
+"""from_config component template — the pattern for any component built from
+configuration (an infra client, a composition-root service, etc.).
+
+`_XConfig` is a PRIVATE structural Protocol naming only the fields this
+component reads. Since every settings concern is a nested facet, `_XConfig`
+layers two Protocols: an outer one exposing the facet as a property returning
+an inner Protocol that lists only the leaf fields read from it — mirroring the
+real facet's own nesting instead of flattening it away. The component never
+imports the aggregate app config — the config satisfies `_XConfig` structurally
+(PEP 544), keeping the component decoupled from the config layer.
+"""
+
+from __future__ import annotations
+
+from typing import Protocol, Self, final, override
+
+from replace_me.infrastructure._from_config import FromConfigMixin
+
+
+class _ReplaceMeFacetConfig(Protocol):
+    """Structural view of the nested facet's fields this client reads."""
+
+    @property
+    def host(self) -> str: ...
+
+    @property
+    def port(self) -> int: ...
+
+
+class _ReplaceMeClientConfig(Protocol):
+    """Structural view of the config fields this client reads."""
+
+    @property
+    def replace_me_facet(self) -> _ReplaceMeFacetConfig: ...
+
+
+@final
+class ReplaceMeClient(FromConfigMixin[_ReplaceMeClientConfig]):
+    """Adapter built from configuration via `from_config`."""
+
+    __slots__ = ("_base_url",)
+
+    def __init__(self, *, base_url: str):
+        """Initialize with an already-resolved base URL.
+
+        Args:
+            base_url (str): Fully assembled service base URL.
+        """
+        self._base_url = base_url
+
+    @classmethod
+    @override
+    def from_config(cls, config: _ReplaceMeClientConfig, /) -> Self:
+        """Build the client from only the fields it needs.
+
+        Args:
+            config (_ReplaceMeClientConfig): Structural config view.
+
+        Returns:
+            Self: A configured client instance.
+        """
+        facet = config.replace_me_facet
+        base_url = f"http://{facet.host}:{facet.port}"
+        return cls(base_url=base_url)

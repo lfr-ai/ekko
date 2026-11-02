@@ -54,14 +54,15 @@ If unsure, inspect `AGENTS.md`, `.agents/agentic-setup/profiles.json`, `PROJECT.
    `PROJECT.md` or specs.
 4. Initialize or update OpenSpec (`openspec/specs/`) from **verified** behavior
    only; preserve significant design decisions in change/archive artifacts.
-5. Refresh the GitNexus index (`task graph`) after new/renamed/moved modules;
+5. Refresh the GitNexus index with the command documented in `PROJECT.md` after
+   adding, renaming, or moving modules;
    record verified gotchas and commands under `/memories/repo/`.
 6. Confirm every convention is covered by an instruction/rule + skill; add any
    missing one with `create-skill` (follow its consistency rubric) and pair scopes.
 
 ## Verify (both paths)
 
-- `uv run python scripts/agents/verify_agent_config.py` passes (skill/agent parity,
+- `uv run python .agents/guard/verify_agent_config.py` passes (skill/agent parity,
   portability, instruction↔rule scopes, hooks, MCP names, profiles/catalogs).
 - `openspec validate --all` passes when specs exist.
 - A fresh agent can locate entry points, layers, tests, config, and the validation

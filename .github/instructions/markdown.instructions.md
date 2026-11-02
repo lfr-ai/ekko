@@ -38,4 +38,19 @@ lives in `update-docs-on-code-change`. This file governs the mechanics.
 
 - Use YAML front matter (`---`) only where a tool consumes it (an instruction's
   `applyTo`, a skill's `name`/`description`, a prompt's metadata). Keep only the
-  fields the consuming tool reads.
+  keys the tool defines; add no ad-hoc metadata.
+
+## Hygiene
+
+- LF line endings, one trailing newline, no trailing whitespace (except a
+  deliberate two-space hard break), no hard tabs.
+- Pick one wrapping style per file — hard-wrapped OR one-sentence-per-line — and
+  do not mix. Keep lines readable (~80-100 cols) unless a table or URL needs
+  more.
+- Use `-` for unordered lists and `1.` for ordered; indent nested items by two
+  spaces. Prefer `**bold**` / `_italic_` over `__` / `*`.
+- Render diagrams as ` ```mermaid ` fenced blocks, not ASCII art or an image,
+  whenever a picture communicates faster than prose.
+
+Enforced by a linter where one is configured (markdownlint, Biome); otherwise
+these are review conventions.

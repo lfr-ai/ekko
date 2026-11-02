@@ -1,0 +1,66 @@
+"""Domain exception hierarchy template — copy into core/exceptions.py.
+
+Domain invariant violations raise stdlib `ValueError`/`TypeError` directly —
+add a custom subclass only once a real call site needs to `except` it more
+specifically than the stdlib type; until then a subclass adds indirection
+without behavior. `DomainError` is the one shared marker base every
+first-party exception inherits, so presentation/observability code can
+`except DomainError` when it needs "any of ours" without enumerating every
+subclass.
+
+Give every "not found" case its OWN named, `@final`, `DomainError`-only
+class (`ReplaceMeNotFoundError`, one per distinct resource) instead of one
+generic, parameterized `NotFoundError(resource, identifier)`. Do NOT also
+inherit stdlib `LookupError` "to keep `except LookupError` working" — a
+presentation handler registered for the whole `LookupError` family also
+catches an accidental `KeyError`/`IndexError` bug elsewhere in the codebase
+and silently turns it into a false client-facing 404 instead of a loud,
+alertable 500. Register one handler per named type instead (see
+`backend-structure`'s `assets/exception_handlers.py.template`). Keep this
+module stdlib-only: exceptions are Core, never import a framework.
+
+Port-specific exceptions (a `*ClientPort` or `*RepositoryPort` failure mode)
+belong in a sibling `exceptions.py` next to that port, importing `DomainError`
+from here — see `core/ports/clients/exceptions.py` and
+`core/ports/repositories/exceptions.py` for the two concrete shapes below.
+"""
+
+from typing import final
+
+
+class DomainError(Exception):
+    """Base class for every first-party failure."""
+
+
+@final
+class ReplaceMeNotFoundError(DomainError):
+    """No ReplaceMe resource exists for the given identifier."""
+
+
+# Add a new domain error only when a call site needs to `except` it
+# specifically — do not create a subclass per invariant "for clarity" if
+# every catcher already just wants `ValueError`/`TypeError`/a named not-found
+# type. Raise a zero-argument type as `raise ReplaceMeNotFoundError` (no
+# resource/identifier string): the client-facing detail stays a generic,
+# non-enumerable "Resource not found" (see `api-contracts`'
+# `assets/error_responses.py.template`); the class NAME already identifies
+# the failure for logs, and any request-scoped identifier (e.g. a case ID)
+# is typically already correlation-bound for structured logging.
+#
+# Port-level example (copy into `core/ports/clients/exceptions.py`):
+#
+#     from replace_me.core.exceptions import DomainError
+#
+#     @final
+#     class ReplaceMeUnusableResultError(DomainError):
+#         """This client port fails to produce a usable result."""
+#
+# A second, unrelated client port needs its OWN distinctly-named exception
+# here too — never reuse this same type across ports; that is exactly the
+# generic-parameterized-exception anti-pattern this template's `@final`
+# not-found guidance above already warns against.
+#
+# Maps to a 502 in `backend-structure`'s `exception_handlers.py.template`
+# (the fault is the upstream service, not this request). A repository-port
+# equivalent (`PersistenceUnavailableError(DomainError)`, mapped to 503) lives
+# in `core/ports/repositories/exceptions.py` the same way.

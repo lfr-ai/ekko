@@ -1,0 +1,25 @@
+"""Repository protocol template — copy into core/ports/, one per aggregate root.
+
+Returns domain objects only, never ORM rows. Method names use domain language
+(see the Ubiquitous Language table in SKILL.md), and all arguments are
+keyword-only per the project's Hard Rules. Shown `async` here as the more
+common default for new services — match whichever calling convention (sync or
+async) the rest of this project's repositories already use; do not mix both
+styles across ports.
+"""
+
+from __future__ import annotations
+
+from typing import Protocol
+
+
+class ReplaceMeRepository(Protocol):
+    """Persistence port for the ReplaceMe aggregate root."""
+
+    async def get(self, *, entity_id: str) -> object | None:
+        """Load one aggregate by ID, or None when it does not exist."""
+        ...
+
+    async def save(self, *, entity: object) -> None:
+        """Persist the aggregate's current state as a single transaction."""
+        ...

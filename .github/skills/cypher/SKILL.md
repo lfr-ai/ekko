@@ -1,14 +1,14 @@
 ---
 name: cypher
-description: Write safe, efficient Cypher queries against any property-graph engine (GitNexus's embedded graph, Neo4j, Memgraph, Kùzu). Use when writing or reviewing a raw Cypher query — including `gitnexus_cypher`/`mcp_gitnexus_cypher` calls — covering parameterization, indexes, and EXPLAIN/PROFILE tuning.
+description: Write safe, efficient Cypher queries against any property-graph engine (GitNexus's embedded graph, Neo4j, Memgraph, Kùzu). Use when writing or reviewing a raw Cypher query — including `gitnexus_cypher` calls — covering parameterization, indexes, and EXPLAIN/PROFILE tuning.
 ---
 
 # Cypher
 
 Portable Cypher language conventions — independent of which graph engine runs
 the query. In this repo the only active consumer is the GitNexus MCP `cypher`
-tool; see the `gitnexus` skill family (`.agents/skills/gitnexus/`) for this
-repo's concrete node/edge schema and worked query examples. This skill is the
+tool; see [`gitnexus/guide`](../gitnexus/guide/SKILL.md) for this repo's
+concrete node/edge schema and worked query examples. This skill is the
 language-level knowledge behind those queries, and applies equally to any
 future real Neo4j/Memgraph work.
 
@@ -72,5 +72,5 @@ MATCH (f:Function {name: "` + functionName + `"}) RETURN f.filePath
 
 ## References
 
-- `.agents/skills/gitnexus/guide/SKILL.md` — this repo's concrete graph
+- [`gitnexus/guide`](../gitnexus/guide/SKILL.md) — this repo's concrete graph
   schema, `gitnexus_cypher` tool, and worked examples against it.

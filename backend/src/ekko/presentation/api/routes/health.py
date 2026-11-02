@@ -2,47 +2,26 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
-from typing import TYPE_CHECKING, Final
+from typing import Annotated
 
-import duckdb
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request, Response, status
 
-from ekko.config.settings import get_settings
-from ekko.core.enums import QueueName
-from ekko.core.registry_constants import ROUTE_HEALTH
+from ekko.application.services import ReadinessService
+from ekko.config.runtime import get_config
+from ekko.core.enums import ServiceStatus
+from ekko.core.registry_constants import ROUTE_HEALTH, ROUTE_READY
+from ekko.presentation.api.dependencies import get_readiness_service
+from ekko.presentation.api.schemas.health import DependencyHealth, ReadinessResponse
 from ekko.presentation.api.schemas.responses import HealthResponse
 
-if TYPE_CHECKING:
-    from pathlib import Path
+_HEALTH_TAG = "health"
 
-router = APIRouter(tags=["health"])
+router = APIRouter(tags=[_HEALTH_TAG])
 
-_DUCKDB_ALIAS: Final[str] = "source_sqlite"
-
-
-def _probe_duckdb_sqlite(*, sqlite_path: Path, duckdb_path: Path) -> tuple[bool, str]:
-    """Probe DuckDB by attaching the active SQLite database file."""
-    if not sqlite_path.exists():
-        return False, "sqlite database file not found"
-
-    escaped_path = str(sqlite_path).replace("'", "''")
-    attach_statement = f"ATTACH '{escaped_path}' AS {_DUCKDB_ALIAS} (TYPE sqlite)"
-    detach_statement = f"DETACH {_DUCKDB_ALIAS}"
-
-    try:
-        with duckdb.connect(database=str(duckdb_path), read_only=False) as conn:
-            conn.execute("INSTALL sqlite")
-            conn.execute("LOAD sqlite")
-            with suppress(duckdb.Error):
-                conn.execute(detach_statement)
-            conn.execute(attach_statement)
-            rows = conn.execute(f"SHOW TABLES FROM {_DUCKDB_ALIAS}").fetchall()
-            with suppress(duckdb.Error):
-                conn.execute(detach_statement)
-            return True, f"attached sqlite with {len(rows)} table(s)"
-    except duckdb.Error as exc:
-        return False, str(exc)
+type ReadinessServiceDependency = Annotated[
+    ReadinessService,
+    Depends(get_readiness_service),
+]
 
 
 @router.get(ROUTE_HEALTH, response_model=HealthResponse)
@@ -56,29 +35,29 @@ async def health(request: Request) -> HealthResponse:
 
     details["sys_server_listening"] = bool(getattr(state, "sys_server", None))
     details["mic_server_listening"] = bool(getattr(state, "mic_server", None))
-    qm = getattr(state, "queue_manager", None)
-    if qm is None:
-        details["queue_manager"] = "missing"
+    settings = get_config()
+    details["sqlite_database_present"] = settings.resolved_db_path.exists()
+    if not details["sqlite_database_present"]:
         ok = False
-    else:
-        try:
-            details["transcripts_queue_present"] = QueueName.TRANSCRIPTS in qm.queues
-        except Exception:
-            details["transcripts_queue_present"] = False
-            ok = False
-
-    settings = get_settings()
-    details["duckdb_enabled"] = settings.duckdb_enabled
-    if settings.duckdb_enabled:
-        duckdb_ok, duckdb_detail = _probe_duckdb_sqlite(
-            sqlite_path=settings.resolved_db_path,
-            duckdb_path=settings.resolved_duckdb_path,
-        )
-        details["duckdb_sqlite_probe"] = {
-            "ok": duckdb_ok,
-            "detail": duckdb_detail,
-        }
-        if not duckdb_ok:
-            ok = False
 
     return HealthResponse(ok=ok, details=details)
+
+
+@router.get(
+    ROUTE_READY,
+    response_model=ReadinessResponse,
+    responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"model": ReadinessResponse}},
+)
+async def ready(response: Response, service: ReadinessServiceDependency) -> ReadinessResponse:
+    """Check external dependency readiness."""
+    database = await service.check_database()
+    redis = await service.check_redis()
+    dependencies = [
+        DependencyHealth(name=database.name, healthy=database.healthy, detail=database.detail),
+        DependencyHealth(name=redis.name, healthy=redis.healthy, detail=redis.detail),
+    ]
+    all_healthy = database.healthy and redis.healthy
+    readiness_status = ServiceStatus.HEALTHY if all_healthy else ServiceStatus.DEGRADED
+    if not all_healthy:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return ReadinessResponse(status=readiness_status, dependencies=dependencies)

@@ -1,0 +1,99 @@
+"""Root, favicon, and health/readiness route handlers.
+
+Copy into presentation/api/routes/root.py, rename package.
+
+Owns every bare, non-`/api` infrastructure route plus the one health
+endpoint every deployment target expects, in one module instead of a
+separate single-route `health.py`: a probe endpoint has no independent
+business logic to justify its own module. Bare routes hide from the
+OpenAPI schema (`include_in_schema=False`); the health check is
+dual-mounted so an orchestrator probe and a documented API consumer hit
+the SAME handler at two paths without duplicating logic:
+
+- `/readiness` — bare, hidden, matches the Azure Container Apps /
+  Kubernetes probe convention.
+- `/api/health` — documented, tagged, rate-limited; what an external
+  consumer or uptime monitor calls.
+"""
+
+from __future__ import annotations
+
+from fastapi import APIRouter, Request, Response, status
+
+from replace_me import APP_NAME, __version__
+from replace_me.presentation.api.middleware.rate_limiter import (
+    RATE_LIMIT_DEFAULT,
+    limiter,
+)
+from replace_me.presentation.api.responses import (
+    TOO_MANY_REQUESTS_RESPONSE,
+    build_success_response,
+)
+
+JSONDict = dict[str, object]
+
+router = APIRouter()
+
+_ROOT_RESPONSE = build_success_response(
+    description="Basic service metadata",
+    examples={
+        "default": {
+            "summary": "Service metadata",
+            "value": {"service": APP_NAME, "status": "ok", "version": __version__},
+        }
+    },
+)
+
+_HEALTH_RESPONSE = build_success_response(
+    description="Service is ready to receive traffic",
+    examples={
+        "ok": {
+            "summary": "Successful health payload",
+            "value": {"status": "ok"},
+        }
+    },
+)
+
+
+@router.get(
+    path="/",
+    include_in_schema=False,
+    responses={status.HTTP_200_OK: _ROOT_RESPONSE},
+)
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def root(request: Request) -> JSONDict:
+    """Basic service metadata ('service', 'status', 'version')."""
+    return {"service": APP_NAME, "status": "ok", "version": __version__}
+
+
+@router.get(
+    path="/favicon.ico",
+    include_in_schema=False,
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "No favicon content",
+        }
+    },
+)
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def favicon(request: Request) -> Response:
+    """Empty favicon response for browser compatibility check."""
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(path="/readiness", include_in_schema=False)
+@router.get(
+    path="/api/health",
+    tags=["Health"],
+    summary="Readiness check",
+    description="Check service readiness for uptime and orchestrator probes",
+    responses={
+        status.HTTP_200_OK: _HEALTH_RESPONSE,
+        status.HTTP_429_TOO_MANY_REQUESTS: TOO_MANY_REQUESTS_RESPONSE,
+    },
+)
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def readiness(request: Request) -> JSONDict:
+    """Check service readiness for uptime and orchestrator probes."""
+    return {"status": "ok"}

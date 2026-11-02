@@ -1,0 +1,82 @@
+"""DTO/request-response schema template — copy into application/dtos/.
+
+Boundary schemas are Pydantic models, never ORM/domain objects. Share one
+configured base per mutability (forbid unknown fields, strip whitespace,
+validate on assignment, accept both alias and field name, allow
+`from_attributes` for ORM-to-DTO reads) instead of repeating `model_config` on
+every model.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Annotated, Self
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+_BASE_MODEL_CONFIG = ConfigDict(
+    extra="forbid",
+    str_strip_whitespace=True,
+    validate_assignment=True,
+    validate_by_alias=True,
+    validate_by_name=True,
+    from_attributes=True,
+)
+
+
+class _ConfiguredDTOModel(BaseModel):
+    """Shared configured Pydantic base model for the DTO layer."""
+
+    model_config = _BASE_MODEL_CONFIG
+
+
+class DTOModel(_ConfiguredDTOModel):
+    """Shared base for mutable Pydantic models in the DTO layer."""
+
+
+class FrozenDTOModel(_ConfiguredDTOModel):
+    """Shared base for immutable Pydantic models in the DTO layer."""
+
+    model_config = ConfigDict(**_BASE_MODEL_CONFIG, frozen=True)
+
+
+class ReplaceMeCreateRequest(DTOModel):
+    """Request payload to create a resource.
+
+    Attributes:
+        name (str): Human-readable resource name.
+        starts_at (datetime): Period start.
+        ends_at (datetime): Period end.
+    """
+
+    name: Annotated[
+        str,
+        Field(description="Human-readable resource name", examples=["Acme Corp"]),
+    ]
+    starts_at: Annotated[
+        datetime,
+        Field(description="Period start", examples=["2020-01-01T00:00:00"]),
+    ]
+    ends_at: Annotated[
+        datetime,
+        Field(description="Period end", examples=["2025-12-31T00:00:00"]),
+    ]
+
+    @model_validator(mode="after")
+    def _validate_period(self) -> Self:
+        """Validate that the period end is not before its start."""
+        if self.ends_at < self.starts_at:
+            raise ValueError("ends_at must not be before starts_at")
+        return self
+
+
+class ReplaceMeResponse(FrozenDTOModel):
+    """Response payload describing a resource.
+
+    Attributes:
+        resource_id (str): Resource identifier.
+        name (str): Human-readable resource name.
+    """
+
+    resource_id: Annotated[str, Field(description="Resource identifier")]
+    name: Annotated[str, Field(description="Human-readable resource name")]

@@ -9,11 +9,8 @@
     "tsx",
     "javascript"
   ],
-  "skipBlocks": [
-    {
-      "open": "\"\"\"",
-      "close": "\"\"\""
-    }
+  "ignorePattern": [
+    "(?s)\"\"\".*?\"\"\""
   ],
   "ignore": [
     "**/.git/**",

@@ -4,9 +4,14 @@ Events are named in past tense and represent immutable facts about what
 happened in the domain. They use only primitive/serializable field types.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from datetime import datetime
-from uuid import UUID
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from uuid import UUID
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

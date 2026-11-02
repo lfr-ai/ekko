@@ -1,5 +1,0 @@
-variables:
-  NODE_VERSION: "22"
-  FRONTEND_DIR: "frontend"
-  RUN_STORYBOOK_TESTS: "true"
-  RUN_E2E: "false"

@@ -6,8 +6,8 @@ applyTo: "**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
 # JavaScript & TypeScript Conventions
 
 - Prefer TypeScript for application source. JavaScript is acceptable for tool
-	configuration or an external compatibility requirement and follows the same
-	module, naming, and formatter rules.
+  configuration or an external compatibility requirement and follows the same
+  module, naming, and formatter rules.
 
 ## Type safety
 
@@ -30,6 +30,16 @@ applyTo: "**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
 - Use named exports only.
 - Keep module surfaces explicit and stable.
 - Avoid wildcard exports (`export *`) for core modules.
+
+## Declarations (`.d.ts`)
+
+- Use `.d.ts` files only for ambient types: an untyped third-party module, Vite's
+  `import.meta.env` (`vite-env.d.ts`), non-code asset imports, or a global
+  augmentation — never for runtime code.
+- Prefer module augmentation (`declare module "x" { ... }`) over `declare global`;
+  keep any globals minimal and colocated (e.g. `src/types/`).
+- Do not hand-write `.d.ts` for your own source — let `tsc`/the bundler emit
+  declarations (`declaration: true`) when publishing a library.
 
 ## Naming
 

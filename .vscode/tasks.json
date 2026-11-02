@@ -15,8 +15,7 @@
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "build",
@@ -30,8 +29,7 @@
         "cwd": "${workspaceFolder}/backend",
         "env": {
           "PYTHONPATH": "src;..",
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "test",
@@ -57,8 +55,7 @@
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "test",
@@ -71,8 +68,7 @@
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "test",
@@ -85,8 +81,7 @@
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "build",
@@ -95,12 +90,24 @@
     {
       "label": "Backend: Type Check",
       "type": "shell",
-      "command": "uv run python -m ty check src/ekko",
+      "command": "uv run python -m ty check src/ekko tests ../tests ../tools ../scripts ../registry alembic",
       "options": {
         "cwd": "${workspaceFolder}/backend",
         "env": {
-          "UV_LINK_MODE": "copy",
-          "UV_NO_SYNC": "1"
+          "UV_LINK_MODE": "copy"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Architecture",
+      "type": "shell",
+      "command": "uv run --project backend python tools/security/check_architecture_boundaries.py",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "UV_LINK_MODE": "copy"
         }
       },
       "group": "test",
@@ -113,16 +120,31 @@
     {
       "label": "Frontend: Install Dependencies",
       "type": "shell",
-      "command": "bun install; $needsRepair = ($LASTEXITCODE -ne 0) -or -not (Test-Path \"node_modules/pathe/package.json\") -or -not (Test-Path \"node_modules/estree-walker/package.json\"); if ($needsRepair) { Write-Host \"Bun install incomplete in this environment. Running npm install fallback...\"; npm install; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }",
+      "command": "bun install --frozen-lockfile",
       "options": {
-        "cwd": "${workspaceFolder}/frontend",
-        "env": {
-          "BUN_CONFIG_LINKER": "hoisted",
-          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
-          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "windows": {
+        "options": {
+          "cwd": "${workspaceFolder}/frontend",
+          "env": {
+            "BUN_INSTALL_CACHE_DIR": "${env:LOCALAPPDATA}\\bun\\install\\cache",
+            "HOME": "${env:USERPROFILE}"
+          }
         }
       },
       "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Architecture",
+      "type": "shell",
+      "command": "node ./scripts/check-architecture.mjs",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {}
+      },
+      "group": "test",
       "problemMatcher": []
     },
     {
@@ -131,11 +153,7 @@
       "command": "bun run dev",
       "options": {
         "cwd": "${workspaceFolder}/frontend",
-        "env": {
-          "BUN_CONFIG_LINKER": "hoisted",
-          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
-          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
-        }
+        "env": {}
       },
       "group": "test",
       "isBackground": true,
@@ -159,11 +177,7 @@
       "command": "bun run build",
       "options": {
         "cwd": "${workspaceFolder}/frontend",
-        "env": {
-          "BUN_CONFIG_LINKER": "hoisted",
-          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
-          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
-        }
+        "env": {}
       },
       "group": "build",
       "problemMatcher": []
@@ -174,11 +188,7 @@
       "command": "bun run test",
       "options": {
         "cwd": "${workspaceFolder}/frontend",
-        "env": {
-          "BUN_CONFIG_LINKER": "hoisted",
-          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
-          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
-        }
+        "env": {}
       },
       "group": "test",
       "problemMatcher": []
@@ -189,11 +199,7 @@
       "command": "bun run lint",
       "options": {
         "cwd": "${workspaceFolder}/frontend",
-        "env": {
-          "BUN_CONFIG_LINKER": "hoisted",
-          "BUN_FEATURE_FLAG_DISABLE_NATIVE_DEPENDENCY_LINKER": "1",
-          "BUN_FEATURE_FLAG_DISABLE_IGNORE_SCRIPTS": "1"
-        }
+        "env": {}
       },
       "group": "test",
       "problemMatcher": []
@@ -215,9 +221,11 @@
       "label": "Quality: Run All Checks",
       "dependsOn": [
         "Backend: Lint",
+        "Backend: Architecture",
         "Backend: Type Check",
         "Backend: Run Tests",
         "Frontend: Lint",
+        "Frontend: Architecture",
         "Frontend: Test"
       ],
       "group": "test",

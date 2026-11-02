@@ -1,0 +1,38 @@
+# https://taskfile.dev
+---
+version: "3"
+
+tasks:
+  fmt:
+    desc: "Format Terraform code"
+    cmds:
+      - terraform fmt -recursive -write .
+
+  fmt:check:
+    desc: "Check Terraform code formatting"
+    cmds:
+      - terraform fmt -recursive -check .
+
+  init:
+    desc: "Initialize Terraform backend (without remote configuration)"
+    cmds:
+      - terraform init -backend=false
+
+  validate:
+    desc: "Validate Terraform configuration"
+    cmds:
+      - terraform validate
+
+  lint:
+    desc: "Run TFLint static analysis"
+    cmds:
+      - tflint --init
+      - tflint
+
+  check:
+    desc: "Run all Terraform checks (format, init, validate, lint)"
+    cmds:
+      - task: fmt:check
+      - task: init
+      - task: validate
+      - task: lint

@@ -9,10 +9,11 @@ from ekko.core.enums.base import ParseableEnum
 
 @unique
 class QueueName(ParseableEnum):
+    """Named runtime queues."""
+
     TRANSCRIPTS = auto()
     COMMANDS = auto()
     EVENTS = auto()
-    METRICS = auto()
 
 
 @unique
@@ -27,7 +28,10 @@ class RecognitionMode(ParseableEnum):
         """Map stream type string to RecognitionMode.
 
         Args:
-            stream_type: Type of stream ("sys" or "mic").
+            stream_type (str): Type of stream ("sys" or "mic").
+
+        Returns:
+            RecognitionMode: Corresponding recognition mode.
 
         Raises:
             ValueError: If stream_type is not "sys" or "mic".
@@ -41,6 +45,8 @@ class RecognitionMode(ParseableEnum):
 
 @unique
 class TranscriptStatus(ParseableEnum):
+    """Lifecycle status of a transcript."""
+
     RECEIVED = auto()
     QUEUED = auto()
     PROCESSING = auto()
@@ -51,6 +57,8 @@ class TranscriptStatus(ParseableEnum):
 
 @unique
 class MessageRole(ParseableEnum):
+    """Conversation message roles."""
+
     SYSTEM = auto()
     USER = auto()
     ASSISTANT = auto()

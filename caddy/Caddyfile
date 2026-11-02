@@ -5,11 +5,11 @@
 #
 # Trust the CA to silence browser warnings: caddy trust
 #
-# CONFIGURATION NOTES
-# -------------------
-# This Caddyfile uses a modular reverse proxy configuration pattern:
-# - Snippet import pattern with `import snippets/*.caddy` for modular configuration
-# - Consolidated snippet files (global.caddy, routes.caddy, security.caddy) containing multiple named snippets
+# CONFIGURATION STRUCTURE
+# -----------------------
+# Modular, snippet-based reverse proxy configuration:
+# - `import snippets/*.caddy` pulls in modular snippet files
+# - Consolidated snippet files (global.caddy, routes.caddy, security.caddy) each define named snippets
 # - Global block for server-wide settings (logging, security)
 # - Per-site blocks with TLS, security headers, and route imports
 # - Argument passing to snippets for upstream configuration

@@ -57,13 +57,22 @@
     "openapi_json": {"value": "/openapi.json", "description": "OpenAPI schema JSON"},
     "redoc": {"value": "/redoc", "description": "ReDoc documentation"},
     "graphql": {"value": "/graphql", "description": "GraphQL endpoint"},
-    "start_stream": {"value": "/start_stream", "description": "Start audio streaming"},
-    "pause_stream": {"value": "/pause_stream", "description": "Pause audio streaming"}
+    "ready": {"value": "/ready", "description": "Dependency readiness endpoint"},
+    "pii_anonymize": {"value": "/pii/anonymize", "description": "PII anonymization endpoint"},
+    "summarize": {"value": "/summarize", "description": "Summarize submitted transcript chunks"},
+    "start_stream": {"value": "/stream/start", "description": "Start audio streaming"},
+    "pause_stream": {"value": "/stream/pause", "description": "Pause audio streaming"},
+    "transcript_stream": {"value": "/transcripts/stream", "description": "Live transcript event stream"}
   },
   "error_codes": {
     "value_error_missing": {"value": "value_error.missing", "description": "Required value is missing"}
   },
   "status_values": {
     "active": {"value": "active", "description": "Active status"}
+  },
+  "prompt_keys": {
+    "summary_chunks": {"value": "summary_chunks", "description": "Chunked transcript summarization prompt"},
+    "summarizer_system": {"value": "summarizer_system", "description": "System prompt for the summarizer"},
+    "conversational_system": {"value": "conversational_system", "description": "Conversational assistant system prompt"}
   }
 }

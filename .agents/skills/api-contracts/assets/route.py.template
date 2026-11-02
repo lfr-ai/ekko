@@ -1,0 +1,60 @@
+"""Endpoint module template — copy into presentation/api/routes/, rename.
+
+One resource per module. Request/response schemas are boundary types (never
+ORM/domain entities directly); dependencies are typed Annotated aliases from
+`presentation/api/dependencies.py` (see the `backend-structure` skill).
+"""
+
+from __future__ import annotations
+
+from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
+
+router = APIRouter(prefix="/replace-me", tags=["replace-me"])
+
+
+class ReplaceMeResponse(BaseModel):
+    """Typed response schema — never expose an ORM or domain entity directly."""
+
+    resource_id: str
+    status: str
+
+
+class ReplaceMeCreateRequest(BaseModel):
+    """Typed request schema for creating a resource."""
+
+    name: str
+
+
+@router.get(
+    "/{resource_id}",
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Resource not found"}},
+)
+async def get_replace_me(resource_id: str) -> ReplaceMeResponse:
+    """Fetch one resource by ID, or 404 when it does not exist."""
+    found = await _load(resource_id=resource_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"resource {resource_id} not found",
+        )
+    return found
+
+
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_replace_me(payload: ReplaceMeCreateRequest) -> ReplaceMeResponse:
+    """Create a resource. Delegates all policy to an application service."""
+    return await _create(name=payload.name)
+
+
+async def _load(*, resource_id: str) -> ReplaceMeResponse | None:
+    """Placeholder — replace with a call through an Annotated service dependency."""
+    raise NotImplementedError
+
+
+async def _create(*, name: str) -> ReplaceMeResponse:
+    """Placeholder — replace with a call through an Annotated service dependency."""
+    raise NotImplementedError

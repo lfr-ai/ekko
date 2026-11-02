@@ -7,9 +7,8 @@ description: Prepare and verify a SemVer release with Commitizen, Conventional C
 
 ## Workflow
 
-1. Read the manifest version provider, Commitizen configuration (`.cz.toml`/
-   `pyproject.toml [tool.commitizen]`), `CHANGELOG.md`, and CI release rules.
-   Never infer the release mechanism from installed CLIs.
+1. Read the manifest version provider, Commitizen configuration, changelog, and
+   CI release rules. Never infer the release mechanism from installed CLIs.
 2. Classify the public impact using SemVer:
    - patch: backward-compatible fix;
    - minor: backward-compatible capability;
@@ -18,11 +17,12 @@ description: Prepare and verify a SemVer release with Commitizen, Conventional C
    breaking change behind a patch/minor label.
 4. Update `[Unreleased]` in `CHANGELOG.md` using terse Added/Changed/Fixed/Removed
    entries. Include migrations or operator actions.
-5. Use `task bump-cz` / `task changelog-cz` (Commitizen). Verify all declared
-   version files stay synchronized and generated changelog changes are reviewed.
-6. Run the full quality gate (`task check`) and build validation before handing off.
+5. Use the repository's configured version provider and release task. Verify all
+   declared version files stay synchronized and generated changelog changes are
+   reviewed.
+6. Run the full quality gate and build/package validation before handing off.
 7. Report the proposed version, artifacts, migration notes, and exact manual Git
-   steps without executing Git (AGENTS.md Hard Rule 11: no `git` commands by agents).
+   steps without executing Git.
 
 ## Guardrails
 

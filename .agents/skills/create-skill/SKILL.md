@@ -36,9 +36,13 @@ If the trigger is a repo-specific *fact* rather than a *procedure*, prefer a
 Skills are mirrored across the three roots — create the same `SKILL.md` in each:
 `.github/skills/`, `.claude/skills/`, `.agents/skills/`.
 
-- Generic, reusable skills go at the root: `<root>/skills/<name>/SKILL.md`.
+- Generic singleton skills go at the root: `<root>/skills/<name>/SKILL.md`.
+- Leaves of an established multi-skill family go under
+  `<root>/skills/<family>/<leaf>/SKILL.md`.
 - Project-specific skills (they name this project, its hosts, or its IDs) go under
   the `project/` subfolder: `<root>/skills/project/<name>/SKILL.md`.
+- Every frontmatter `name` matches its leaf directory and is globally unique
+  across canonical `.agents/skills`, including nested families.
 
 ## Format
 
@@ -53,6 +57,20 @@ Each `SKILL.md` starts with YAML frontmatter, then a concise playbook body:
 - Body: scannable steps, commands, guardrails, and references. The Documentation
   Style rule applies — minimal, no filler.
 - Add `disable-model-invocation: true` only for manual-only skills.
+
+Use optional directories only when they improve a real execution trace:
+
+- `scripts/` for repeated deterministic mechanics; scripts are non-interactive,
+  idempotent, have `--help`, meaningful exits, and structured bounded output;
+- `references/` for focused details loaded only under an explicit condition;
+- `assets/` for reusable output templates or static inputs;
+- `evals/` for realistic trigger/output cases when reliability matters.
+
+Do not create empty directories or split short instructions for symmetry. Keep
+`SKILL.md` under 500 lines and references one level deep. Start evals by copying
+the bundled [`assets/evals.template.json`](assets/evals.template.json) into the
+new skill, then compare with-skill output against a baseline and retain only
+instructions/resources that measurably improve results.
 
 ## Consistency rubric
 
@@ -77,7 +95,10 @@ rather than adding sections for symmetry.
 
 ## After creating
 
-- Top-level skills auto-load. A brand-new nested collection folder (such as
-  `project/`) must be added to `chat.agentSkillsLocations` in `.vscode/settings.json`.
-- Run the agent-config guard; it validates metadata, mirrored content, scopes,
-  agents, hooks, portability, and MCP names.
+- Top-level and nested skills load through native customization discovery in
+  current VS Code. Do not add deprecated `chat.*Locations` settings;
+  command-backed families still need thin Copilot prompt and Claude command façades.
+- Run the agent-config guard; it validates metadata, mirrored content, bundled
+  resources, scopes, agents, hooks, portability, and MCP names.
+- Run `skills-ref validate <skill-directory>` when available, then execute the
+  skill's focused evals and record only durable findings in root `memories/`.

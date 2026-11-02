@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class PIIMatch:
     """A detected PII occurrence."""
 
@@ -16,7 +16,7 @@ class PIIMatch:
     score: float = 0.0
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class AnonymizedText:
     """Result of PII anonymization."""
 

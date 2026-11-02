@@ -1,7 +1,11 @@
+"""Probe the default Windows loopback and microphone audio devices."""
+
+from __future__ import annotations
+
 import subprocess
 import sys
 
-code = (
+_PROBE_CODE = (
     "import json\n"
     "import pyaudiowpatch as pyaudio\n"
     "pa = getattr(pyaudio, 'Pyaudio', None) or pyaudio.PyAudio()\n"
@@ -11,7 +15,20 @@ code = (
     "print(json.dumps({'sys_name': sys_name,'mic_name': mic_name}))"
 )
 
-r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)  # nosec B603
-print("RC=", r.returncode)
-print("STDOUT=", repr(r.stdout))
-print("STDERR=", repr(r.stderr))
+
+def main() -> int:
+    """Run the isolated device probe and return its process status."""
+    result = subprocess.run(  # nosec B603
+        [sys.executable, "-c", _PROBE_CODE],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    print("RC=", result.returncode)
+    print("STDOUT=", repr(result.stdout))
+    print("STDERR=", repr(result.stderr))
+    return result.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

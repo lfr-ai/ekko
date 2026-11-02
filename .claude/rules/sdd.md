@@ -1,49 +1,33 @@
 ---
-description: Specification-Driven Development rules for OpenSpec scenario files
+description: Specification-Driven Development rules for spec scenario files
 paths:
+  - "docs/specs/**/*.md"
   - "openspec/specs/**/*.md"
   - "openspec/changes/**/specs/**/*.md"
 ---
 
-# SDD Rules
+# SDD Instructions
+
+Apply these rules to all spec files in `docs/specs/` and `openspec/specs/`.
+Scenario format, OpenSpec workflow, and worked examples live in the `sdd`
+skill (`.agents/skills/sdd/SKILL.md`) — pull it up for deep patterns.
 
 ## Core Rule
 
-Every scenario in `docs/specs/` or `openspec/` specs must have a corresponding
-passing automated test. A spec without a test is documentation rot.
+Every spec scenario must have a corresponding passing automated test.
+A spec without a passing test is documentation rot.
 
-## Scenario Format
+## Rules
 
-Given-When-Then with concrete values:
-
-```markdown
-## Scenario: Valid order with available inventory is fulfilled
-
-**Given** an order with product "WIDGET-001" and quantity 5
-**And** inventory has 10 units available
-**When** the fulfillment service processes the order
-**Then** the order status is "FULFILLED"
-**And** inventory is reduced to 5
-```
-
-## Prohibited in Specs
-
-- Vague inputs: "some data", "a valid request"
-- Implementation details: "calls API with retry=3"
-- Vague outcomes: "an error is returned" (use the exact status code/exception)
-
-## Test Link
-
-Every implementing test cites the spec in its docstring:
-
-```python
-async def test_valid_order_fulfilled(...) -> None:
-    """Spec: order-processing/fulfillment.md
-    Scenario: Valid order with available inventory is fulfilled.
-    """
-```
+- Use Given-When-Then with concrete values ("product WIDGET-001", not
+  "some data"); specs describe observable behavior (WHAT), never
+  implementation details (HOW).
+- Scenario naming: `{Action} {context/input} {expected outcome}`.
+- One feature file per domain concept; keep files small (≤ 10 scenarios).
+- Every test implementing a scenario cites the spec file and scenario name
+  in its docstring.
 
 ## Sync Policy
 
-When behavior changes: update spec → update test → update implementation.
-All three change in the same commit.
+When behavior changes: update the spec scenario first, then the test, then
+the implementation — all three committed together.

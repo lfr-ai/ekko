@@ -8,11 +8,11 @@
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTHONUNBUFFERED": "1"
   },
-  "includeGitInstructions": false,
   "attribution": {
     "commit": "",
     "pr": ""
   },
+  "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "Read",
@@ -28,11 +28,6 @@
       "Bash(pytest *)",
       "Bash(alembic *)",
       "Bash(ruff *)",
-      "Bash(bun *)",
-      "Bash(bunx *)",
-      "Bash(npx *)",
-      "Bash(node *)",
-      "Bash(powershell *)",
       "Bash(jq *)",
       "Bash(ls *)",
       "Bash(cat *)",
@@ -51,10 +46,9 @@
       "Bash(diff *)",
       "Bash(docker *)",
       "Bash(docker compose *)",
+      "Bash(powershell *)",
       "mcp__context7__*",
-      "mcp__shadcn__*",
-      "mcp__gitnexus__*",
-      "mcp__playwright__*"
+      "mcp__gitnexus__*"
     ],
     "ask": [
       "Bash(rm *)",
@@ -77,12 +71,6 @@
       "Bash(rm -rf /*)",
       "Bash(rm -rf $HOME)",
       "Bash(git *)",
-      "Bash(git push --force *)",
-      "Bash(git reset --hard *)",
-      "Bash(git clean -fd *)",
-      "Bash(git stash drop *)",
-      "Bash(git stash clear)",
-      "Bash(git branch -D *)",
       "Bash(curl * | bash)",
       "Bash(wget * | bash)",
       "Bash(pip install *)",
@@ -98,40 +86,48 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\hooks\\scripts\\guard-tool.ps1\"",
-            "timeout": 10,
-            "statusMessage": "Tool Guardian: checking for dangerous operations..."
+            "command": "bun",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.agents/guard/tool-guardian.ts"
+            ],
+            "timeout": 30,
+            "statusMessage": "Tool Guardian: enforcing read-only external resources..."
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& { $f = ($input | ConvertFrom-Json).tool_input.file_path; if ($f -and (Test-Path $f)) { uv run --project backend ruff check --fix $f 2>&1 | Out-Null }; exit 0 }\"",
-            "if": "Edit(*.py)|Write(*.py)",
-            "timeout": 15,
-            "statusMessage": "Linting Python file..."
+            "command": "bun",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.agents/guard/license-guardian.ts"
+            ],
+            "timeout": 45,
+            "statusMessage": "License Guardian: checking dependency license policy..."
           }
         ]
       }
     ],
-    "Stop": [
+    "SessionStart": [
       {
-        "matcher": "",
+        "matcher": "startup|resume|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR\\hooks\\scripts\\check-licenses.ps1\"",
-            "timeout": 60,
-            "statusMessage": "License Checker: scanning dependency licenses..."
+            "command": "bun",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.agents/guard/session-context.ts"
+            ],
+            "timeout": 30,
+            "statusMessage": "Validating agent context entry files..."
           }
         ]
       }
@@ -154,17 +150,14 @@
   "enabledPlugins": {
     "github@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
-    "repo-quality-gate@claude-plugins-official": true,
-    "react-testing-library@claude-plugins-official": true
+    "repo-quality-gate@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {

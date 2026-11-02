@@ -12,9 +12,10 @@ __all__ = [
     "BaseDict",
     "Confidence",
     "JSONDict",
+    "JSONScalar",
+    "JSONValue",
     "MaxTokens",
     "ModelDeploymentName",
-    "PromptContent",
     "Temperature",
 ]
 
@@ -26,11 +27,14 @@ _MAX_TEMPERATURE = 2.0
 _MIN_CONFIDENCE = 0.0
 _MAX_CONFIDENCE = 1.0
 
-type PromptContent = str
+# Transparent boundary name that decouples core ports from provider-specific
+# deployment/model configuration types.
 type ModelDeploymentName = str
 
 type BaseDict = dict[str, object]
-type JSONDict = BaseDict
+type JSONScalar = str | int | float | bool | None
+type JSONValue = JSONScalar | list[JSONValue] | dict[str, JSONValue]
+type JSONDict = dict[str, JSONValue]
 
 
 class MaxTokens(int):
@@ -50,11 +54,14 @@ class MaxTokens(int):
             ValueError: If 'max_tokens' is out of bounds.
         """
         if isinstance(max_tokens, bool) or not isinstance(max_tokens, int):
-            raise TypeError("'max_tokens' must be an integer")
+            msg = "'max_tokens' must be an integer"
+            raise TypeError(msg)
         if max_tokens <= 0:
-            raise ValueError(f"'max_tokens' must be positive, got: {max_tokens}")
+            msg = f"'max_tokens' must be positive, got: {max_tokens}"
+            raise ValueError(msg)
         if max_tokens > _MAX_TOKENS_LIMIT:
-            raise ValueError(f"'max_tokens' must not exceed {_MAX_TOKENS_LIMIT:,}, got: {max_tokens:,}")
+            msg = f"'max_tokens' must not exceed {_MAX_TOKENS_LIMIT:,}, got: {max_tokens:,}"
+            raise ValueError(msg)
         return super().__new__(cls, max_tokens)
 
 
@@ -75,11 +82,11 @@ class Temperature(float):
             ValueError: If 'temperature' is outside supported range.
         """
         if isinstance(temperature, bool) or not isinstance(temperature, (int, float)):
-            raise TypeError("'temperature' must be a numeric value (int or float)")
+            msg = "'temperature' must be a numeric value (int or float)"
+            raise TypeError(msg)
         if not _MIN_TEMPERATURE <= temperature <= _MAX_TEMPERATURE:
-            raise ValueError(
-                f"'temperature' must be between {_MIN_TEMPERATURE} and {_MAX_TEMPERATURE}, got: {temperature}"
-            )
+            msg = f"'temperature' must be between {_MIN_TEMPERATURE} and {_MAX_TEMPERATURE}, got: {temperature}"
+            raise ValueError(msg)
         return super().__new__(cls, temperature)
 
 
@@ -100,7 +107,9 @@ class Confidence(float):
             ValueError: If 'confidence' is outside supported range.
         """
         if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
-            raise TypeError("'confidence' must be a numeric value (int or float)")
+            msg = "'confidence' must be a numeric value (int or float)"
+            raise TypeError(msg)
         if not _MIN_CONFIDENCE <= confidence <= _MAX_CONFIDENCE:
-            raise ValueError(f"'confidence' must be between {_MIN_CONFIDENCE} and {_MAX_CONFIDENCE}, got: {confidence}")
+            msg = f"'confidence' must be between {_MIN_CONFIDENCE} and {_MAX_CONFIDENCE}, got: {confidence}"
+            raise ValueError(msg)
         return super().__new__(cls, confidence)

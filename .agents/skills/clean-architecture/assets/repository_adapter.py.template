@@ -1,0 +1,57 @@
+"""Repository adapter template — copy into infrastructure/persistence/repositories/,
+implementing the matching core/ports/ Protocol (see the `ddd` skill's
+repository_protocol.py.template for the port this adapter satisfies).
+
+Maps ORM rows to domain-shaped records at the boundary; never returns ORM
+objects to callers, and never imports application DTOs. Assumes a shared
+`RepositoryBase` (defined once per project) that owns the SQLAlchemy `Session`
+context manager.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import final, override
+from uuid import UUID
+
+from replace_me.core.ports.repositories.replace_me import (
+    ReplaceMeRecord,
+    ReplaceMeRepositoryPort,
+)
+from replace_me.infrastructure.persistence.orm.models import ReplaceMeModel
+from replace_me.infrastructure.persistence.repositories._base import RepositoryBase
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class _ReplaceMeRecordSnapshot:
+    """Immutable read-only snapshot returned across the persistence boundary."""
+
+    id: UUID
+    name: str
+
+
+def _to_record(model: ReplaceMeModel) -> ReplaceMeRecord:
+    """Map one ORM row to its domain-shaped record."""
+    return _ReplaceMeRecordSnapshot(id=model.id, name=model.name)
+
+
+@final
+class ReplaceMeRepository(RepositoryBase, ReplaceMeRepositoryPort):
+    """SQLAlchemy-backed implementation of ReplaceMeRepositoryPort."""
+
+    @override
+    def get_by_id(self, *, resource_id: UUID) -> ReplaceMeRecord | None:
+        """Load one record by identifier, or None when it does not exist."""
+        with self._session() as session:
+            if not (model := session.get(ReplaceMeModel, resource_id)):
+                return None
+            return _to_record(model)
+
+    @override
+    def save(self, *, record: ReplaceMeRecord) -> UUID:
+        """Persist the record's current state as a single transaction."""
+        with self._session() as session:
+            model = ReplaceMeModel(id=record.id, name=record.name)
+            session.merge(model)
+            session.commit()
+            return model.id

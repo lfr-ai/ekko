@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "hooks": {
+        "SessionStart": [
+            {
+                "type": "command",
+                "command": "bun .agents/guard/session-context.ts",
+                "timeout": 30
+            }
+        ]
+    }
+}

@@ -2,20 +2,23 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DependencyHealth(BaseModel):
     """Health status of a single dependency."""
+
+    model_config = ConfigDict(frozen=True)
 
     name: str
     healthy: bool
     detail: str = ""
 
 
-class HealthResponse(BaseModel):
-    """Application health check response."""
+class ReadinessResponse(BaseModel):
+    """Application dependency readiness."""
+
+    model_config = ConfigDict(frozen=True)
 
     status: str
-    environment: str
-    dependencies: list[DependencyHealth] = []
+    dependencies: list[DependencyHealth] = Field(default_factory=list)

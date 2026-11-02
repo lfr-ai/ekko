@@ -1,9 +1,11 @@
 """Transcription info value object."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class TranscriptionInfo:
     """Metadata returned by the speech-to-text engine."""
 

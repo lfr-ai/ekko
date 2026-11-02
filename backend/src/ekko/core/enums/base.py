@@ -19,6 +19,12 @@ class ParseableEnum(StrEnum):
     def from_str(cls, value: str) -> ParseableEnum:
         """Parse a string value to an enum member (case-insensitive).
 
+        Args:
+            value (str): Text to match against the enum values.
+
+        Returns:
+            ParseableEnum: Matching enum member.
+
         Raises:
             ValueError: If value does not match any member.
         """
@@ -31,10 +37,10 @@ class ParseableEnum(StrEnum):
 
 
 def enum_values(enum_cls: type[StrEnum]) -> list[str]:
-    """Return the string values of a StrEnum class in declaration order.
+    """List the string values of a StrEnum class in declaration order.
 
     Args:
-        enum_cls (type[StrEnum]): The StrEnum class to extract values from.
+        enum_cls (type[StrEnum]): StrEnum class to extract values from.
 
     Returns:
         list[str]: String values in declaration order.

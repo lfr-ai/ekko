@@ -9,6 +9,8 @@ from ekko.core.enums.base import ParseableEnum
 
 @unique
 class LogLevel(IntEnum):
+    """Standard logging severity levels."""
+
     NOTSET = 0
     DEBUG = 10
     INFO = 20

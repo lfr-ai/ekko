@@ -1,0 +1,58 @@
+name: Terraform validation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "azure/iac/terraform/**"
+      - "tasks/terraform.yml"
+      - ".github/workflows/terraform-validation.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "azure/iac/terraform/**"
+      - "tasks/terraform.yml"
+      - ".github/workflows/terraform-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-validation:
+    name: Terraform format, validate, and lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.2
+
+      - name: Terraform format check
+        working-directory: azure/iac/terraform
+        run: terraform fmt -recursive -check .
+
+      - name: Terraform init without backend
+        working-directory: azure/iac/terraform
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: azure/iac/terraform
+        run: terraform validate
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.52.0
+
+      - name: Initialize TFLint plugins
+        working-directory: azure/iac/terraform
+        run: tflint --init
+
+      - name: Run TFLint
+        working-directory: azure/iac/terraform
+        run: tflint

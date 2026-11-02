@@ -130,7 +130,7 @@ CONTRIBUTING.md
 .typos.toml
 .shellcheckrc
 .coderabbit.yaml
-.redocly.yaml
+redocly.yaml
 .spectral.yaml
 .jscpd.json
 .cz.toml

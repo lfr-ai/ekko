@@ -3,7 +3,7 @@
 # install-gitnexus.zsh — Install GitNexus code intelligence for ekko
 # ==============================================================================
 # Usage: ./scripts/install/install-gitnexus.zsh
-# Requires: bun (preferred) or node 20+
+# Requires: Bun (version pinned in frontend/package.json)
 # ==============================================================================
 
 emulate -L zsh
@@ -14,8 +14,7 @@ setopt ERR_EXIT PIPE_FAIL
 # ------------------------------------------------------------------------------
 readonly SCRIPT_DIR="${0:A:h}"
 readonly PROJECT_ROOT="${SCRIPT_DIR:h:h}"
-readonly MIN_NODE_MAJOR=20
-readonly GITNEXUS_PACKAGE="gitnexus@latest"
+readonly GITNEXUS_VERSION=1.6.9
 readonly HOOKS_DIR="${PROJECT_ROOT}/.git/hooks"
 
 # Colors
@@ -50,38 +49,8 @@ command_exists() {
 verify_runtime() {
     step "Verifying JavaScript runtime..."
 
-    RUNTIME=""
-    RUNNER=""
-
-    # Prefer bun
-    if command_exists bun; then
-        local bun_version
-        bun_version="$(bun --version 2>/dev/null)"
-        ok "bun found: v${bun_version}"
-        RUNTIME="bun"
-        RUNNER="bunx"
-        return 0
-    fi
-
-    # Fallback to node
-    if command_exists node; then
-        local node_version_raw
-        node_version_raw="$(node --version 2>/dev/null)"
-        local node_major
-        node_major="${node_version_raw#v}"
-        node_major="${node_major%%.*}"
-
-        if (( node_major >= MIN_NODE_MAJOR )); then
-            ok "Node.js found: ${node_version_raw} (>= ${MIN_NODE_MAJOR})"
-            RUNTIME="node"
-            RUNNER="npx"
-            return 0
-        else
-            warn "Node.js ${node_version_raw} is below minimum v${MIN_NODE_MAJOR}"
-        fi
-    fi
-
-    die "No suitable JavaScript runtime found. Install bun (preferred) or Node.js >= ${MIN_NODE_MAJOR}."
+    command_exists bun || die "Bun is required; install the version declared in frontend/package.json."
+    ok "bun found: v$(bun --version)"
 }
 
 # ------------------------------------------------------------------------------
@@ -90,36 +59,8 @@ verify_runtime() {
 install_gitnexus() {
     step "Installing GitNexus..."
 
-    case "${RUNTIME}" in
-        bun)
-            if command_exists gitnexus; then
-                ok "GitNexus is already installed globally"
-                info "Updating to latest version..."
-                bun install -g "${GITNEXUS_PACKAGE}" 2>/dev/null || {
-                    warn "Global install update failed; will use bunx for execution"
-                }
-            else
-                info "Installing GitNexus globally via bun..."
-                bun install -g "${GITNEXUS_PACKAGE}" 2>/dev/null || {
-                    warn "Global install failed; GitNexus will run via bunx"
-                }
-            fi
-            ;;
-        node)
-            if command_exists gitnexus; then
-                ok "GitNexus is already installed globally"
-                info "Updating to latest version..."
-                npm install -g "${GITNEXUS_PACKAGE}" 2>/dev/null || {
-                    warn "Global install update failed; will use npx for execution"
-                }
-            else
-                info "Installing GitNexus globally via npm..."
-                npm install -g "${GITNEXUS_PACKAGE}" 2>/dev/null || {
-                    warn "Global install failed; GitNexus will run via npx"
-                }
-            fi
-            ;;
-    esac
+    info "Installing GitNexus ${GITNEXUS_VERSION} with Bun..."
+    bun add --global "gitnexus@${GITNEXUS_VERSION}"
 
     ok "GitNexus installation step complete"
 }
@@ -132,11 +73,7 @@ configure_mcp() {
 
     info "Running GitNexus MCP setup..."
 
-    ${RUNNER} "${GITNEXUS_PACKAGE}" setup 2>/dev/null || {
-        warn "MCP setup did not complete (may require manual configuration)"
-        info "Run manually: ${RUNNER} ${GITNEXUS_PACKAGE} setup"
-        return 0
-    }
+    gitnexus setup
 
     ok "MCP integration configured"
 }
@@ -149,11 +86,7 @@ index_repository() {
 
     info "Running initial code analysis (skipping embeddings)..."
 
-    (cd "${PROJECT_ROOT}" && ${RUNNER} "${GITNEXUS_PACKAGE}" analyze . --skip-embeddings) 2>/dev/null || {
-        warn "Initial indexing did not complete"
-        info "Run manually: cd ${PROJECT_ROOT} && ${RUNNER} ${GITNEXUS_PACKAGE} analyze . --skip-embeddings"
-        return 0
-    }
+    (cd "${PROJECT_ROOT}" && gitnexus analyze . --skip-embeddings)
 
     ok "Repository indexed"
 }
@@ -192,8 +125,8 @@ install_hooks() {
 
 ${hook_marker}
 # Incremental GitNexus indexing after each commit
-if command -v ${RUNNER} >/dev/null 2>&1; then
-    ${RUNNER} ${GITNEXUS_PACKAGE} analyze . --incremental --skip-embeddings >/dev/null 2>&1 &
+if command -v gitnexus >/dev/null 2>&1; then
+gitnexus analyze . --incremental --skip-embeddings >/dev/null 2>&1 &
 fi
 # <<< gitnexus incremental index <<<
 HOOK
@@ -209,11 +142,7 @@ generate_skills() {
 
     info "Running skill generation from code analysis..."
 
-    (cd "${PROJECT_ROOT}" && ${RUNNER} "${GITNEXUS_PACKAGE}" analyze --skills) 2>/dev/null || {
-        warn "Skill generation did not complete"
-        info "Run manually: cd ${PROJECT_ROOT} && ${RUNNER} ${GITNEXUS_PACKAGE} analyze --skills"
-        return 0
-    }
+    (cd "${PROJECT_ROOT}" && gitnexus analyze --skills)
 
     ok "Code intelligence skills generated"
 }
@@ -238,9 +167,9 @@ main() {
     printf "\n"
     ok "GitNexus setup complete for ekko."
     info "Usage:"
-    info "  ${RUNNER} ${GITNEXUS_PACKAGE} status        -- Check index status"
-    info "  ${RUNNER} ${GITNEXUS_PACKAGE} analyze .     -- Re-index repository"
-    info "  ${RUNNER} ${GITNEXUS_PACKAGE} clean         -- Clear index cache"
+    info "  gitnexus status        -- Check index status"
+    info "  gitnexus analyze .     -- Re-index repository"
+    info "  gitnexus clean         -- Clear index cache"
     printf "\n"
 }
 

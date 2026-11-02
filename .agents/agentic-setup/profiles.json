@@ -1,0 +1,205 @@
+{
+  "version": 2,
+  "description": "Machine-readable capability profiles for this full-stack repository's portable agent setup.",
+  "profiles": {
+    "shared": {
+      "extends": [],
+      "skills": [
+        "agent-config",
+        "clean-architecture",
+        "codebase-onboarding",
+        "consistency",
+        "create-skill",
+        "cypher",
+        "documentation",
+        "dry-refactoring",
+        "gitnexus/cli",
+        "gitnexus/debugging",
+        "gitnexus/exploring",
+        "gitnexus/guide",
+        "gitnexus/impact-analysis",
+        "gitnexus/refactoring",
+        "jscpd",
+        "opsx/apply-change",
+        "opsx/archive-change",
+        "opsx/bulk-archive-change",
+        "opsx/continue-change",
+        "opsx/explore",
+        "opsx/ff-change",
+        "opsx/new-change",
+        "opsx/onboard",
+        "opsx/propose",
+        "opsx/sync-specs",
+        "opsx/update-change",
+        "opsx/verify-change",
+        "parallel-agents",
+        "ponytail/audit",
+        "ponytail/debt",
+        "ponytail/minimalism",
+        "ponytail/overengineering-review",
+        "ponytail/quick-reference",
+        "project-bootstrap",
+        "quality-gate",
+        "release-management",
+        "sdd",
+        "self-reflection",
+        "subagent-driven-development",
+        "tdd",
+        "vscode-workspace"
+      ],
+      "agents": [
+        "code-reviewer",
+        "codebase-researcher",
+        "debug",
+        "deep-thinking",
+        "devops",
+        "docs-writer",
+        "modernization",
+        "orchestrator",
+        "plan-architect",
+        "planner",
+        "refactor",
+        "security-reviewer",
+        "solid-review",
+        "test-author"
+      ],
+      "instructions": [
+        "agentic-config",
+        "ci-pipelines",
+        "containers",
+        "devops",
+        "markdown",
+        "memories",
+        "repository-files",
+        "sdd",
+        "shell",
+        "update-docs-on-code-change"
+      ],
+      "mcpServers": [
+        "context7",
+        "gitnexus",
+        "github",
+        "microsoft-learn"
+      ],
+      "optionalMcpServers": [],
+      "assets": [
+        "agent-knowledge-base"
+      ]
+    },
+    "backend": {
+      "extends": [
+        "shared"
+      ],
+      "skills": [
+        "api-contracts",
+        "backend-structure",
+        "configuration",
+        "database-migrations",
+        "ddd",
+        "infrastructure-validation",
+        "jinja2",
+        "litellm",
+        "observability-stack",
+        "pyinstaller",
+        "python-conventions",
+        "rag",
+        "task-queue",
+        "testing-conventions"
+      ],
+      "agents": [
+        "backend-implementer",
+        "contract-iac-lint",
+        "ddd",
+        "devops-implementer",
+        "sdd",
+        "tdd",
+        "testing"
+      ],
+      "instructions": [
+        "api-contracts",
+        "cognitive-load",
+        "database",
+        "ddd",
+        "jinja2",
+        "prompt",
+        "pyinstaller",
+        "python-conventions",
+        "tdd",
+        "testing"
+      ],
+      "mcpServers": [
+        "postman"
+      ],
+      "optionalMcpServers": [],
+      "assets": [
+        "backend-blueprint"
+      ]
+    },
+    "frontend": {
+      "extends": [
+        "shared"
+      ],
+      "skills": [
+        "frontend/accessibility",
+        "frontend/browser-debugging",
+        "frontend/playwright",
+        "frontend/react-stack",
+        "frontend/runtime-config",
+        "frontend/shadcn",
+        "frontend/structure",
+        "frontend/testing",
+        "frontend/ui-ux"
+      ],
+      "agents": [
+        "frontend",
+        "frontend-implementer"
+      ],
+      "instructions": [
+        "css-conventions",
+        "frontend-tooling",
+        "react-conventions",
+        "typescript-conventions"
+      ],
+      "mcpServers": [
+        "chrome-devtools",
+        "playwright",
+        "shadcn",
+        "storybook"
+      ],
+      "optionalMcpServers": [
+        "figma",
+        "storybook"
+      ],
+      "assets": [
+        "frontend-blueprint"
+      ]
+    },
+    "project": {
+      "extends": [],
+      "skills": [
+        "project/deploy-check",
+        "project/naming-registry"
+      ],
+      "agents": [],
+      "instructions": [],
+      "mcpServers": [],
+      "optionalMcpServers": [],
+      "assets": []
+    },
+    "fullstack": {
+      "extends": [
+        "backend",
+        "frontend",
+        "project"
+      ],
+      "skills": [],
+      "agents": [
+        "fullstack"
+      ],
+      "instructions": [],
+      "mcpServers": [],
+      "optionalMcpServers": [],
+      "assets": []
+    }
+  }
+}

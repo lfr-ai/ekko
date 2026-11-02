@@ -5,32 +5,49 @@
       "url": "https://mcp.context7.com/mcp"
     },
     "gitnexus": {
-      "type": "stdio",
       "command": "gitnexus",
       "args": [
         "mcp"
       ],
-      "cwd": "${workspaceFolder}"
+      "cwd": "."
     },
-    "shadcn": {
-      "type": "stdio",
-      "command": "npx",
+    "microsoft-learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "chrome-devtools": {
+      "command": "bunx",
       "args": [
-        "-y",
-        "shadcn@latest",
-        "mcp"
-      ],
-      "cwd": "${workspaceFolder}/frontend"
+        "chrome-devtools-mcp@1.9.0",
+        "--isolated",
+        "--headless",
+        "--no-usage-statistics",
+        "--no-performance-crux"
+      ]
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
     },
     "playwright": {
-      "type": "stdio",
-      "command": "npx",
+      "command": "bunx",
       "args": [
-        "-y",
-        "@playwright/mcp@latest",
+        "@playwright/mcp@0.0.80",
         "--isolated",
         "--headless"
       ]
+    },
+    "shadcn": {
+      "command": "bunx",
+      "args": [
+        "shadcn@4.21.0",
+        "mcp"
+      ],
+      "cwd": "."
+    },
+    "postman": {
+      "type": "http",
+      "url": "https://mcp.postman.com/minimal"
     },
     "storybook": {
       "type": "http",

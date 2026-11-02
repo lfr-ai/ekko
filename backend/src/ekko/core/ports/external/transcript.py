@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ekko.core.value_objects import TranscriptionInfo, TranscriptSegment
 
 
-class TranscriptProtocol(Protocol):
+class TranscriptPort(Protocol):
     """Protocol for a completed transcript with segments and metadata."""
 
     stream_name: str

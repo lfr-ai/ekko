@@ -1,8 +1,10 @@
 ---
-name: debug
+name: Debug
 description: Debugging and troubleshooting specialist for systematic problem diagnosis
-agents: ['*']
+agents: ['codebase-researcher', 'backend-implementer', 'frontend-implementer', 'devops-implementer', 'code-reviewer', 'security-reviewer']
 user-invocable: false
+disable-model-invocation: true
+tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Agent, mcp__gitnexus__*, mcp__context7__*, mcp__chrome-devtools__*, mcp__playwright__*, mcp__postman__*
 ---
 
 # Debug Agent

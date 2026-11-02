@@ -1,0 +1,52 @@
+"""SQLAlchemy ORM model template — copy into infrastructure/persistence/orm/.
+
+Mirrors the `ddd` skill's entity/value_object templates but on the
+persistence side: a `Mapped`/`mapped_column` table definition, never leaked
+across a repository port (see repository_impl.py.template in this skill,
+which converts each row to a plain read-only snapshot before returning it).
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from uuid import UUID, uuid4
+
+from sqlalchemy import TIMESTAMP, String, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class ORMBase(DeclarativeBase):
+    """Base class for ORM table models."""
+
+
+class _CreatedOnMixin:
+    """Mixin providing a server-defaulted created_on timestamp column."""
+
+    created_on: Mapped[datetime] = mapped_column(
+        "created_on",
+        TIMESTAMP,
+        nullable=False,
+        server_default=func.now(),
+    )
+
+
+class ReplaceMe(ORMBase, _CreatedOnMixin):
+    """ORM model for the ReplaceMe aggregate root.
+
+    Attributes:
+        id (UUID): Unique identifier, generated client-side.
+        name (str): Example unique-constrained field — replace with real columns.
+        created_on (datetime): Record creation timestamp.
+    """
+
+    __tablename__ = "replace_me"
+    __table_args__ = (UniqueConstraint("name", name="uq_replace_me_name"),)
+
+    id: Mapped[UUID] = mapped_column(
+        "id",
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    name: Mapped[str] = mapped_column("name", String(255), nullable=False, index=True)

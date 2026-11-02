@@ -1,0 +1,62 @@
+"""Request-correlation ASGI middleware template — copy into
+presentation/api/middleware/request_context.py.
+
+Binds one correlation ID per inbound request (reusing an inbound
+`x-request-id` header when present) so every log line and error response for
+that request can be tied together. Pure ASGI (no Starlette
+BaseHTTPMiddleware subclassing) to avoid its known streaming-response
+overhead.
+"""
+
+from __future__ import annotations
+
+from uuid import uuid4
+
+from starlette.datastructures import Headers
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+# Replace with the project's own contextvar-backed binder
+# (see `infrastructure/logging.py`'s request-context filter).
+from myapp.core.correlation_context import bind_request_id
+
+_REQUEST_ID_HEADER = "x-request-id"
+
+
+def _resolve_request_id(scope: Scope) -> str:
+    """Reuse an inbound correlation header, or generate a new one.
+
+    Args:
+        scope (Scope): ASGI connection scope.
+
+    Returns:
+        str: Request correlation identifier.
+    """
+    if candidate := Headers(scope=scope).get(_REQUEST_ID_HEADER):
+        return candidate
+    return uuid4().hex
+
+
+class RequestContextMiddleware:
+    """Bind a request correlation identifier for the duration of one request."""
+
+    def __init__(self, app: ASGIApp):
+        """Wrap the downstream ASGI application.
+
+        Args:
+            app (ASGIApp): Downstream ASGI application.
+        """
+        self._app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Bind the resolved request ID, then delegate to the wrapped app.
+
+        Args:
+            scope (Scope): ASGI connection scope.
+            receive (Receive): ASGI receive channel.
+            send (Send): ASGI send channel.
+        """
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+        with bind_request_id(_resolve_request_id(scope)):
+            await self._app(scope, receive, send)

@@ -1,24 +1,17 @@
-# =================================================================
-# Dependabot Configuration for Ekko
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
-# =================================================================
+# Dependabot configuration for Ekko
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
 
 version: 2
 
 updates:
-  # ---------------------------------------------------------------
-  # Python Backend Dependencies (uv)
-  # ---------------------------------------------------------------
-  - package-ecosystem: pip
+  # Backend Python dependencies (uv)
+  - package-ecosystem: uv
     directory: /backend
     schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 10
-    reviewers:
-      - lauritsfromberg
+    open-pull-requests-limit: 3
     assignees:
       - lauritsfromberg
     labels:
@@ -26,54 +19,22 @@ updates:
       - backend
       - python
     commit-message:
-      prefix: 'chore(deps)'
-      prefix-development: 'chore(deps-dev)'
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
       include: scope
     groups:
-      fastapi-ecosystem:
+      backend-dependencies:
         patterns:
-          - fastapi*
-          - uvicorn*
-          - starlette*
-          - pydantic*
-      sqlalchemy-ecosystem:
-        patterns:
-          - sqlalchemy*
-          - alembic*
-          - aiosqlite*
-          - asyncpg*
-      ai-ml:
-        patterns:
-          - langchain*
-          - crewai*
-          - openai*
-          - anthropic*
-      testing:
-        patterns:
-          - pytest*
-          - hypothesis*
-          - factory-boy*
-          - faker*
-      linting:
-        patterns:
-          - ruff*
-          - ty*
-          - bandit*
-          - xenon*
+          - "*"
 
-  # ---------------------------------------------------------------
-  # Frontend Dependencies (Bun)
-  # ---------------------------------------------------------------
-  - package-ecosystem: npm
+  # Frontend dependencies (bun lockfile + package.json)
+  - package-ecosystem: bun
     directory: /frontend
     schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 10
-    reviewers:
-      - lauritsfromberg
+    open-pull-requests-limit: 3
     assignees:
       - lauritsfromberg
     labels:
@@ -81,96 +42,65 @@ updates:
       - frontend
       - javascript
     commit-message:
-      prefix: 'chore(deps)'
-      prefix-development: 'chore(deps-dev)'
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
       include: scope
     groups:
-      react-ecosystem:
+      frontend-dependencies:
         patterns:
-          - react
-          - react-dom
-          - '@vitejs/*'
-      ui-components:
-        patterns:
-          - '@radix-ui/*'
-          - lucide-react
-          - tailwindcss
-          - tailwindcss-animate
-      testing:
-        patterns:
-          - '@testing-library/*'
-          - vitest
-          - '@vitest/*'
-          - '@playwright/*'
-          - '@storybook/*'
-      linting:
-        patterns:
-          - '@biomejs/*'
-          - typescript
-          - '@types/*'
+          - "*"
 
-  # ---------------------------------------------------------------
-  # GitHub Actions
-  # ---------------------------------------------------------------
+  # GitHub Actions workflow dependencies
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
-    reviewers:
-      - lauritsfromberg
+    open-pull-requests-limit: 2
     assignees:
       - lauritsfromberg
     labels:
       - dependencies
-      - github-actions
       - ci
+      - github-actions
     commit-message:
-      prefix: 'chore(deps)'
+      prefix: "chore(deps)"
       include: scope
     groups:
-      github-actions:
+      github-actions-dependencies:
         patterns:
-          - '*'
+          - "*"
 
-  # ---------------------------------------------------------------
-  # Docker - Production Image
-  # ---------------------------------------------------------------
+  # Docker images in production/container files
   - package-ecosystem: docker
     directory: /docker
     schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
-    reviewers:
-      - lauritsfromberg
+    open-pull-requests-limit: 2
     assignees:
       - lauritsfromberg
     labels:
       - dependencies
       - docker
     commit-message:
-      prefix: 'chore(deps)'
+      prefix: "chore(deps)"
       include: scope
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
-  # ---------------------------------------------------------------
-  # Docker - Dev Container
-  # ---------------------------------------------------------------
+  # Docker images used by the local devcontainer build
   - package-ecosystem: docker
     directory: /.devcontainer
     schedule:
-      interval: weekly
-      day: monday
-      time: '06:00'
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
-    reviewers:
-      - lauritsfromberg
+    open-pull-requests-limit: 2
     assignees:
       - lauritsfromberg
     labels:
@@ -178,5 +108,52 @@ updates:
       - docker
       - devcontainer
     commit-message:
-      prefix: 'chore(deps)'
+      prefix: "chore(deps)"
       include: scope
+    groups:
+      devcontainer-docker-dependencies:
+        patterns:
+          - "*"
+
+  # Devcontainer Features in devcontainer.json
+  - package-ecosystem: devcontainers
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 2
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - devcontainer
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      devcontainer-feature-dependencies:
+        patterns:
+          - "*"
+
+  # Docker Compose image references
+  - package-ecosystem: docker-compose
+    directory: /docker
+    schedule:
+      interval: cron
+      cronjob: "every 2 weeks on monday at 06:00"
+      timezone: Europe/Copenhagen
+    open-pull-requests-limit: 2
+    assignees:
+      - lauritsfromberg
+    labels:
+      - dependencies
+      - docker
+      - compose
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      docker-compose-dependencies:
+        patterns:
+          - "*"

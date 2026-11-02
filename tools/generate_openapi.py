@@ -11,10 +11,13 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import yaml
 from fastapi.openapi.utils import get_openapi
+
+if TYPE_CHECKING:
+    from yaml.nodes import ScalarNode
 
 # Ensure backend/src is importable when this script is run from repository root.
 BACKEND_SRC: Final[Path] = Path(__file__).parent.parent / "backend" / "src"
@@ -30,6 +33,19 @@ OPENAPI_YAML: Final[Path] = OUTPUT_DIR / "openapi.yaml"
 OPENAPI_HTML: Final[Path] = OUTPUT_DIR / "index.html"
 
 
+class _OpenAPIDumper(yaml.SafeDumper):
+    """YAML dumper tuned for human-readable OpenAPI artifacts."""
+
+
+def _represent_openapi_string(dumper: yaml.SafeDumper, data: str) -> ScalarNode:
+    """Represent multiline strings as block scalars."""
+    style = "|" if "\n" in data else None
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+
+_OpenAPIDumper.add_representer(str, _represent_openapi_string)
+
+
 def generate_openapi_spec() -> dict:
     """
     Generate OpenAPI specification from FastAPI app.
@@ -41,7 +57,6 @@ def generate_openapi_spec() -> dict:
     from ekko.config.openapi_config import (
         OPENAPI_CONTACT,
         OPENAPI_DESCRIPTION,
-        OPENAPI_EXTERNAL_DOCS,
         OPENAPI_LICENSE,
         OPENAPI_SERVERS,
         OPENAPI_TAGS,
@@ -53,7 +68,7 @@ def generate_openapi_spec() -> dict:
     app = create_app()
 
     # Generate OpenAPI schema
-    openapi_schema = get_openapi(
+    return get_openapi(
         title=OPENAPI_TITLE,
         version=OPENAPI_VERSION,
         description=OPENAPI_DESCRIPTION,
@@ -63,11 +78,6 @@ def generate_openapi_spec() -> dict:
         contact=OPENAPI_CONTACT,
         license_info=OPENAPI_LICENSE,
     )
-
-    # Add external docs
-    openapi_schema["externalDocs"] = OPENAPI_EXTERNAL_DOCS
-
-    return openapi_schema
 
 
 def write_json_spec(spec: dict) -> None:
@@ -90,7 +100,7 @@ def write_yaml_spec(spec: dict) -> None:
         spec: OpenAPI specification dictionary.
     """
     with OPENAPI_YAML.open("w", encoding="utf-8") as f:
-        yaml.dump(spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        yaml.dump(spec, f, Dumper=_OpenAPIDumper, default_flow_style=False, allow_unicode=True, sort_keys=False)
     print(f"✓ Generated OpenAPI YAML: {OPENAPI_YAML}")
 
 
@@ -167,7 +177,7 @@ def main() -> None:
         write_html_docs(spec)
 
         print()
-        print("✅ OpenAPI specification generated successfully!")
+        print("Done: OpenAPI specification generated successfully.")
         print()
         print("View documentation:")
         print(f"  - JSON: {OPENAPI_JSON.absolute()}")
@@ -178,7 +188,7 @@ def main() -> None:
         print(f"  file://{OPENAPI_HTML.absolute()}")
 
     except Exception as e:
-        print(f"❌ Error generating OpenAPI spec: {e}")
+        print(f"Error generating OpenAPI spec: {e}")
         raise
 
 

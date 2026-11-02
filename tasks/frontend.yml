@@ -11,7 +11,12 @@ tasks:
   install:
     desc: "Install frontend dependencies"
     cmds:
-      - bun install
+      - cmd: bun install --frozen-lockfile
+        platforms: [linux, darwin]
+      - cmd: >-
+          cmd.exe /d /c "set HOME=%USERPROFILE%&& bun install --frozen-lockfile
+          --cache-dir %LOCALAPPDATA%\bun\install\cache"
+        platforms: [windows]
 
   build:
     desc: "Build frontend for production"
@@ -35,6 +40,11 @@ tasks:
     cmds:
       - bun run lint
 
+  arch:check:
+    desc: "Check frontend Clean Architecture import boundaries"
+    cmds:
+      - node ./scripts/check-architecture.mjs
+
   format:
     desc: "Format frontend code"
     cmds:
@@ -44,6 +54,11 @@ tasks:
     desc: "Type check frontend"
     cmds:
       - bun run typecheck
+
+  graphql:validate:
+    desc: "Validate GraphQL operation documents"
+    cmds:
+      - bun run graphql:validate
 
   # ── Storybook ────────────────────────────────────────────────
   storybook:

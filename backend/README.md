@@ -2,117 +2,72 @@
 
 Backend package for Ekko (FastAPI + Strawberry GraphQL + Clean Architecture).
 
-## Database Runtime Modes
+## Database
 
-- `local` / `test`: SQLite backend by default.
-- `dev` / `prod`: PostgreSQL backend by default.
-- Override backend in any environment with `EKKO_DATABASE_BACKEND=sqlite|postgresql`.
+SQLite with async via `aiosqlite`. WAL mode and foreign keys enabled automatically.
 
-Primary DB settings:
+- `EKKO_DATABASE_PATH` — SQLite file path (default: `./ekko.db`)
+- Migrations: `task db:migrate` (Alembic)
 
-- `EKKO_DATABASE_PATH` (SQLite file)
-- `EKKO_POSTGRESQL_HOST`, `EKKO_POSTGRESQL_PORT`, `EKKO_POSTGRESQL_NAME`
-- `EKKO_POSTGRESQL_USER`, `EKKO_POSTGRESQL_PASSWORD`, `EKKO_POSTGRESQL_SSLMODE`
-- Optional URL overrides:
-  - `EKKO_POSTGRESQL_ASYNC_DATABASE_URL_OVERRIDE`
-  - `EKKO_POSTGRESQL_SYNC_DATABASE_URL_OVERRIDE`
+## Analytics pattern (optional): SQLite + Parquet + DuckDB
 
-### Migrate local PostgreSQL data into SQLite
+Runtime storage is SQLite only. Health checks (`/health`, `/ready`) validate
+application state and SQLite connectivity.
 
-- Task: `task db:migrate:pg-to-sqlite`
-- CLI: `uv run python -m ekko.cli.postgres_to_sqlite`
-- Useful flags:
-  - `--source-url` (override source PostgreSQL URL)
-  - `--target-url` (override target SQLite URL)
-  - `--tables users ...` (migrate selected tables only)
-  - `--append` (keep existing target rows; default behavior truncates target tables)
+For analytics workloads, use a file-based pattern:
 
-## DuckDB Migration (existing health checks)
+1. Export query results to Parquet files.
+2. Analyze Parquet files with DuckDB when needed.
 
-- DuckDB can be enabled for readiness probes over the existing SQLite database.
-- Configure with:
-  - `EKKO_DUCKDB_ENABLED=true|false`
-  - `EKKO_DUCKDB_DATABASE_PATH=./ekko_analytics.duckdb`
-- REST `/health` and GraphQL `healthReady` keep existing behavior and add optional DuckDB probe results when enabled.
+Example DuckDB query pattern:
 
-## GraphQL-first stream control and REST compatibility
+- `SELECT * FROM read_parquet('analytics/*.parquet');`
 
-- Canonical stream control interface is GraphQL mutation `controlStream`.
-- Legacy REST stream endpoints (`/start_stream`, `/pause_stream`) are disabled by default.
-- Enable temporary REST compatibility only when needed:
-  - `EKKO_REST_STREAM_ENDPOINTS_ENABLED=true`
-- When enabled, legacy REST endpoints emit deprecation metadata headers:
-  - `Deprecation: true`
-  - `Link: </graphql>; rel="successor-version"; title="GraphQL endpoint"`
-  - `Warning: 299 - "REST stream endpoints are deprecated; use GraphQL mutation controlStream."`
+This keeps OLTP/runtime concerns on SQLite and analytical scanning on Parquet.
 
-## GraphQL schema governance
+## API surface
 
-- CI enforces a reviewed schema contract fingerprint to detect unreviewed breaking drift.
-- Validation command:
-  - `uv run --project backend python tools/conventions/check_graphql_schema_contract.py`
-- Refresh baseline after intentional schema changes:
-  - `uv run --project backend python tools/conventions/check_graphql_schema_contract.py --update`
+- REST is the canonical transport for commands and health:
+  - `GET /health` and `GET /ready` report application and SQLite state.
+  - `POST /stream/start` and `POST /stream/pause` control audio streaming.
+  - `POST /pii/anonymize` redacts sensitive text.
+  - `GET /transcripts/stream` streams live transcript segments over SSE.
+- GraphQL exposes one read-only query, `promptCatalog`, at `POST /graphql` for
+  field-selective prompt browsing.
+- The retired `/start_stream` and `/pause_stream` paths return `404`.
 
 ## Prompt Registry / Versioning
 
-- Runtime prompts are versioned through a registry in `src/ekko/ai/prompts/versions/registry.json`.
+- Runtime prompts are versioned through closed named sets in `src/ekko/ai/prompts/registry/prompt_registry.json`.
 - Prompt snapshots are stored as immutable files in `src/ekko/ai/prompts/versions/`.
+- Runtime selection belongs to environment settings, never to the manifest:
+  local uses editable `experimental` templates, development uses `development`,
+  and production uses `production`.
 - Configure behavior with:
-  - `EKKO_PROMPT_AUTO_PROVISION=true|false`
-  - `EKKO_PROMPT_VERSION=vN` (optional pin for all prompts)
+  - `EKKO_PROMPT_AUTO_PROVISION=true|false` (authoring CLI only)
+  - `EKKO_PROMPT_VERSION=vN.N` (optional immutable pin for all prompts)
+  - `EKKO_PROMPT_VERSION_SET=experimental|development|production`
+
+Active prompts:
+
+- `summary_chunks` — chunked transcript summarization
+- `summarizer_system` — system prompt for the summarizer
+- `conversational_system` — conversational assistant system prompt
+
+All templates live as flat files under `src/ekko/ai/prompts/templates/`.
 
 Provision and inspect prompt versions:
 
-- `uv run python -m ekko.cli.prompt_registry provision`
-- `uv run python -m ekko.cli.prompt_registry list`
-- `uv run python -m ekko.cli.prompt_registry active`
-- `uv run python -m ekko.cli.prompt_registry resolve --prompt-key summary_chunks --version v1`
-- `task prompts:active`
-- `task prompts:resolve -- --prompt-key summary_chunks --version v1`
-
-Generate reproducible backtest run metadata with prompt version tags:
-
-- `uv run python -m ekko.cli.evaluator run-name --dataset-label baseline --model-label gpt-4o`
-- `uv run python -m ekko.cli.evaluator metadata --dataset-label baseline --model-label gpt-4o`
-
-## Keploy Integration
-
-Keploy traffic capture/replay is integrated through backend task commands with explicit runtime defaults.
-
-Local workflow:
-
-- `task keploy:version`
-- `task keploy:record`
-- `task keploy:test`
-- `task keploy:report`
-
-Optional local config-file workflow:
-
-- `keploy config --generate --path .`
-- Then run `keploy record` / `keploy test` directly with `--config-path .` if you prefer a file-driven setup.
-
-Cloud suite workflow note (CI-friendly):
-
-- Cloud `test-suite` execution is available in newer Keploy CLI generations.
-- If you use that mode, store `KEPLOY_API_KEY` only in environment/secret stores.
-
-Operational best practices applied:
-
-- Filter out noisy non-business endpoints from recording (`/health`, `/metrics`).
-- Use `globalNoise` to ignore volatile response headers and timing noise.
-- Keep app deterministic during replay (`EKKO_DISABLE_AUDIO=true`, local SQLite backend).
-- Do not commit Keploy test-set secrets (`backend/keploy/*/secret.yaml`).
-
-Windows note:
-
-- Keploy eBPF capabilities require WSL/Docker-backed flow on Windows; ensure prerequisites from Keploy install docs are satisfied.
+```bash
+uv run python -m ekko.cli.prompt_registry provision
+uv run python -m ekko.cli.prompt_registry list
+uv run python -m ekko.cli.prompt_registry active
+```
 
 ## Testing Notes
 
-- Integration database tests run against PostgreSQL via `testcontainers` (Docker required).
+- Integration database tests run against in-memory SQLite.
 - Integration and E2E tests run in-process using FastAPI test clients (no manual localhost server required).
-- If Docker is unavailable, container-backed integration tests are skipped.
 
 ### E2E Run Matrix
 

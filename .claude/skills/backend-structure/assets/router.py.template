@@ -1,0 +1,21 @@
+"""Aggregator router template — copy into presentation/api/router.py.
+
+The one place every feature router gets registered. Root (bare `/`,
+`/favicon.ico`, `/readiness`, and the documented `/api/health`) is
+unconditional; feature routers are mounted only when their dependency/config
+is present.
+"""
+
+from __future__ import annotations
+
+from fastapi import APIRouter
+
+from replace_me.presentation.api.routes import root
+
+api_router = APIRouter()
+api_router.include_router(root.router)
+
+# Mount feature routers conditionally, e.g.:
+# if config.feature_x_enabled:
+#     from replace_me.presentation.api.routes import feature_x
+#     api_router.include_router(feature_x.router)

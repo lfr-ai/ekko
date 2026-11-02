@@ -1,0 +1,27 @@
+# redocly.yaml — Redocly CLI config (OpenAPI contract lint + static API reference)
+# Docs: https://redocly.com/docs/cli/configuration
+# Full rule reference: https://redocly.com/docs/cli/rules/built-in-rules
+# Single OpenAPI contract-lint tool for this repo. The FastAPI app's schema is
+# generated to ./docs/api/openapi.json via `tools/generate_openapi.py`.
+apis:
+  ekko@v1:
+    root: ./docs/api/openapi.json
+
+extends:
+  - recommended
+
+rules:
+  operation-operationId: error
+  operation-description: warn
+  operation-summary: warn
+  operation-4xx-response: warn
+  no-unused-components: warn
+  no-invalid-media-type-examples: warn
+  # The app is served behind Caddy (no `servers=`) and models auth at the
+  # network boundary (no per-operation OpenAPI security scheme) — accepted as
+  # visible warnings rather than errors.
+  no-empty-servers: warn
+  security-defined: warn
+  # This is a local-only desktop application (see `info.description`) — its
+  # `servers` genuinely point at `localhost` by design, not a placeholder.
+  no-server-example.com: warn

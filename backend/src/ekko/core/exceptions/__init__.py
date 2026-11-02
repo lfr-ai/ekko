@@ -6,40 +6,24 @@ class EkkoError(Exception):
 
 
 class ConfigurationError(EkkoError):
-    """Raised when configuration is invalid or missing."""
+    """Invalid or missing application configuration."""
 
 
 class AudioDeviceError(EkkoError):
-    """Raised when an audio device cannot be found or initialized."""
+    """Audio device cannot be found or initialized."""
 
 
 class STTError(EkkoError):
-    """Raised when speech-to-text processing fails."""
+    """Speech-to-text processing failure."""
 
 
 class LLMError(EkkoError):
-    """Raised when an LLM call fails."""
+    """LLM request failure."""
+
+
+class PIIPolicyViolationError(EkkoError):
+    """Text fails the mandatory PII policy check before an LLM call."""
 
 
 class PromptNotFoundError(EkkoError):
-    """Raised when a prompt template file cannot be found."""
-
-
-class PIIError(EkkoError):
-    """Raised when PII anonymization fails."""
-
-
-class AgentError(EkkoError):
-    """Raised when a CrewAI agent execution fails."""
-
-
-class ConversationNotFoundError(EkkoError):
-    """Raised when a conversation ID is not found."""
-
-
-class AuthenticationError(EkkoError):
-    """Raised when authentication fails."""
-
-
-class AuthorizationError(EkkoError):
-    """Raised when authorization fails."""
+    """Prompt template file cannot be found."""

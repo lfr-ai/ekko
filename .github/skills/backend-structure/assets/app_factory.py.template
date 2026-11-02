@@ -1,0 +1,78 @@
+"""App factory template — copy into composition/app_factory.py, rename package.
+
+Wires the lifespan, container, limiter, and middleware. Keep this the ONLY
+place that constructs the FastAPI app; main.py should just call create_app().
+"""
+
+from __future__ import annotations
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from starlette.middleware.body_limit import RequestBodyLimitMiddleware
+from starlette.middleware.gzip import GZipMiddleware
+
+from replace_me.composition.container import Container
+from replace_me.configs import load_config
+from replace_me.presentation.api.middleware.rate_limiter import limiter
+from replace_me.presentation.api.middleware.request_context import (
+    RequestContextMiddleware,
+)
+from replace_me.presentation.api.router import api_router
+
+# Above the largest legitimate upload, with headroom for encoding overhead.
+_MAX_REQUEST_BODY_BYTES = 150 * 1024 * 1024
+_GZIP_MINIMUM_SIZE_BYTES = 1024
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Build the container on startup, dispose async resources on shutdown."""
+    config = load_config()
+    container = Container.from_config(config)
+    app.state.container = container
+    try:
+        yield
+    finally:
+        await container.dispose()
+
+
+def _register_middleware(app: FastAPI) -> None:
+    """Register rate-limiter state and all middleware on the application.
+
+    Middleware executes outside-in for requests in reverse registration
+    order (the last one added runs first). `RequestContextMiddleware` is
+    added last so every response — including a rejected oversized request —
+    carries a correlated request id. Starlette's built-in
+    `RequestBodyLimitMiddleware` (`starlette.middleware.body_limit`) runs
+    before `GZipMiddleware` so an oversized body is rejected before it is
+    read or compressed — it sends a plain-text 413 at the ASGI layer, not
+    the app's JSON error envelope, so don't route it through
+    `exception_handlers.py`. Add `CORSMiddleware` here (first, so it wraps innermost) only
+    when a browser-based frontend consumes this API cross-origin — omit it
+    entirely for a same-origin or server-to-server-only API:
+
+        from fastapi.middleware.cors import CORSMiddleware
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=config.cors_allowed_origins,  # explicit list, never "*" with credentials
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            allow_headers=["*"],
+        )
+    """
+    app.state.limiter = limiter
+    app.add_middleware(GZipMiddleware, minimum_size=_GZIP_MINIMUM_SIZE_BYTES)
+    app.add_middleware(
+        RequestBodyLimitMiddleware, max_body_size=_MAX_REQUEST_BODY_BYTES
+    )
+    app.add_middleware(RequestContextMiddleware)
+
+
+def create_app() -> FastAPI:
+    """Assemble and return the FastAPI application."""
+    app = FastAPI(lifespan=_lifespan)
+    _register_middleware(app)
+    app.include_router(api_router)
+    return app

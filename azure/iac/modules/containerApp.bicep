@@ -43,12 +43,27 @@ param memoryGi string = '2Gi'
 @description('Application Insights connection string used by application-level telemetry.')
 param appInsightsConnectionString string
 
+@description('Name of the Azure Cache for Redis instance backing rate limiting and transcript fan-out.')
+param redisName string
+
+@description('Host name of the Azure Cache for Redis instance.')
+param redisHostName string
+
+@description('SSL port of the Azure Cache for Redis instance.')
+param redisSslPort int
+
 var containerAppName = '${baseName}-ca'
 var imageRef = '${acrLoginServer}/${imageName}:${imageTag}'
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: acrName
 }
+
+resource redis 'Microsoft.Cache/redis@2024-11-01' existing = {
+  name: redisName
+}
+
+var redisConnectionString = 'rediss://:${redis.listKeys().primaryKey}@${redisHostName}:${redisSslPort}/0'
 
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: containerAppName
@@ -73,6 +88,12 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
           identity: 'system'
         }
       ]
+      secrets: [
+        {
+          name: 'redis-connection-string'
+          value: redisConnectionString
+        }
+      ]
     }
     template: {
       containers: [
@@ -87,6 +108,10 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               value: appInsightsConnectionString
+            }
+            {
+              name: 'EKKO_REDIS_URL'
+              secretRef: 'redis-connection-string' // pragma: allowlist secret
             }
           ]
           resources: {
@@ -137,7 +162,10 @@ resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   scope: acr
   name: guid(acrId, containerApp.name, 'AcrPull')
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    )
     principalId: containerApp.identity.principalId
     principalType: 'ServicePrincipal'
   }

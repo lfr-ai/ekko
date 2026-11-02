@@ -1,0 +1,65 @@
+{
+  "_comment": "Allowlist for the magic-strings checker (tools/conventions/check_magic_strings.py). Each entry documents a string literal that is legitimately NOT a magic value: framework-required literals, structural field-access names, route/mount paths, and CLI subcommand names. Entries are matched by file + literal (line-agnostic), so they survive unrelated edits. The 'line' field is documentation of the first known occurrence only.",
+  "exceptions": [
+    {
+      "file": "backend/src/ekko/ai/pii/patterns.py",
+      "line": 45,
+      "literal": "email",
+      "reason": "PIIPattern identifier (name of a redaction rule), not a domain value"
+    },
+    {
+      "file": "backend/src/ekko/infrastructure/audio_streamer/audio_streamer.py",
+      "line": 78,
+      "literal": "name",
+      "reason": "Device-info dict field name passed to _require_string_field (structural access)"
+    },
+    {
+      "file": "backend/src/ekko/infrastructure/metrics.py",
+      "line": 26,
+      "literal": "status",
+      "reason": "Prometheus metric label name in the labelnames tuple"
+    },
+    {
+      "file": "backend/src/ekko/presentation/graphql/router.py",
+      "line": 33,
+      "literal": "username",
+      "reason": "Request-context field name extracted from the ASGI scope"
+    },
+    {
+      "file": "backend/src/ekko/presentation/graphql/router.py",
+      "line": 34,
+      "literal": "user_id",
+      "reason": "Request-context field name extracted from the ASGI scope"
+    },
+    {
+      "file": "backend/src/ekko/presentation/graphql/router.py",
+      "line": 251,
+      "literal": "/graphql",
+      "reason": "GraphQL router mount path (single definition site)"
+    },
+    {
+      "file": "backend/src/ekko/core/value_objects/audio_chunk.py",
+      "line": 17,
+      "literal": "system",
+      "reason": "Default audio-source label on the AudioChunk value object"
+    },
+    {
+      "file": "backend/src/ekko/presentation/graphql/types.py",
+      "line": 150,
+      "literal": "user",
+      "reason": "Strawberry requires a literal default for schema generation"
+    },
+    {
+      "file": "backend/src/ekko/composition/app_factory.py",
+      "line": 141,
+      "literal": "/metrics",
+      "reason": "Prometheus metrics mount path (single definition site)"
+    },
+    {
+      "file": "backend/src/ekko/cli/prompt_registry.py",
+      "line": 36,
+      "literal": "active",
+      "reason": "argparse subcommand name for the prompt-registry CLI"
+    }
+  ]
+}

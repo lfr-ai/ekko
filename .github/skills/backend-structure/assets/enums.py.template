@@ -1,0 +1,45 @@
+"""Presentation-layer enumerations template — copy into
+presentation/api/enums.py.
+
+One shared `StrEnum` for every generic client-facing error detail, reused by
+BOTH `exception_handlers.py` (what actually gets logged/returned) and
+`responses.py`'s OpenAPI documentation (see `api-contracts`'s
+`assets/error_responses.py.template`) — so the two can never silently drift
+into two different strings for the same error. Add a member only for a
+detail genuinely reused across more than one call site; a one-off detail
+(e.g. a per-file upload-size message) stays a local literal.
+"""
+
+from enum import StrEnum, unique
+import http
+
+
+@unique
+class StandardErrorDetail(StrEnum):
+    """Canonical client-facing error details.
+
+    Members:
+        NOT_FOUND (str): A domain resource lookup failed.
+        VALIDATION (str): Request or response schema validation failed.
+        RATE_LIMITED (str): Client exceeded the configured rate limit.
+        DB_UNAVAILABLE (str): The persistence backend is temporarily unreachable.
+        EXTERNAL_SERVICE_FAILURE (str): An upstream external client port returned an unusable result.
+        INTERNAL_ERROR (str): Unhandled server-side failure.
+        CONTENT_TOO_LARGE (str): Request body exceeded the maximum allowed size.
+    """
+
+    NOT_FOUND = "Resource not found"
+    VALIDATION = "Request validation error"
+    RATE_LIMITED = "Too many requests; please try again later"
+    DB_UNAVAILABLE = "Database is temporarily unavailable; please try again later"
+    EXTERNAL_SERVICE_FAILURE = (
+        "An upstream external service returned an unusable result; please try again"
+    )
+    INTERNAL_ERROR = (
+        "An unexpected error occurred; contact support if the problem persists"
+    )
+    # Mirrors the standard RFC 9110 reason phrase — this is the one member
+    # whose value must match a literal duplicated elsewhere (the body-limit
+    # middleware's 413 response), so pin it to the stdlib source of truth
+    # instead of a second hand-typed string.
+    CONTENT_TOO_LARGE = http.HTTPStatus.CONTENT_TOO_LARGE.phrase

@@ -1,16 +1,22 @@
 """Audio streamer interface for capturing system and microphone audio."""
 
+from __future__ import annotations
+
 import asyncio
 import logging
-from typing import Any
+from typing import TYPE_CHECKING
 
 import pyaudiowpatch as pyaudio
 from pyaudiowpatch import Stream
 
-from ekko.config.settings import BaseAppConfig
 from ekko.core.enums import RecognitionMode
 
+if TYPE_CHECKING:
+    from ekko.config.base import BaseAppConfig
+
 logger = logging.getLogger(__name__)
+
+_EMPTY_AUDIO_CHUNK = b""
 
 
 class AudioStreamer:
@@ -20,105 +26,131 @@ class AudioStreamer:
         self.settings = settings
         self.running = False
         self.sending = False
-        self.group: asyncio.TaskGroup | None = None
+        self._queue_tasks: set[asyncio.Task[None]] = set()
 
         # PyAudio instance (lazy-created in _initialize)
-        self.p: Any = None
+        self.p: pyaudio.PyAudio | None = None
         # Track send tasks for subprocess-to-main streaming
-        self.sys_sending_task: asyncio.Task | None = None
-        self.mic_sending_task: asyncio.Task | None = None
+        self.sys_sending_task: asyncio.Task[None] | None = None
+        self.mic_sending_task: asyncio.Task[None] | None = None
+        self.stream_sys: Stream | None = None
+        self.stream_mic: Stream | None = None
+        self.sys_name: str = ""
+        self.mic_name: str = ""
+        self.mode: RecognitionMode = RecognitionMode.CUSTOMER
 
-    def _get_sys_info(self) -> dict[str, Any]:
-        self.mode = RecognitionMode.CUSTOMER
-        return self.p.get_default_wasapi_loopback()
+    def _require_pyaudio(self) -> pyaudio.PyAudio:
+        if self.p is None:
+            msg = "PyAudio is not initialized"
+            raise RuntimeError(msg)
+        return self.p
 
-    def _get_mic_info(self) -> dict[str, Any]:
-        self.mode = RecognitionMode.ADVISOR
-        return self.p.get_default_input_device_info()
+    def _create_stream(self, device_info: dict[str, object]) -> Stream:
+        py_audio = self._require_pyaudio()
+        max_input_channels = device_info.get("maxInputChannels")
+        default_sample_rate = device_info.get("defaultSampleRate")
+        input_device_index = device_info.get("index")
+        if not isinstance(max_input_channels, int):
+            msg = "Audio device info missing integer maxInputChannels"
+            raise TypeError(msg)
+        if not isinstance(default_sample_rate, (int, float)):
+            msg = "Audio device info missing numeric defaultSampleRate"
+            raise TypeError(msg)
+        if not isinstance(input_device_index, int):
+            msg = "Audio device info missing integer index"
+            raise TypeError(msg)
 
-    def _create_stream(self, device_info: dict[str, Any]) -> Stream:
-        return self.p.open(
+        return py_audio.open(
             format=self.settings.audio_format,
-            channels=device_info["maxInputChannels"],
-            rate=int(device_info["defaultSampleRate"]),
+            channels=max_input_channels,
+            rate=int(default_sample_rate),
             input=True,
             frames_per_buffer=self.settings.audio_frames_per_buffer,
-            input_device_index=device_info["index"],
+            input_device_index=input_device_index,
         )
 
-    def _create_sys_stream(self):
-        sys_info = self._get_sys_info()
-        self.sys_name = sys_info["name"]
-        self.stream_sys = self._create_stream(sys_info)
+    @staticmethod
+    def _require_string_field(*, device_info: dict[str, object], field_name: str) -> str:
+        field_value = device_info.get(field_name)
+        if not isinstance(field_value, str):
+            msg = f"Audio device info missing string {field_name}"
+            raise TypeError(msg)
+        return field_value
 
-    def _create_mic_stream(self):
-        mic_info = self._get_mic_info()
-        self.mic_name = mic_info["name"]
-        self.stream_mic = self._create_stream(mic_info)
+    async def start(
+        self,
+        sys_queue: asyncio.Queue[bytes] | None = None,
+        mic_queue: asyncio.Queue[bytes] | None = None,
+    ) -> None:
+        """Start streamer tasks (opens devices)."""
+        self._initialize()
+        self.running = True
+        if sys_queue is not None:
+            self._queue_tasks.add(asyncio.create_task(self._stream_audio(self.stream_sys, sys_queue)))
+        if mic_queue is not None:
+            self._queue_tasks.add(asyncio.create_task(self._stream_audio(self.stream_mic, mic_queue)))
 
-    async def _stream_audio(self, stream: Stream, queue: asyncio.Queue):
-        """Original audio streaming to a queue (unused in this setup)."""
-        try:
-            while self.running:
-                if self.sending:
-                    data = await asyncio.to_thread(stream.read, self.settings.audio_frames_per_buffer)
-                    await queue.put(data)
-                else:
-                    await asyncio.sleep(self.settings.sleep_delay_seconds)
-        except asyncio.CancelledError:
-            pass
-        except Exception:
-            logger.exception("Error in _stream_audio")
-
-    def _initialize(self):
-        # create a TaskGroup instance; we'll enter it in async start()
-        self.group = asyncio.TaskGroup()
+    def _initialize(self) -> None:
         self.p = pyaudio.PyAudio()
         self._create_sys_stream()
         self._create_mic_stream()
 
-    async def start(
-        self,
-        sys_queue: asyncio.Queue | None = None,
-        mic_queue: asyncio.Queue | None = None,
-    ):
-        """Start streamer tasks (opens devices)."""
-        self._initialize()
-        group = self.group
-        if group is None:
-            raise RuntimeError("Failed to create TaskGroup")
-        assert group is not None
-        await group.__aenter__()
-        self.running = True
-        # We do not create queue tasks here since streaming is sent via TCP
-        if sys_queue is not None:
-            group.create_task(self._stream_audio(self.stream_sys, sys_queue))
-        if mic_queue is not None:
-            group.create_task(self._stream_audio(self.stream_mic, mic_queue))
+    def _create_sys_stream(self) -> None:
+        sys_info = self._get_sys_info()
+        self.sys_name = self._require_string_field(device_info=sys_info, field_name="name")
+        self.stream_sys = self._create_stream(sys_info)
 
-    def start_stream(self):
+    def _get_sys_info(self) -> dict[str, object]:
+        self.mode = RecognitionMode.CUSTOMER
+        return self._require_pyaudio().get_default_wasapi_loopback()
+
+    def _create_mic_stream(self) -> None:
+        mic_info = self._get_mic_info()
+        self.mic_name = self._require_string_field(device_info=mic_info, field_name="name")
+        self.stream_mic = self._create_stream(mic_info)
+
+    def _get_mic_info(self) -> dict[str, object]:
+        self.mode = RecognitionMode.ADVISOR
+        return self._require_pyaudio().get_default_input_device_info()
+
+    async def _stream_audio(self, stream: Stream | None, queue: asyncio.Queue[bytes]) -> None:
+        """Read audio frames from stream and push to queue while running."""
+        if stream is None:
+            return
+
+        while self.running:
+            data = await asyncio.to_thread(stream.read, self.settings.audio_frames_per_buffer)
+            if data == _EMPTY_AUDIO_CHUNK:
+                break
+            await queue.put(data)
+
+    def start_stream(self) -> None:
         """Begin sending audio frames (subprocess only)."""
         self.sending = True
 
-    def pause_stream(self):
+    def pause_stream(self) -> None:
         """Stop sending audio frames."""
         self.sending = False
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop all streaming and cleanup."""
         self.sending = False
         self.running = False
         await self._cleanup()
 
-    async def _cleanup(self):
-        group = getattr(self, "group", None)
-        if group is not None:
-            for task in list(getattr(group, "_tasks", [])):
-                task.cancel()
-            try:
-                await group.__aexit__(None, None, None)
-            except Exception:
-                logger.exception("Error while stopping AudioStreamer")
+    async def _cleanup(self) -> None:
+        owned_tasks = {
+            *self._queue_tasks,
+            *(task for task in (self.sys_sending_task, self.mic_sending_task) if task is not None),
+        }
+        for task in owned_tasks:
+            task.cancel()
+        if owned_tasks:
+            await asyncio.gather(*owned_tasks, return_exceptions=True)
+        self._queue_tasks.clear()
+        self.sys_sending_task = None
+        self.mic_sending_task = None
+
         for stream_attr in ("stream_sys", "stream_mic"):
             stream = getattr(self, stream_attr, None)
             if stream:

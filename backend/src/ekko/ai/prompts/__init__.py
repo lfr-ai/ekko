@@ -1,9 +1,12 @@
-"""Prompt templates for LLM interactions."""
+"""Prompt registry, versioning, and provisioning utilities.
 
-from ekko.ai.prompts.provider import RegistryPromptProvider
+The low-level registry functions live here.  New code should prefer the
+``Prompt`` enum (``ekko.core.enums.Prompt``) and the
+``PromptRegistryPort`` / ``PromptRegistryClient`` for type-safe prompt
+loading.
+"""
+
 from ekko.ai.prompts.registry import (
-    PROMPT_KEY_CONVERSATIONAL_SYSTEM,
-    PROMPT_KEY_SUMMARY_CHUNKS,
     PromptRegistryError,
     PromptVersionInfo,
     get_active_prompt_version,
@@ -16,11 +19,8 @@ from ekko.ai.prompts.registry import (
 )
 
 __all__ = [
-    "PROMPT_KEY_CONVERSATIONAL_SYSTEM",
-    "PROMPT_KEY_SUMMARY_CHUNKS",
     "PromptRegistryError",
     "PromptVersionInfo",
-    "RegistryPromptProvider",
     "get_active_prompt_version",
     "get_active_prompt_versions",
     "get_prompt_text",

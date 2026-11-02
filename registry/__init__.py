@@ -1,0 +1,1 @@
+"""Naming registry generation package."""

@@ -1,0 +1,17 @@
+"""Rate-limiter middleware template — presentation-boundary `slowapi` policy
+constants and limiter instance. Route decorators consume the `RATE_LIMIT_*`
+policies (`@limiter.limit(RATE_LIMIT_HEAVY)`); wire `limiter` onto
+`app.state.limiter` in the app factory. Pair with this skill's
+`assets/exception_handlers.py.template`, which maps a `RateLimitExceeded`
+failure to the canonical error envelope.
+"""
+
+from typing import Final
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+RATE_LIMIT_DEFAULT: Final[str] = "30/second"
+RATE_LIMIT_HEAVY: Final[str] = "5/second"
+
+limiter = Limiter(key_func=get_remote_address)

@@ -1,0 +1,82 @@
+"""Concrete repository template — copy into infrastructure/persistence/repositories/.
+
+Implements the `ddd` skill's `repository_protocol.py.template` port. Shown
+synchronous here to match this project's SQLAlchemy repositories (session
+calls block); switch every method to `async def` if the project's ports
+declare an async protocol instead — never mix both styles across ports.
+
+Never return an ORM row across the port boundary — always convert to a
+frozen, read-only snapshot first, so callers cannot mutate persistence state
+outside a repository method.
+"""
+
+from __future__ import annotations
+
+from contextlib import AbstractContextManager
+from dataclasses import dataclass
+from typing import final, override
+from uuid import UUID
+
+from sqlalchemy.orm import Session
+
+# Replace with the project's real port Protocol (see the `ddd` skill's
+# repository_protocol.py.template) and shared session-manager type.
+from myapp.core.ports.repositories.replace_me import ReplaceMeRepositoryPort
+from myapp.infrastructure.persistence.database_manager import DatabaseManager
+from myapp.infrastructure.persistence.orm.models import ReplaceMe
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class ReplaceMeRecord:
+    """Immutable, read-only snapshot returned across the repository port.
+
+    Attributes:
+        id (UUID): Unique identifier.
+        name (str): Example field — replace with the real projection.
+    """
+
+    id: UUID
+    name: str
+
+
+def _to_record(row: ReplaceMe) -> ReplaceMeRecord:
+    """Convert an ORM row to its protocol-compliant snapshot."""
+    return ReplaceMeRecord(id=row.id, name=row.name)
+
+
+@final
+class ReplaceMeRepository(ReplaceMeRepositoryPort):
+    """SQLAlchemy-backed implementation of the ReplaceMe repository port."""
+
+    def __init__(
+        self, *, database_manager: DatabaseManager, postgresql_url: str
+    ):
+        """Initialize with the shared session manager and target database URL.
+
+        Args:
+            database_manager (DatabaseManager): Shared database session manager.
+            postgresql_url (str): PostgreSQL connection URL.
+        """
+        self._database_manager = database_manager
+        self._postgresql_url = postgresql_url
+
+    def _session(self) -> AbstractContextManager[Session]:
+        """Open a managed SQLAlchemy session scoped to one unit of work."""
+        return self._database_manager.get_session(self._postgresql_url)
+
+    @override
+    def get_by_id(self, *, entity_id: UUID) -> ReplaceMeRecord | None:
+        """Get one record by identifier, or None when it does not exist."""
+        with self._session() as session:
+            if not (row := session.get(ReplaceMe, entity_id)):
+                return None
+            return _to_record(row)
+
+    @override
+    def save(self, *, record: ReplaceMeRecord) -> None:
+        """Persist the record's current state as a single transaction."""
+        with self._session() as session:
+            row = session.get(ReplaceMe, record.id) or ReplaceMe(id=record.id)
+            row.name = record.name
+            session.add(row)
+            session.commit()

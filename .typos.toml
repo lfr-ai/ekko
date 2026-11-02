@@ -7,11 +7,10 @@ ekko = "ekko"
 fastapi = "fastapi"
 uvicorn = "uvicorn"
 sqlalchemy = "sqlalchemy"
-structlog = "structlog"
 pydantic = "pydantic"
 alembic = "alembic"
 crewai = "crewai"
-langchain = "langchain"
+litellm = "litellm"
 tiktoken = "tiktoken"
 zustand = "zustand"
 shadcn = "shadcn"
@@ -23,6 +22,9 @@ axe = "axe"
 injectaxe = "injectaxe"
 behaviour = "behaviour"
 minimumreleaseagebehaviour = "minimumreleaseagebehaviour"
+
+[default.extend-identifiers]
+datas = "datas"
 
 [files]
 extend-exclude = [

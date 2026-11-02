@@ -17,9 +17,9 @@ cosmetics never belong here.
 | `settings.example.jsonc` | Yes | Copy-paste template for personal preferences (theme, panel layout, terminal profile, Copilot ghost-text toggles). Never auto-applied. |
 | `tasks.json` | Yes | Thin wrappers around `Taskfile.yml` targets (`command: "task <name>"`) plus a few directly-scoped dev-loop tasks (current file/test). Never duplicate Task's logic inline. |
 | `launch.json` | Yes | Debug configurations for the app entrypoint, the active test file, the active file, and remote attach. |
-| `mcp.json` | Yes | MCP server manifest for VS Code (mirrors `.claude/settings.json`'s `allowedMcpServers`/`.mcp.json` — see `agent-config` skill for parity rules). |
+| `mcp.json` | Yes | VS Code project MCP manifest; keep server names aligned with root `.mcp.json` and `.claude/mcp.json` per `agent-config`. |
 | `extensions.json` | Yes | Recommended extensions only; never `"unwantedRecommendations"` for personal taste. |
-| `keybindings.json` | Yes | Only bindings the whole team should share (rare); personal bindings live in user keybindings. |
+| `keybindings.example.jsonc` | Yes | Copy-paste template for personal host keybindings; VS Code does not apply workspace keybinding files. |
 
 ## Language servers & editor analysis
 
@@ -48,6 +48,11 @@ editor never fights what CI owns:
 instructions, hooks, MCP startup posture, the default-model seed, and harness
 posture. Personal risk/ergonomics choices (permission default, notifications,
 session cleanup) belong in **user** settings, kept consistent with these.
+
+Keep personal host keybindings in VS Code's user `keybindings.json`; the
+workspace template is not loaded automatically. A Dev Container may provision
+its own machine-scoped keybindings only through an explicit, documented setup
+script.
 
 - **Prefer the Copilot Agent Host** harness: each session runs in its own
   process (not blocked by a busy extension) and unlocks worktree/Dev-Container

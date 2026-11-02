@@ -4,10 +4,12 @@ from ekko.core.value_objects.audio_chunk import AudioChunk
 from ekko.core.value_objects.conversation_summary import ConversationSummary
 from ekko.core.value_objects.intent_classification import IntentClassification
 from ekko.core.value_objects.pii import AnonymizedText, PIIMatch
-from ekko.core.value_objects.transcript_segment import TranscriptSegment
+from ekko.core.value_objects.transcript_segment import SOURCE_MICROPHONE, SOURCE_SYSTEM, TranscriptSegment
 from ekko.core.value_objects.transcription_info import TranscriptionInfo
 
 __all__ = [
+    "SOURCE_MICROPHONE",
+    "SOURCE_SYSTEM",
     "AnonymizedText",
     "AudioChunk",
     "ConversationSummary",

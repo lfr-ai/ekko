@@ -5,19 +5,19 @@ description: Package a Python app into a standalone executable with PyInstaller 
 
 # PyInstaller packaging
 
-Freeze a Python entry point into a self-contained executable. A committed
-spec is typically `<project>.spec` (root, see `PROJECT.md`), building the
-desktop distribution via `task build:exe` / `scripts/build_exe.ps1`. Keep the
+Freeze a Python entry point into a self-contained executable. Adopt PyInstaller
+only when a consumer genuinely needs a runtime-free binary (a desktop tool, an
+air-gapped CLI) — a web service ships as a container, not an `.exe`. Keep the
 frozen entry point thin and import real logic from the package so it stays
 testable without freezing.
 
 ## The spec file is the source of truth
 
-- `<project>.spec` is executable Python and pins every build option. Rebuild
-  with `pyinstaller <project>.spec` (or `task build:exe`); CLI options are
-  ignored when
-  building from a spec (only `--clean`, `--noconfirm`, `--distpath`,
-  `--workpath`, `--log-level`, `--upx-dir` still apply).
+- Generate once with `pyi-makespec` (or the first `pyinstaller` run), then commit
+  and edit the `.spec` — it is executable Python and pins every build option.
+  Rebuild with `pyinstaller myapp.spec`; CLI options are ignored when building
+  from a spec (only `--clean`, `--noconfirm`, `--distpath`, `--workpath`,
+  `--log-level`, `--upx-dir` still apply).
 - The spec builds `Analysis` -> `PYZ` -> `EXE` (plus `COLLECT` for onedir). Keep
   `data`, `binaries`, `hiddenimports`, and `excludes` as named lists above the
   `Analysis` call for readability.
@@ -67,14 +67,17 @@ For data inside an installed package, prefer `importlib.resources` /
 - Pin a fixed hash seed for determinism via the `EXE` `OPTIONS` list:
   `[("hash_seed=0", None, "OPTION")]`; build with `--clean` in CI.
 - Support debug and production builds from one spec with an argparse block and
-  `pyinstaller <project>.spec -- --debug` (console + onedir for debug, windowed
+  `pyinstaller myapp.spec -- --debug` (console + onedir for debug, windowed
   onefile for release).
 - Never bundle secrets or `.env` into the binary — read configuration at run
-  time (AGENTS.md Hard Rule: no secrets in code).
+  time (Hard Rule 21).
 
 ## Guardrails
 
 - Test the built binary on a clean machine/VM with no Python installed — imports
   that work in dev often miss from the freeze.
 - Freeze on each target OS; PyInstaller does not cross-compile.
-- Keep the `.spec`, the `data` manifest, and `task build:exe` in version control.
+- Keep the `.spec`, the `data` manifest, and the build task in version control.
+
+Copy-and-rename starting point:
+[`assets/app.spec.template`](assets/app.spec.template).

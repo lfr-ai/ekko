@@ -1,0 +1,62 @@
+"""FastAPI lifespan template — copy into presentation/api/lifespan.py.
+
+Owns startup/shutdown only. The container itself is built and stashed on
+`app.state` here so presentation dependencies (see dependencies.py.template)
+can reach it through the structural `_DependencyProvider` protocol without
+ever importing the concrete container class (Structural Presentation
+Boundary, Hard Rule 6/18).
+"""
+
+from __future__ import annotations
+
+import logging
+from collections.abc import AsyncGenerator, Callable
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from typing import Protocol
+
+from fastapi import FastAPI
+
+_logger = logging.getLogger(__name__)
+
+
+class _LifecycleContainer(Protocol):
+    """Application container managed by the API lifespan."""
+
+    async def shutdown(self) -> None:
+        """Dispose container-owned async resources (pools, clients, sessions)."""
+        ...
+
+
+def create_lifespan(
+    *,
+    container_factory: Callable[[], _LifecycleContainer],
+) -> Callable[[FastAPI], AbstractAsyncContextManager[None]]:
+    """Build a lifespan context manager that owns the container's lifecycle.
+
+    Args:
+        container_factory (Callable[[], _LifecycleContainer]): Factory that
+            lazily builds the application container.
+
+    Returns:
+        Callable[[FastAPI], AbstractAsyncContextManager[None]]: Lifespan
+            usable as `FastAPI(lifespan=...)`.
+    """
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+        """Bind the container to app state, then dispose it on shutdown.
+
+        Args:
+            app (FastAPI): FastAPI application instance.
+        """
+        container = container_factory()
+        app.state.container = container
+
+        _logger.info("Startup complete")
+
+        yield
+
+        _logger.info("Shutting down — disposing shared resources")
+        await container.shutdown()
+
+    return lifespan

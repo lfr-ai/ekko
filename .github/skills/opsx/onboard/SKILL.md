@@ -71,9 +71,8 @@ Scan the codebase for small improvement opportunities. Look for:
 5. **Debug artifacts** - `console.log`, `console.debug`, `debugger` statements in non-debug code
 6. **Missing validation** - User input handlers without validation
 
-Also review recent project activity through IDE Source Control history or the
-GitNexus session/context. Use it only to spot small, recently touched areas;
-do not invoke shell version-control commands.
+If recent history would improve task selection, ask the user for a summary or
+for relevant references. Agents do not run version-control commands.
 
 ### Present Suggestions
 
@@ -510,33 +509,9 @@ Exit gracefully without pressure.
 
 ### User just wants command reference
 
-If the user says they just want to see the commands or skip the tutorial:
-
-```
-## OpenSpec Quick Reference
-
-**Core workflow:**
-
- | Command                  | What it does                               |
- |--------------------------|--------------------------------------------|
- | `/opsx-propose <name>` | Create a change and generate all artifacts |
- | `/opsx-explore`        | Think through problems (no code changes)   |
- | `/opsx-apply <name>`   | Implement tasks                            |
- | `/opsx-archive <name>` | Archive when done                          |
-
-**Additional commands** (only if installed - availability depends on your profile):
-
- | Command                   | What it does                        |
- |---------------------------|-------------------------------------|
- | `/opsx-new <name>`      | Start a new change, step by step    |
- | `/opsx-continue <name>` | Continue an existing change         |
- | `/opsx-ff <name>`       | Fast-forward: all artifacts at once |
- | `/opsx-verify <name>`   | Verify implementation               |
-
-Try `/opsx-propose` to start your first change.
-```
-
-Exit gracefully.
+If the user says they just want to see the commands or skip the tutorial, show
+them the **Command Reference** table above and suggest `/opsx-propose` to start
+their first change. Exit gracefully.
 
 ---
 

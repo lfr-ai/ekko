@@ -19,13 +19,13 @@ duplication in the codebase.
 ## Recommended command patterns
 
 ```bash
-npx jscpd --reporters ai --min-lines 10 --min-tokens 80 <path>
+bunx jscpd --reporters ai --min-lines 10 --min-tokens 80 <path>
 ```
 
 For full-repo scan (can be slower):
 
 ```bash
-npx jscpd -c jscpd.json .
+bunx jscpd -c jscpd.json .
 ```
 
 ## Output expectations

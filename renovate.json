@@ -41,8 +41,7 @@
     "npm",
     "dockerfile",
     "docker-compose",
-    "github-actions",
-    "azure-pipelines"
+    "github-actions"
   ],
   "rangeStrategy": "bump",
   "fetchChangeLogs": "off",

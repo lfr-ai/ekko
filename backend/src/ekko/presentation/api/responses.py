@@ -1,13 +1,15 @@
 """Shared API response models and constants."""
 
+from __future__ import annotations
+
 from typing import Annotated, Final
 
 from fastapi import status
 from pydantic import BaseModel, ConfigDict, Field
 
-from ekko.core.types import BaseDict, JSONDict
+from ekko.core.types import BaseDict
 
-_MIME_JSON: Final[str] = "application/json"
+_MIME_JSON = "application/json"
 
 
 class ErrorResponse(BaseModel):
@@ -31,7 +33,7 @@ class ErrorResponse(BaseModel):
     ]
 
 
-JSON_OK_RESPONSE: Final[JSONDict] = {
+JSON_OK_RESPONSE: Final[BaseDict] = {
     "description": "Successful response",
     "content": {
         _MIME_JSON: {
@@ -45,7 +47,7 @@ JSON_OK_RESPONSE: Final[JSONDict] = {
     },
 }
 
-BAD_REQUEST_RESPONSE: Final[JSONDict] = {
+BAD_REQUEST_RESPONSE: Final[BaseDict] = {
     "description": "Request was malformed or invalid",
     "model": ErrorResponse,
     "content": {
@@ -60,7 +62,7 @@ BAD_REQUEST_RESPONSE: Final[JSONDict] = {
     },
 }
 
-NOT_FOUND_RESPONSE: Final[JSONDict] = {
+NOT_FOUND_RESPONSE: Final[BaseDict] = {
     "description": "Requested resource could not be found",
     "model": ErrorResponse,
     "content": {
@@ -75,7 +77,7 @@ NOT_FOUND_RESPONSE: Final[JSONDict] = {
     },
 }
 
-UNPROCESSABLE_CONTENT_RESPONSE: Final[JSONDict] = {
+UNPROCESSABLE_CONTENT_RESPONSE: Final[BaseDict] = {
     "description": (
         "Request was well-formed, but the server cannot process it due to it being "
         "semantically invalid (validation error)."
@@ -93,7 +95,7 @@ UNPROCESSABLE_CONTENT_RESPONSE: Final[JSONDict] = {
     },
 }
 
-TOO_MANY_REQUESTS_RESPONSE: Final[JSONDict] = {
+TOO_MANY_REQUESTS_RESPONSE: Final[BaseDict] = {
     "description": ("Client has sent too many requests in a given amount of time (rate limiting)."),
     "model": ErrorResponse,
     "content": {
@@ -108,7 +110,7 @@ TOO_MANY_REQUESTS_RESPONSE: Final[JSONDict] = {
     },
 }
 
-SERVICE_UNAVAILABLE_RESPONSE: Final[JSONDict] = {
+SERVICE_UNAVAILABLE_RESPONSE: Final[BaseDict] = {
     "description": "Service temporarily unavailable",
     "model": ErrorResponse,
     "content": {
@@ -123,7 +125,7 @@ SERVICE_UNAVAILABLE_RESPONSE: Final[JSONDict] = {
     },
 }
 
-INTERNAL_SERVER_ERROR_RESPONSE: Final[JSONDict] = {
+INTERNAL_SERVER_ERROR_RESPONSE: Final[BaseDict] = {
     "description": ("Unexpected server error. A problem occurred on the server while processing the request."),
     "model": ErrorResponse,
     "content": {

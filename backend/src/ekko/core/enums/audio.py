@@ -9,6 +9,8 @@ from ekko.core.enums.base import ParseableEnum
 
 @unique
 class AudioFormat(ParseableEnum):
+    """Supported audio container/codec formats."""
+
     WAV = auto()
     FLAC = auto()
     MP3 = auto()
@@ -18,12 +20,16 @@ class AudioFormat(ParseableEnum):
 
 @unique
 class AudioChannel(IntEnum):
+    """Audio channel count."""
+
     MONO = 1
     STEREO = 2
 
 
 @unique
 class SampleRate(IntEnum):
+    """Supported audio sample rates in hertz."""
+
     SR_8000 = 8000
     SR_16000 = 16000
     SR_22050 = 22050
@@ -34,6 +40,8 @@ class SampleRate(IntEnum):
 
 @unique
 class BitDepth(IntEnum):
+    """Audio sample bit depth."""
+
     BITS_8 = 8
     BITS_16 = 16
     BITS_24 = 24

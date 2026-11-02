@@ -1,42 +1,45 @@
-# Azure Baseline (Ekko)
+# Azure deployment
 
-This folder provides a minimal Infrastructure-as-Code baseline for production-oriented Azure deployment patterns.
+Ekko's Bicep deployment provisions Azure Container Apps, Azure Container
+Registry, Log Analytics/Application Insights, and Azure Cache for Redis.
 
-## Included
+## Entry points
 
-- `iac/main.bicep` — resource-group scoped baseline with Log Analytics + App Insights, tagged resources, and environment-aware observability posture
-- `iac/main.parameters.json` — sample parameter file
+- `iac/deploy.bicep` — subscription-scoped entry point; creates the resource
+  group and deploys the workload.
+- `iac/main.bicep` — resource-group-scoped workload modules.
+- `iac/parameters/dev/deploy.dev.bicepparam` and
+  `iac/parameters/prod/deploy.prod.bicepparam` — environment parameter files.
+- `iac/modules/` — individual Azure resource modules.
 
-### Key parameters
+The deployment entry point currently accepts `dev` and `prod`. Review the
+environment parameters and resulting deployment preview before provisioning.
 
-- `logAnalyticsRetentionInDays` (30-730)
-- `logAnalyticsPublicNetworkAccess` (recommend `false` in production)
-- `tags` object for consistent resource tagging
-- `iac/appservice-acr.bicep` — App Service (Linux container) + ACR baseline for CI/CD deployment
-- `iac/appservice-acr.parameters.json` — sample parameter file for App Service + ACR deployment
+## Validate and preview
 
-## Validation
+Build the subscription deployment template:
 
-- Validate Bicep before deployment:
-  - `az bicep build --file azure/iac/main.bicep`
-- Preview deployment changes before applying:
-  - `az deployment group what-if --resource-group <rg-name> --template-file azure/iac/main.bicep --parameters @azure/iac/main.parameters.json`
+```powershell
+az bicep build --file azure/iac/deploy.bicep
+```
 
-## Deployment
+Preview a development deployment before applying it:
 
-- Resource-group deployment entrypoint:
-  - `az deployment group create --resource-group <rg-name> --template-file azure/iac/main.bicep --parameters @azure/iac/main.parameters.json`
+```powershell
+az deployment sub what-if `
+  --location swedencentral `
+  --template-file azure/iac/deploy.bicep `
+  --parameters azure/iac/parameters/dev/deploy.dev.bicepparam
+```
 
-- App Service + ACR deployment entrypoint:
-  - `az deployment group create --resource-group <rg-name> --template-file azure/iac/appservice-acr.bicep --parameters @azure/iac/appservice-acr.parameters.json`
+Use the corresponding production parameter file only after reviewing the
+environment-specific resource settings and cost/security impact. Deployment is
+an operator action; see `azure/iac/` for the source of truth.
 
-After deployment, build and push your image to ACR (for example from CI), then
-set `imageTag` in the parameter file (or override parameter at deploy time).
+## Terraform mirror
 
-## Next steps
-
-- Add workload-specific resources (Container Apps/App Service/AKS) as modules
-- Configure environment-specific parameter files (`dev`, `test`, `prod`) and keep secrets in Key Vault (not in parameter JSON)
-- Wire deployment into CI/CD after review
-- Add policy/compliance checks (for example `azqr`) in CI before production rollout
-- For production: set `logAnalyticsPublicNetworkAccess=false` and increase retention according to compliance policy
+`iac/terraform/` contains an AzureRM/HCL mirror for review and validation.
+Bicep remains the deployment authority; Terraform CI performs static checks
+only and does not plan or apply resources. See the
+[Terraform guide](./iac/terraform/README.md) and
+[parity matrix](./iac/terraform/PARITY_MATRIX.md).

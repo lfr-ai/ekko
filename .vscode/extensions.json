@@ -1,98 +1,76 @@
 {
-  // ═══════════════════════════════════════════════════════════
-  // Recommended Extensions for Frontend-First Development
-  // ═══════════════════════════════════════════════════════════
-
   "recommendations": [
-    // ──────────────────────────────────────────────────────────
-    // AI-Powered Development
-    // ──────────────────────────────────────────────────────────
-    "github.copilot",
-    "github.copilot-chat",
-
-    // ──────────────────────────────────────────────────────────
-    // Python Development
-    // ──────────────────────────────────────────────────────────
-    "ms-python.python",
-    "ms-python.vscode-pylance",
-    "ms-python.debugpy",
-    "charliermarsh.ruff",
+    "anseki.vscode-color",
+    "anthropic.claude-code",
     "astral-sh.ty",
-
-    // ──────────────────────────────────────────────────────────
-    // TypeScript/JavaScript/React
-    // ──────────────────────────────────────────────────────────
     "biomejs.biome",
     "bradlc.vscode-tailwindcss",
-    "dsznajder.es7-react-js-snippets",
-    "graphql.vscode-graphql-syntax",
-
-    // ──────────────────────────────────────────────────────────
-    // Testing
-    // ──────────────────────────────────────────────────────────
-    "ms-playwright.playwright",
-    "vitest.explorer",
-    "storybookjs.storybook-vscode",
-    "codecov.codecov",
-    "upstash.context7-mcp",
-    "angdrew.openspec-vscode",
-    "ms-azuretools.vscode-azure-mcp-server",
-    "ms-azuretools.vscode-bicep",
-    "ms-azuretools.vscode-azureresourcegroups",
-    "ms-azuretools.vscode-azureappservice",
-
-    // ──────────────────────────────────────────────────────────
-    // Task Runner
-    // ──────────────────────────────────────────────────────────
-    "actboy168.task",
-
-    // ──────────────────────────────────────────────────────────
-    // API Development
-    // ──────────────────────────────────────────────────────────
-    "rangav.vscode-thunder-client",
-
-    // ──────────────────────────────────────────────────────────
-    // Database
-    // ──────────────────────────────────────────────────────────
-    "qwtel.sqlite-viewer",
-
-    // ──────────────────────────────────────────────────────────
-    // Git & GitHub
-    // ──────────────────────────────────────────────────────────
-    "github.vscode-pull-request-github",
-    "github.vscode-github-actions",
-    "eamodio.gitlens",
-
-    // ──────────────────────────────────────────────────────────
-    // Docker & Containers
-    // ──────────────────────────────────────────────────────────
-    "ms-azuretools.vscode-docker",
-    "ms-vscode-remote.remote-containers",
-
-    // ──────────────────────────────────────────────────────────
-    // Markdown & Documentation
-    // ──────────────────────────────────────────────────────────
-    "yzhang.markdown-all-in-one",
+    "charliermarsh.ruff",
+    "coderabbit.coderabbit-vscode",
+    "codezombiech.gitignore",
+    "cweijan.vscode-office",
     "davidanson.vscode-markdownlint",
-
-    // ──────────────────────────────────────────────────────────
-    // YAML, TOML & Config Files
-    // ──────────────────────────────────────────────────────────
-    "redhat.vscode-yaml",
-    "tamasfe.even-better-toml",
-
-    // ──────────────────────────────────────────────────────────
-    // Utilities
-    // ──────────────────────────────────────────────────────────
-    "usernamehw.errorlens",
-    "streetsidesoftware.code-spell-checker",
+    "docker.docker",
+    "dvirtz.parquet-viewer",
     "editorconfig.editorconfig",
+    "exiasr.hadolint",
+    "fluxlabs.gsd-2",
+    "github.copilot-chat",
+    "github.remotehub",
+    "github.vscode-github-actions",
+    "github.vscode-pull-request-github",
+    "graphql.vscode-graphql",
+    "graphql.vscode-graphql-syntax",
     "gruntfuggly.todo-tree",
-    "christian-kohler.path-intellisense",
-    "visualstudioexptteam.vscodeintellicode",
-    "visualstudioexptteam.intellicode-api-usage-examples"
+    "mikestead.dotenv",
+    "ms-azuretools.vscode-azure-github-copilot",
+    "ms-azuretools.vscode-azure-mcp-server",
+    "ms-azuretools.vscode-azurecontainerapps",
+    "ms-azuretools.vscode-azureresourcegroups",
+    "ms-azuretools.vscode-bicep",
+    "ms-azuretools.vscode-containers",
+    "ms-dotnettools.vscode-dotnet-runtime",
+    "ms-edgedevtools.vscode-edge-devtools",
+    "ms-mssql.mssql",
+    "ms-ossdata.vscode-pgsql",
+    "ms-playwright.playwright",
+    "ms-python.debugpy",
+    "ms-python.python",
+    "ms-python.vscode-python-envs",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-ssh",
+    "ms-vscode-remote.remote-ssh-edit",
+    "ms-vscode-remote.remote-wsl",
+    "ms-vscode.azure-repos",
+    "ms-vscode.azurecli",
+    "ms-vscode.powershell",
+    "ms-vscode.remote-explorer",
+    "ms-vscode.remote-repositories",
+    "ms-vscode.remote-server",
+    "ms-vscode.vscode-chat-customizations-evaluations",
+    "ms-windows-ai-studio.windows-ai-studio",
+    "natizyskunk.sftp",
+    "naumovs.color-highlight",
+    "neo4j-extensions.neo4j-for-vscode",
+    "patricklee.vsnotes",
+    "postman.postman-for-vscode",
+    "redhat.vscode-yaml",
+    "samuelcolvin.jinjahtml",
+    "shd101wyy.markdown-preview-enhanced",
+    "sonarsource.sonarlint-vscode",
+    "sqlfluff.vscode-sqlfluff",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-danish",
+    "tamasfe.even-better-toml",
+    "task.vscode-task",
+    "timonwong.shellcheck",
+    "tomoki1207.pdf",
+    "upstash.context7-mcp",
+    "vitest.explorer",
+    "vscode-icons-team.vscode-icons",
+    "waderyan.gitblame",
+    "wayou.vscode-todo-highlight"
   ],
-
   "unwantedRecommendations": [
     "ms-python.autopep8",
     "ms-python.flake8",
@@ -101,7 +79,6 @@
     "ms-pyright.pyright",
     "prettier.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "orta.vscode-jest",
-    "wayou.vscode-todo-highlight"
+    "orta.vscode-jest"
   ]
 }

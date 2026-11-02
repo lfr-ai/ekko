@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 if TYPE_CHECKING:
     from fastapi import FastAPI
 
-    from ekko.config.settings.base import BaseAppConfig
+    from ekko.config.base import BaseAppConfig
 
 _LOCAL_ORIGINS = [
     "http://localhost:3000",
@@ -26,6 +26,6 @@ def setup_cors(app: FastAPI, *, settings: BaseAppConfig) -> None:
         CORSMiddleware,
         allow_origins=_LOCAL_ORIGINS,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )

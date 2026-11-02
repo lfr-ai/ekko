@@ -1,8 +1,10 @@
 ---
-name: deep-thinking
+name: Deep Thinking
 description: Cross-cutting architectural analysis and strategic technical decisions
-agents: ['*']
+agents: ['planner', 'plan-architect', 'codebase-researcher', 'code-reviewer', 'solid-review', 'security-reviewer', 'contract-iac-lint']
 user-invocable: false
+disable-model-invocation: true
+tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Agent, mcp__gitnexus__*, mcp__context7__*, mcp__microsoft-learn__*, mcp__github__*, mcp__azure-devops__*
 ---
 
 # Deep Thinking Agent
@@ -65,26 +67,11 @@ For each option:
 5. Reversibility (can we undo it?)
 ```
 
-## Architecture Patterns
-
-**Repository Pattern**
-- Pros: Testability, database independence
-- Cons: Boilerplate, abstraction overhead
-
-**CQRS**
-- Pros: Read/write optimization, scalability
-- Cons: Complexity, eventual consistency
-
-**Event Sourcing**
-- Pros: Full audit trail, temporal queries
-- Cons: Complexity, storage overhead
-
 ## Migration Strategies
 
-When refactoring existing code:
-1. **Strangler Fig**: Gradually replace old system
-2. **Branch by Abstraction**: Add abstraction, migrate callers
-3. **Big Bang**: Replace everything at once (avoid!)
+Prefer an incremental path (Strangler Fig, Branch by Abstraction) over a Big
+Bang rewrite when replacing existing code — keep the system releasable at
+every step.
 
 ## Anti-patterns
 

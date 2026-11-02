@@ -1,8 +1,10 @@
 ---
-name: refactor
+name: Refactor
 description: Code refactoring and technical debt reduction specialist using Fowler's catalog
-agents: ['*']
+agents: ['planner', 'plan-architect', 'codebase-researcher', 'backend-implementer', 'frontend-implementer', 'code-reviewer', 'solid-review']
 user-invocable: false
+disable-model-invocation: true
+tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Agent, mcp__gitnexus__*, mcp__context7__*
 ---
 
 # Refactor Agent
@@ -76,105 +78,12 @@ under a green test suite.
 | Message Chains | `a.b().c().d()` | Hide Delegate |
 | Middle Man | Class delegates everything | Remove Middle Man |
 
-## Key Refactoring Techniques
-
-### Extract Method
-
-```python
-# Before: Long method with mixed concerns
-def process_order(self, order: Order) -> Result:
-    # validation (10 lines)
-    if not order.items:
-        raise ValueError("Order must have items")
-    if order.total <= 0:
-        raise ValueError("Total must be positive")
-    # ... more validation
-
-    # processing (15 lines)
-    for item in order.items:
-        inventory.reserve(item)
-    payment = gateway.charge(order.total)
-    # ... more processing
-
-# After: Extracted cohesive methods
-def process_order(self, order: Order) -> Result:
-    self._validate_order(order)
-    return self._execute_fulfillment(order)
-
-def _validate_order(self, order: Order) -> None:
-    if not order.items:
-        raise ValueError("Order must have items")
-    if order.total <= 0:
-        raise ValueError("Total must be positive")
-
-def _execute_fulfillment(self, order: Order) -> Result:
-    for item in order.items:
-        inventory.reserve(item)
-    return gateway.charge(order.total)
-```
-
-### Replace Primitive with Value Object
-
-```python
-# Before: Primitive obsession
-def create_user(name: str, email: str, phone: str) -> User: ...
-
-# After: Rich domain types
-@dataclass(frozen=True, kw_only=True, slots=True)
-class Email:
-    value: str
-
-    def __post_init__(self) -> None:
-        if "@" not in self.value:
-            raise ValueError(f"Invalid email: {self.value}")
-
-def create_user(name: str, email: Email, phone: PhoneNumber) -> User: ...
-```
-
-### Introduce Parameter Object
-
-```python
-# Before: Long parameter list
-def search(
-    query: str, page: int, size: int, sort_by: str, direction: str
-) -> list[Result]: ...
-
-# After: Parameter object
-@dataclass(frozen=True, kw_only=True, slots=True)
-class SearchQuery:
-    query: str
-    page: int = 1
-    size: int = 20
-    sort_by: str = "relevance"
-    direction: str = "desc"
-
-def search(query: SearchQuery) -> list[Result]: ...
-```
-
 ## Architecture-Aware Refactoring
 
-### Clean Architecture Compliance
-
-When refactoring in this project, respect layer boundaries:
-
-| Refactoring | Allowed Direction |
-|-------------|-------------------|
-| Extract Interface | Always to `core/ports/` |
-| Move Method | Inward only (infra → core is OK) |
-| Extract Class | Must stay in same or inner layer |
-| Inline Class | Never across layer boundaries |
-
-### Safe Moves
-
-- `infrastructure/` → `core/` : Extract protocol, keep adapter
-- `application/` → `core/` : Move domain logic to entities
-- `presentation/` → `application/` : Extract service method
-
-### Forbidden Moves
-
-- `core/` → `infrastructure/` : Violates dependency rule
-- `core/` → `presentation/` : Domain logic in API layer
-- `application/` → `presentation/` : Business logic in routes
+Layer boundaries and allowed import directions live in the `clean-architecture`
+skill — a refactoring must never move code against the Dependency Rule (e.g.
+`core/` → `infrastructure/`); extracting an interface always lands in
+`core/ports/`.
 
 ## Safety Checklist
 

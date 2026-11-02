@@ -17,7 +17,7 @@ Outer layers depend on inner layers through imports.
 > **Layer names below are the Python backend convention.** The frontend applies
 > the same Dependency Rule with its own layers (`domain → application →
 > infrastructure → presentation`, plus `router`/`lib`); see the
-> `frontend-structure` skill for the React/TypeScript mapping.
+> `frontend/structure` skill for the React/TypeScript mapping.
 
 ## Dependency Rule
 
@@ -87,3 +87,56 @@ The fundamental invariant: **source-code dependencies always point inward**.
 | Hardcoded DI | `service = MyService()` in route | Use dependency injection |
 | Business logic in route | Complex logic in handler | Move to `application/services/` |
 | ORM model in domain | SQLAlchemy model in `core/` | Create domain entity + mapper |
+
+## Verification
+
+Ruff and ty are layer-unaware — neither catches an outward import. `import-linter`
+deterministically enforces the Dependency Rule table above via a declarative
+`layers` contract in the repo-root `.importlinter` file (the
+`presentation | infrastructure` pipe marks them as independent siblings):
+
+```shell
+task architecture
+# equivalent to: uv run --directory src lint-imports --config ../.importlinter
+```
+
+Exit code `0` = no violations; non-zero prints each broken contract with the
+offending import chain. Also runs as the `architecture-boundaries` pre-commit
+hook. Run this after moving modules between layers or before finalizing a
+change that touches more than one layer.
+
+Import direction alone does not catch a Core port and its Infrastructure
+adapter drifting apart in *shape* — a signature or docstring edited on one
+side and forgotten on the other. `scripts/check_ports_adapters.py` closes that
+gap: it AST-parses every `Protocol` under `core/ports/**` and every class
+under `infrastructure/**` that nominally inherits one (the
+`repository_adapter.py.template` pattern), then diffs each overridden
+method's signature (parameter names/kinds/annotations, return type,
+async-ness) and docstring summary line — deliberately excluding `Raises:`,
+since an adapter legitimately raises infrastructure-specific exceptions its
+port never declares.
+
+```shell
+task ports:check
+# equivalent to:
+# uv run python .agents/skills/clean-architecture/scripts/check_ports_adapters.py
+```
+
+Also runs as the `ports-adapters-guard` pre-commit hook and as part of
+`task guard`. A port method an adapter never overrides (inherited from an
+unrelated mixin, or satisfied only structurally without nominal inheritance)
+is out of scope by design — see the script's module docstring.
+
+## Templates
+
+- [`assets/use_case.py.template`](assets/use_case.py.template) — an
+  Application-layer use case/orchestrator/pipeline: constructor-injected Core
+  ports, `__slots__`, one public `execute()` composing private step methods.
+  Domain shapes (entity/value object/event/exceptions) instead use the `ddd`
+  skill's templates; app-level wiring uses `backend-structure`'s.
+- [`assets/repository_adapter.py.template`](assets/repository_adapter.py.template)
+  — an infrastructure repository implementing a Core port, with ORM-to-record
+  mapping at the boundary. Pairs with the `ddd` skill's
+  `repository_protocol.py.template` for the port it satisfies.
+- [`assets/orm_model.py.template`](assets/orm_model.py.template) — a
+  SQLAlchemy `DeclarativeBase` model, infrastructure-only.

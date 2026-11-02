@@ -1,110 +1,61 @@
 ---
 name: tdd
-description: "Test-Driven Development Red-Green-Refactor methodology. Use when implementing features test-first, fixing bugs with regression tests, or refactoring with test safety nets."
+description: Test-Driven Development Red-Green-Refactor methodology. Use when implementing features test-first, fixing bugs with regression tests, or refactoring with test safety nets.
 ---
 
-# Test-Driven Development (TDD) Skill
+# Test-driven development
 
-Strict Red-Green-Refactor methodology for building reliable software.
+Use short Red-Green-Refactor cycles with the repository's declared test runner.
+Load `testing-conventions` for Python or `frontend/testing` for React/TypeScript;
+this shared skill defines the method, not framework syntax.
 
-## When to Use This Skill
-
-- Implementing new features with test-first approach
-- Fixing bugs with regression tests
-- Refactoring with test safety net
-- Writing contract tests for protocol interfaces
-- Achieving coverage targets per architectural layer
-
-## The Three Laws
-
-1. No production code without a failing test that requires it.
-2. No more test code than is sufficient to fail.
-3. No more production code than is sufficient to pass.
-
-## TDD Cycle
+## Cycle
 
 ```text
-RED → GREEN → REFACTOR → (repeat)
+RED → GREEN → REFACTOR → repeat
 ```
 
-Each cycle should take 1-5 minutes. If it takes longer, break into smaller steps.
+1. **Red** — add the smallest test that describes one observable behavior. Run
+     it and confirm it fails for the intended reason, not setup noise.
+2. **Green** — implement only enough production behavior to pass that test. Do
+     not add speculative abstractions, options, or unrelated cleanup.
+3. **Refactor** — improve names, duplication, and structure while the focused
+     test remains green. Run the relevant broader suite before the next slice.
 
-### RED Phase
-Write a test that:
-- Describes the desired behavior in its name
-- Uses concrete values (not vague inputs)
-- Fails for the RIGHT reason (compilation error or assertion failure)
+If a cycle cannot be completed quickly, split the behavior into a thinner
+vertical slice. Compilation/type failures may be a valid red state when adding a
+new typed interface, but the test must still express the desired behavior.
 
-```python
-@pytest.mark.unit
-def test_money_with_negative_amount_raises_validation_error() -> None:
-    """Money value object rejects negative amounts."""
-    with pytest.raises(ValueError, match="Amount cannot be negative"):
-        Money(amount=Decimal("-1.00"), currency="USD")
-```
+## Test design
 
-### GREEN Phase
-Write the MINIMAL code to pass:
-- Don't over-engineer
-- Don't add features not required by the test
-- It's OK to hard-code if only one test exists
+- Name the scenario and expected outcome; avoid implementation vocabulary.
+- Use concrete inputs and assert public outcomes, state transitions, emitted
+    events, or boundary calls—not private fields or incidental call order.
+- Arrange, act, and assert clearly. Keep one behavioral reason for failure.
+- Prefer small protocol/interface-conforming fakes. Use mocks only at boundaries
+    where interaction itself is the contract.
+- Keep tests deterministic and independent of execution order, wall clock,
+    network, developer state, and shared mutable fixtures.
+- Select the lowest-cost test level that proves the behavior; add integration or
+    E2E coverage only when a real boundary is part of the contract.
+- Property tests are for invariant-rich pure logic, not a quota.
 
-### REFACTOR Phase
-Improve structure without changing behavior:
-- Extract duplication
-- Rename for clarity
-- Simplify logic
-- ALL tests must remain green
+## Bug fixes
 
-## Test Quality Standards
+1. Reproduce the defect with a failing regression test.
+2. Confirm the failure would have caught the original defect.
+3. Apply the smallest fix and make the regression test pass.
+4. Refactor only while all affected tests remain green.
+5. Run the repository's full completion gate before handoff.
 
-### Naming
-Follow `test_{method}_{scenario}_{expected}`:
-```python
-def test_order_with_zero_quantity_raises_validation_error() -> None: ...
-def test_repository_with_unknown_id_returns_none() -> None: ...
-```
+## Guardrails
 
-### Structure (AAA)
-```python
-def test_service_processes_valid_input() -> None:
-    # Arrange
-    entity = EntityFactory()
-    service = ServiceUnderTest()
-
-    # Act
-    result = service.process(entity)
-
-    # Assert
-    assert result.status == ExpectedStatus.COMPLETED
-```
-
-### Markers (required)
-- `@pytest.mark.unit` — fast, no I/O, < 10 ms
-- `@pytest.mark.integration` — DB, API, external services
-- `@pytest.mark.property` — Hypothesis property-based tests
-
-### Fakes over Mocks
-Use factory-boy factories. No `MagicMock` on domain objects.
-
-## Coverage Targets
-
-| Layer | Minimum |
-|-------|---------|
-| Core | 90% |
-| Application | 80% |
-| Infrastructure | 60% |
-| Presentation | 70% |
-
-## Bug Fix Protocol
-
-1. Write failing regression test (RED)
-2. Fix the bug (GREEN)
-3. Commit test + fix together
-4. Never fix a bug without a test
-
-## Checklist
-
+- Never write production code first and add a test that can only pass.
+- Never weaken an assertion to encode known-bad behavior.
+- Never require a particular test factory, marker, directory, or coverage number
+    here; those are project/framework conventions and CI policy.
+- Do not perform Git operations; hand the verified test and implementation
+    changes back together.
 - [ ] Failing test written BEFORE implementation
 - [ ] Test name describes behavior, not implementation
 - [ ] `pytest.raises` uses `match=` parameter

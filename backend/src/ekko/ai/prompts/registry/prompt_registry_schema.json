@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prompt Registry",
+  "description": "Schema for prompt_registry.json — maps named version sets to specific prompt file versions.",
+  "type": "object",
+  "required": ["version_sets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version_sets": {
+      "type": "object",
+      "propertyNames": {
+        "not": { "const": "experimental" }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/version_set"
+      },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "version_set": {
+      "type": "object",
+      "required": ["prompts"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "prompts": {
+          "type": "object",
+          "required": ["summary_chunks", "summarizer_system", "conversational_system"],
+          "properties": {
+            "summary_chunks": { "type": "string", "pattern": "^v\\d+\\.\\d+$" },
+            "summarizer_system": { "type": "string", "pattern": "^v\\d+\\.\\d+$" },
+            "conversational_system": { "type": "string", "pattern": "^v\\d+\\.\\d+$" }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

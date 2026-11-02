@@ -26,6 +26,8 @@ var baseName = '${resourcePrefix}-${environment}'
 var minReplicas = environment == 'prod' ? 1 : 0
 var maxReplicas = environment == 'prod' ? 5 : 3
 var acrSku = environment == 'prod' ? 'Standard' : 'Basic'
+var redisSkuName = environment == 'prod' ? 'Standard' : 'Basic'
+var redisSkuCapacity = environment == 'prod' ? 1 : 0
 var tags = {
   workload: 'ekko'
   environment: environment
@@ -65,6 +67,19 @@ module containerEnvironment 'modules/containerEnvironment.bicep' = {
   }
 }
 
+// Shared store for rate limiting and cross-replica transcript fan-out —
+// required for correctness once the container app scales beyond one replica.
+module redisCache 'modules/redisCache.bicep' = {
+  name: 'deploy-redis'
+  params: {
+    location: location
+    baseName: baseName
+    tags: tags
+    skuName: redisSkuName
+    skuCapacity: redisSkuCapacity
+  }
+}
+
 module containerApp 'modules/containerApp.bicep' = {
   name: 'deploy-container-app'
   params: {
@@ -80,6 +95,9 @@ module containerApp 'modules/containerApp.bicep' = {
     minReplicas: minReplicas
     maxReplicas: maxReplicas
     appInsightsConnectionString: observability.outputs.connectionString
+    redisName: redisCache.outputs.redisName
+    redisHostName: redisCache.outputs.redisHostName
+    redisSslPort: redisCache.outputs.redisSslPort
   }
 }
 
@@ -89,3 +107,4 @@ output containerAppsEnvironmentId string = containerEnvironment.outputs.environm
 output containerAppName string = containerApp.outputs.containerAppName
 output containerAppFqdn string = containerApp.outputs.containerAppFqdn
 output acrLoginServer string = registry.outputs.acrLoginServer
+output redisHostName string = redisCache.outputs.redisHostName

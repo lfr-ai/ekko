@@ -28,7 +28,6 @@ All errors return:
 
 OPENAPI_CONTACT: Final[dict[str, str]] = {
     "name": "Ekko Development Team",
-    "url": "https://github.com/ap-pension/ekko",
     "email": "lfr@tik-ai.dk",
 }
 
@@ -57,7 +56,7 @@ OPENAPI_TAGS: Final[list[dict[str, str]]] = [
     },
     {
         "name": "stream",
-        "description": "Real-time audio streaming control via GraphQL mutations",
+        "description": "Real-time audio streaming control via REST",
     },
     {
         "name": "chat",
@@ -65,19 +64,12 @@ OPENAPI_TAGS: Final[list[dict[str, str]]] = [
     },
     {
         "name": "graphql",
-        "description": "GraphQL API with queries, mutations, and subscriptions",
+        "description": "GraphQL API exposing a read-only prompt catalog query",
     },
 ]
 
-# External documentation
-OPENAPI_EXTERNAL_DOCS: Final[dict[str, str]] = {
-    "description": "Project Documentation",
-    "url": "https://github.com/ap-pension/ekko/blob/main/README.md",
-}
-
-# Schema customization
 # Response examples
-OPENAPI_RESPONSES: dict[int | str, dict[str, object]] = {
+OPENAPI_RESPONSES: Final[dict[int | str, dict[str, object]]] = {
     status.HTTP_400_BAD_REQUEST: {
         "description": "Bad Request - Invalid input parameters",
         "content": {

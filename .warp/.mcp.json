@@ -1,0 +1,52 @@
+{
+    "mcpServers": {
+        "context7": {
+            "url": "https://mcp.context7.com/mcp"
+        },
+        "gitnexus": {
+            "command": "gitnexus",
+            "args": [
+                "mcp"
+            ],
+            "working_directory": "."
+        },
+        "microsoft-learn": {
+            "url": "https://learn.microsoft.com/api/mcp"
+        },
+        "chrome-devtools": {
+            "command": "bunx",
+            "args": [
+                "chrome-devtools-mcp@1.9.0",
+                "--isolated",
+                "--headless",
+                "--no-usage-statistics",
+                "--no-performance-crux"
+            ]
+        },
+        "github": {
+            "url": "https://api.githubcopilot.com/mcp/"
+        },
+        "playwright": {
+            "command": "bunx",
+            "args": [
+                "@playwright/mcp@0.0.80",
+                "--isolated",
+                "--headless"
+            ]
+        },
+        "shadcn": {
+            "command": "bunx",
+            "args": [
+                "shadcn@4.21.0",
+                "mcp"
+            ],
+            "working_directory": "."
+        },
+        "postman": {
+            "url": "https://mcp.postman.com/minimal"
+        },
+        "storybook": {
+            "url": "http://localhost:6006/mcp"
+        }
+    }
+}

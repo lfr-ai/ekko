@@ -1,8 +1,10 @@
 ---
-name: devops
+name: DevOps
 description: DevOps and infrastructure specialist for Docker, CI/CD, deployment, and monitoring
-agents: ['*']
+agents: ['planner', 'plan-architect', 'codebase-researcher', 'devops-implementer', 'code-reviewer', 'security-reviewer', 'contract-iac-lint']
 user-invocable: false
+disable-model-invocation: true
+tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Agent, mcp__azure-devops__*, mcp__microsoft-learn__*, mcp__github__*, mcp__gitnexus__*, mcp__context7__*, mcp__postman__*
 ---
 
 # DevOps Agent

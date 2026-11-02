@@ -1,57 +1,54 @@
 ---
 paths:
-  - "**/core/**/*.py"
+  - "src/**/core/**/*.py"
 ---
 
-# Domain-Driven Design Rules
+# Domain-Driven Design Instructions
 
-Apply these tactical DDD rules to the Core layer.
+Apply DDD tactical patterns to all code in the core layer. Templates, worked
+examples, and the port/adapter enforcement script live in the `ddd` skill
+(`.agents/skills/ddd/SKILL.md`) — pull it up for deep patterns.
 
-## Aggregates and Entities
+## Rules
 
-- Use `@dataclass(frozen=True, kw_only=True, slots=True)` for immutable domain objects.
-- Enforce invariants in `__post_init__`; construction must always produce a valid object.
-- Return new instances for state transitions.
-- Reference other aggregates by identifier, not object graph.
-
-## Value Objects
-
-- Use validated scalar subclasses for scalar boundary invariants and frozen,
-  keyword-only dataclasses for compound values.
-- Validate every invariant at construction.
-- Keep value objects identity-free with structural equality.
-- Place compound domain values in `core/value_objects/` and shared scalar types
-  in `core/types.py` when they cross multiple Core contracts.
-
-## Domain Events
-
-- Name events in past tense.
-- Use `@dataclass(frozen=True, kw_only=True, slots=True)`.
-- Include `occurred_at: datetime` and serializable fields only.
-- Place events in `core/events/`.
-
-## Repository and Client Ports
-
-- Define stdlib `Protocol` contracts in `core/ports/`.
-- Use domain language and keyword-only parameters.
-- Return domain objects or transport-neutral port records, never ORM models.
-- Infrastructure adapters implement these inward-facing contracts.
-
-## Framework Independence
-
-Core uses Python stdlib and other `myapp.core.*` modules only.
-
-**Narrow exception — value-object serialization protocols:** scalar/value objects
-may implement Pydantic `__get_pydantic_core_schema__` and
-`__get_pydantic_json_schema__` hooks. Keep those imports inside Core scalar/value-
-object modules and limit them to schema hook types. Core ports and domain behavior
-MUST remain framework-independent and MUST NOT inherit from or bind generics to
-`pydantic.BaseModel`.
+- Aggregates and value objects: `@dataclass(frozen=True, kw_only=True, slots=True)`;
+  invariants enforced in `__post_init__`; mutations return new instances.
+  One repository per aggregate root; aggregates reference each other by ID only.
+- Domain events: named in past tense (`OrderPlaced`), only primitive/serializable
+  fields, always include `occurred_at: datetime`, placed in `core/events/`.
+- Repository protocols live in `core/ports/`, use domain language, return
+  domain objects (never ORM models), keyword-only parameters.
+- Place compound value objects in `core/value_objects/`; shared scalar types
+  that cross multiple Core contracts go in `core/types.py`.
+- Keep the dataclass-generated `__repr__` by default. Mark sensitive or large
+  payload fields with `field(repr=False)`; scalar national identifiers require
+  an explicit masked, non-reconstructible `__repr__`.
 
 ## Ubiquitous Language
 
-- Prefer domain terms over persistence/framework vocabulary.
-- Do not expose ORM rows/models from Core.
-- `*Record` names are reserved for immutable, transport-neutral port snapshots;
-  they are not ORM records.
-- Prefer command/query/result over request/response inside domain behavior.
+Use domain terms consistently. Forbidden in `core/`:
+
+- "model" → use entity, aggregate, value object
+- "row"/"record" → use domain entity
+- "request"/"response" → use command, query, DTO
+- "data"/"payload" → use domain-specific term
+
+`*Record` names are reserved for immutable, transport-neutral port snapshots —
+they are not ORM records.
+
+## Framework Independence
+
+`core/` must have **ZERO imports** from application frameworks (FastAPI, Django,
+Flask) or infrastructure libraries (SQLAlchemy, httpx, boto3).
+
+**Allowed exception — serialization protocols**: Value objects MAY implement
+Pydantic's `__get_pydantic_core_schema__` / `__get_pydantic_json_schema__`
+dunder methods. These are **serialization protocol contracts** — analogous to
+`__repr__`, `__format__`, or `__json__` — that declare how to serialize the type
+at system boundaries without coupling domain logic to the framework.
+
+Keep this exception inside Core scalar/value-object modules and limit imports to
+schema hook types. Core ports MUST NOT inherit from or bind generics to
+`pydantic.BaseModel`.
+
+Use stdlib `Protocol` contracts in `core/ports/` for all other abstraction needs.

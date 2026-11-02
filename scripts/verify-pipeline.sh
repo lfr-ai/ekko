@@ -62,7 +62,7 @@ step "Formatting checks"
 ok "Formatting/lint checks completed"
 
 step "Type checks"
-( cd backend && uv run ty check src/ekko )
+( cd backend && uv run python -m ty check src/ekko tests ../tests ../tools ../scripts ../registry alembic )
 ( cd frontend && bun run typecheck )
 ok "Type checks completed"
 
@@ -96,7 +96,7 @@ if [[ "$FULL_MODE" == true ]]; then
   ok "Bandit scan completed"
 
   step "Security: pip-audit"
-  ( cd backend && uv run python -m pip_audit --fix-dry-run || true )
+  uv run --project backend python scripts/security/dependency_audit.py
   ok "pip-audit scan completed"
 
   step "Security: detect-secrets"
@@ -108,19 +108,8 @@ if [[ "$FULL_MODE" == true ]]; then
   ok "Integration tests completed"
 
   step "Architecture: Clean Architecture boundaries"
-  if command -v rg >/dev/null 2>&1; then
-    if rg "from\s+ekko\.(application|infrastructure|presentation)" backend/src/ekko/core -n; then
-      echo -e "${YELLOW}[error]${NC} Found outward imports from core layer."
-      exit 1
-    fi
-    if rg "from\s+ekko\.infrastructure" backend/src/ekko/application -n; then
-      echo -e "${YELLOW}[error]${NC} Found direct infrastructure imports in application layer."
-      exit 1
-    fi
-    ok "Clean Architecture import boundaries verified"
-  else
-    warn "ripgrep not installed; skipping architecture boundary check"
-  fi
+  uv run --project backend python tools/security/check_architecture_boundaries.py
+  ok "Clean Architecture import boundaries verified"
 fi
 
 # ============================================================================

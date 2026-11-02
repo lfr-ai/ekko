@@ -1,6 +1,6 @@
 """PII anonymization module for Ekko.
 
-Scrubs personally identifiable information before sending data to LLM/HMAS.
+Scrubs personally identifiable information before sending data to LLM services.
 Supports Danish PII patterns (CPR numbers, phone numbers) plus common patterns.
 """
 

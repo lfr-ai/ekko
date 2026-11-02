@@ -1,0 +1,34 @@
+# <project-name>
+
+> <one-line description of what this project is and does>
+
+This is the agent-facing entry point for the repository — the LLM analogue to a
+human `docs/` index, following the llms.txt convention (https://llmstxt.org).
+Agent operating policy is canonical in `AGENTS.md`; project-specific facts live in
+`PROJECT.md`; durable, synthesized codebase knowledge lives in
+`.agents/knowledge-base/`. Read those before changing code, and verify claims
+against the code (GitNexus `gitnexus_*` tools) rather than folder names.
+
+## Policy and project facts
+
+- [AGENTS.md](AGENTS.md): Canonical, cross-runtime agent operating policy — hard rules, execution workflow, and agent profiles. Start here.
+- [PROJECT.md](PROJECT.md): Project-specific facts — toolchain commands, architecture layers, ubiquitous language, CI, and deployment.
+- [memories/README.md](memories/README.md): Shared cross-session facts, decisions, lessons, and unfinished agent handoffs.
+- [CLAUDE.md](CLAUDE.md): Claude Code entry point; imports AGENTS.md and adds Claude-specific notes.
+- [.github/copilot-instructions.md](.github/copilot-instructions.md): VS Code / Copilot discovery layer over AGENTS.md.
+
+## Codebase knowledge base
+
+- [.agents/knowledge-base/README.md](.agents/knowledge-base/README.md): Index of durable, agent-facing codebase knowledge and its authoritative sources.
+
+## Specs and conventions
+
+- [openspec/specs/](openspec/specs/): Living specification of behavior (capabilities and Given-When-Then scenarios); validate with `openspec validate --all`.
+- [openspec/changes/](openspec/changes/): In-flight change proposals with design notes and delta specs.
+- [.github/instructions/](.github/instructions/): Path-scoped coding conventions, auto-loaded by glob and paired with `.claude/rules/`.
+
+## Optional
+
+- [README.md](README.md): Human-facing project overview and setup.
+- [docs/](docs/): Human-facing documentation — environment templates, database migrations, and setup.
+- [CHANGELOG.md](CHANGELOG.md): Release history.

@@ -1,42 +1,41 @@
 ---
 name: litellm
-description: 'Use LiteLLM as the unified client behind the core ChatPort — provider routing, retries/fallbacks, structured output, streaming, and cost/token tracking. Use when adding or changing an LLM client, provider deployment, or completion call.'
+description: 'Use LiteLLM as the unified client behind a Core chat-completion port — provider routing, retries/fallbacks, structured output, streaming, and cost/token tracking. Use when adding or changing an LLM client, provider deployment, or completion call.'
 ---
 
 # LiteLLM Skill
 
 LiteLLM gives one call shape (`litellm.acompletion`) across OpenAI, Azure
 OpenAI, Anthropic, and other providers — the reason to reach for it instead of
-a provider SDK directly is provider-swap without touching call sites. This
-This repo's adapter lives at `infrastructure/clients/chat.py`, implementing
-the `core/ports/` `ChatPort`.
+a provider SDK directly is provider-swap without touching call sites.
 
 ## Port boundary
 
-Define the capability as a core port (`ChatPort`, a `Protocol`); the
+Define the capability as a Core port (`ChatClientPort`, a `Protocol`); the
 Infrastructure adapter is the only place that imports `litellm`. Never let a
 `litellm` type (its message dict shape, its response object, its exception
-classes) cross into core or application — translate to/from domain types at
+classes) cross into Core or Application — translate to/from domain types at
 the adapter boundary, matching the `clean-architecture` skill's ports
 convention.
 
 ```python
-# core/ports/chat.py — core, stdlib-only
-class ChatPort(Protocol):
-    async def achat(self, *, messages: Sequence[ChatMessage]) -> ChatCompletion: ...
+# core/ports/clients/chat.py — Core, stdlib-only
+class ChatClientPort(Protocol):
+    async def complete(self, *, messages: Sequence[ChatMessage]) -> ChatCompletion: ...
+
 
 # infrastructure/clients/chat.py — the only module that imports litellm
-class ChatClient(ChatPort):
-    """Chat client implementing ChatPort via LiteLLM."""
+class ChatClient(ChatClientPort):
+    """Chat client implementing ChatClientPort via LiteLLM."""
 ```
 
 ## Provider and deployment naming
 
-Use a decoupling `type` alias (see the `python-conventions` skill's Hard Rule
-16 guidance, e.g. `ModelDeploymentName`) for the outer-layer provider/deployment
-string (e.g. `"azure/gpt-4o"`) instead of a bare `str` at every call site — it
-documents intent without adding a validated value object for a value core
-never branches on.
+Use the `ModelDeploymentName` decoupling `type` alias (see the
+`python-conventions` skill's Hard Rule 16 guidance) for the outer-layer
+provider/deployment string (e.g. `"azure/gpt-4o"`) instead of a bare `str` at
+every call site — it documents intent without adding a validated value object
+for a value Core never branches on.
 
 ## Retries, timeouts, and fallbacks
 
@@ -46,15 +45,15 @@ never branches on.
   back across multiple deployments (e.g. two Azure regions of the same
   model) — it already implements cooldown-aware fallback and load balancing.
 - Catch LiteLLM's typed exceptions (`litellm.exceptions.*`) at the adapter
-  boundary only, and re-raise as a core-defined exception the application
+  boundary only, and re-raise as a Core-defined exception the Application
   layer can depend on without importing `litellm`.
 
 ## Structured output
 
 Prefer the provider's native structured-output/JSON-schema mode
 (`response_format`) over prompt-engineered JSON — validate the parsed result
-against a Pydantic model in the adapter before it crosses back into core, and
-raise a core-defined validation error on mismatch rather than passing a
+against a Pydantic model in the adapter before it crosses back into Core, and
+raise a Core-defined validation error on mismatch rather than passing a
 partially-validated dict inward.
 
 ## Cost and token tracking
@@ -63,9 +62,9 @@ partially-validated dict inward.
   tokens client-side — it reflects what the provider actually billed.
 - For cross-provider cost estimates use `litellm.completion_cost(response)`
   rather than hand-maintained per-provider price tables that drift stale.
-- Record token/cost figures through a metrics port boundary (see the
+- Record token/cost figures through the `MetricsPort` boundary (see the
   `observability-stack` skill) — never a raw `prometheus_client` call from
-  the adapter that already implements `ChatPort`.
+  the adapter that already implements `ChatClientPort`.
 
 ## Noise control
 
@@ -76,8 +75,8 @@ provider-internal debug lines on every call.
 
 ## Testing
 
-- Unit/property tests mock `ChatPort` at the application boundary — never
-  call a real provider from a fast test tier.
+- Unit/property tests mock `ChatClientPort` at the Application boundary —
+  never call a real provider from a fast test tier.
 - An integration test that must exercise the real adapter records a fixture
   response once and replays it (or hits a local/sandboxed provider), instead
   of making a live network call on every run — matches the
@@ -85,10 +84,10 @@ provider-internal debug lines on every call.
 
 ## Observability
 
-Wrap a completion call in a span when it is not already covered by an
+Wrap a completion call in an OTel span when it is not already covered by an
 HTTP-client auto-instrumentor (see the `observability-stack` skill); record
-provider, deployment name, and latency as span/log attributes — never the
-prompt or completion content itself (data-boundary concern, not just size).
+provider, deployment name, and latency as span attributes — never the prompt
+or completion content itself (data-boundary concern, not just size).
 
 ## References
 

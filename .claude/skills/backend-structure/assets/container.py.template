@@ -1,0 +1,47 @@
+"""DI container template — copy into composition/container.py.
+
+One frozen dataclass holding config plus one `@cached_property` per port.
+Every dependency is built through `Adapter.from_config(self.config)` (see the
+`configuration` skill) so the container never reads the environment directly.
+Ports are typed as `Protocol` (see the `ddd` skill's repository_protocol
+template) so infrastructure adapters stay swappable without touching callers.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from functools import cached_property
+from typing import final
+
+# Replace with the project's assembled configuration type (`configuration` skill).
+from myapp.configs.base import AppConfig
+
+# Replace with real ports/adapters; one pair per dependency the container owns.
+from myapp.core.ports.replace_me import ReplaceMePort
+from myapp.infrastructure.clients.replace_me import ReplaceMeClient
+
+
+@final
+@dataclass(frozen=True, kw_only=True)
+class Container:
+    """Application container with lazily cached dependencies.
+
+    Attributes:
+        config (AppConfig): Assembled application configuration.
+    """
+
+    config: AppConfig
+
+    @cached_property
+    def replace_me(self) -> ReplaceMePort:
+        """Shared adapter built once and reused across the process lifetime."""
+        return ReplaceMeClient.from_config(self.config)
+
+    async def shutdown(self) -> None:
+        """Dispose owned async resources (pools, sessions, clients) on shutdown.
+
+        Only close resources this container actually created; never reach
+        into a dependency's private internals to guess what needs closing.
+        """
+        # Example: await self.replace_me.aclose()
+        return

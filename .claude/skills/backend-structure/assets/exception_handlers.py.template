@@ -1,0 +1,164 @@
+"""FastAPI exception-handler wiring template — copy into
+presentation/api/exception_handlers.py, call `register_exception_handlers(app)`
+from the app factory/lifespan.
+
+Maps every raised exception to ONE canonical JSON error envelope
+(`{"detail": "..."}`), so presentation never leaks a raw traceback or an
+inconsistent shape. Server faults (5xx) log at ERROR with a stack trace;
+client faults (4xx) log at WARNING without one, so alerting stays focused on
+genuine server-side failures. Pair this with the domain exception hierarchy in
+the `ddd` skill's `assets/domain_exceptions.py.template` and the response
+contract in the `api-contracts` skill's `assets/error_responses.py.template`.
+
+Never register a handler for the whole stdlib `LookupError`/`KeyError`/
+`IndexError` family “ to catch every not-found case at once ” — that also
+swallows an accidental lookup bug elsewhere in the codebase and turns it into
+a false client-facing 404 instead of a loud, alertable 500. Register one
+handler per NAMED domain not-found type instead (stacking `@app.
+exception_handler(...)` on one function is fine when they share a status code
+and detail, as below).
+"""
+
+from __future__ import annotations
+
+import logging
+
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import JSONResponse
+
+from replace_me.core.exceptions import DomainError, ReplaceMeNotFoundError
+
+# Port-level exceptions (see `ddd`'s `domain_exceptions.py.template`): a
+# `*ClientPort` failure (e.g. an LLM/OCR call returning nothing usable) maps
+# to 502 (the fault is upstream, not this request); a `*RepositoryPort`
+# outage maps to 503 (the fault is this app's own dependency, temporarily).
+# Both stay GLOBAL in `STANDARD_ERROR_RESPONSES` when every route can reach
+# persistence/an external client — narrow to per-route `responses=` if only
+# some routes can. Give EACH client port its OWN distinctly-named exception
+# (`ReplaceMeUnusableResultError` below stands in for ONE port; a second,
+# unrelated client port needs its own named type — never reuse this one
+# across ports) and register one handler per type.
+from replace_me.core.ports.clients.exceptions import ReplaceMeUnusableResultError
+from replace_me.core.ports.repositories.exceptions import PersistenceUnavailableError
+from replace_me.presentation.api.enums import StandardErrorDetail
+
+_logger = logging.getLogger(__name__)
+
+
+def _error_response(
+    request: Request, status_code: int, detail: str, exc: Exception
+) -> JSONResponse:
+    """Build the canonical JSON error response and log the failure.
+
+    Args:
+        request (Request): Incoming HTTP request.
+        status_code (int): HTTP status code to respond with.
+        detail (str): Human-readable error detail returned to the client.
+        exc (Exception): Original exception, used for server-side logging.
+
+    Returns:
+        JSONResponse: Canonical `{"detail": ...}` error response.
+    """
+    log_context = {"path": request.url.path, "status_code": status_code}
+    if status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
+        _logger.error("request_failed", exc_info=exc, extra=log_context)
+    else:
+        log_context["error"] = f"{type(exc).__name__}: {exc}"
+        _logger.warning("request_failed", extra=log_context)
+    return JSONResponse(status_code=status_code, content={"detail": detail})
+
+
+def _register_validation_handlers(app: FastAPI) -> None:
+    """Register handlers for request/response schema-validation failures."""
+
+    @app.exception_handler(ValidationError)
+    @app.exception_handler(RequestValidationError)
+    async def validation_error_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        """Handle Pydantic/request validation errors."""
+        return _error_response(
+            request,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            StandardErrorDetail.VALIDATION,
+            exc,
+        )
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(
+        request: Request, exc: StarletteHTTPException
+    ) -> JSONResponse:
+        """Handle HTTP exceptions raised explicitly by route handlers or
+        middleware (e.g. a body-size-limit 413)."""
+        return _error_response(request, exc.status_code, str(exc.detail), exc)
+
+
+def _register_domain_handlers(app: FastAPI) -> None:
+    """Register handlers for domain, port, and stdlib-typed failures."""
+
+    @app.exception_handler(ReplaceMeNotFoundError)
+    # Stack one @app.exception_handler(...) line per named not-found type here.
+    async def not_found_handler(request: Request, exc: DomainError) -> JSONResponse:
+        """Handle domain resource-lookup failures.
+
+        Deliberately scoped to named domain types, never the stdlib
+        `LookupError` family — see this file's module docstring.
+        """
+        return _error_response(
+            request, status.HTTP_404_NOT_FOUND, StandardErrorDetail.NOT_FOUND, exc
+        )
+
+    @app.exception_handler(ValueError)
+    async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse:
+        """Handle domain invalid-value errors and bare value errors."""
+        return _error_response(
+            request,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            StandardErrorDetail.VALIDATION,
+            exc,
+        )
+
+    @app.exception_handler(PersistenceUnavailableError)
+    async def database_unavailable_handler(
+        request: Request, exc: PersistenceUnavailableError
+    ) -> JSONResponse:
+        """Handle persistence-backend connectivity failures."""
+        return _error_response(
+            request,
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            StandardErrorDetail.DB_UNAVAILABLE,
+            exc,
+        )
+
+    @app.exception_handler(ReplaceMeUnusableResultError)
+    async def unusable_result_handler(
+        request: Request, exc: ReplaceMeUnusableResultError
+    ) -> JSONResponse:
+        """Handle an unusable result from this client port."""
+        return _error_response(
+            request,
+            status.HTTP_502_BAD_GATEWAY,
+            StandardErrorDetail.EXTERNAL_SERVICE_FAILURE,
+            exc,
+        )
+
+    @app.exception_handler(Exception)
+    async def generic_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        """Handle any uncaught exception as an internal server error."""
+        return _error_response(
+            request,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            StandardErrorDetail.INTERNAL_ERROR,
+            exc,
+        )
+
+
+def register_exception_handlers(app: FastAPI) -> None:
+    """Register exception handlers that map errors to the canonical envelope."""
+    _register_validation_handlers(app)
+    _register_domain_handlers(app)

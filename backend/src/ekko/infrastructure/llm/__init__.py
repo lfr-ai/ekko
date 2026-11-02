@@ -1,1 +1,0 @@
-"""LLM chat adapter infrastructure."""

@@ -1,0 +1,15 @@
+# This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
+# See https://redocly.com/docs/cli/ for more information.
+#
+# Only genuinely accepted findings are listed here — everything else in
+# redocly.yaml's `rules:` block is already downgraded to `warn` with an inline
+# rationale and does not need a separate ignore entry.
+docs/api/openapi.json:
+  struct:
+    # FastAPI's native `fastapi.sse.EventSourceResponse` emits `itemSchema`
+    # alongside `schema` for `text/event-stream` responses to describe the
+    # per-event payload shape. This is FastAPI's own SSE convention, not a
+    # generation bug; Redocly's built-in `struct` rule does not yet recognize
+    # it. See ekko/presentation/api/routes/transcript.py.
+    - >-
+      #/paths/~1transcripts~1stream/get/responses/200/content/text~1event-stream/itemSchema

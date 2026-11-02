@@ -1,343 +1,82 @@
 # Contributing
 
-Thank you for contributing! Please read `README.md` and follow the coding conventions in `.github/copilot-instructions.md`.
-
 ## Quick Reference
 
-1. Fork the repository
-2. Create a feature branch (`feature/your-feature`, `fix/your-fix`, `chore/your-chore`)
-3. Install dependencies: `task install`
-4. Make your changes following project conventions
-5. Run pre-push validation: `task verify`
-6. Commit using Conventional Commits: `cz commit`
-7. Push and submit a pull request
+1. Fork and create a branch (`feature/...`, `fix/...`, `chore/...`)
+2. Install: `task install`
+3. Develop following project conventions
+4. Validate: `task verify`
+5. Commit: `cz commit` (Conventional Commits enforced)
+6. Push and open a pull request
 
-## Development Setup
-
-### Prerequisites
-
-- Python 3.12+
-- Node.js 20+
-- [uv](https://astral.sh/uv) (Python package manager)
-- [Bun](https://bun.sh) (Frontend package manager)
-- [Task](https://taskfile.dev) (Task runner)
-
-### Installation
+## Setup
 
 ```bash
-# Install all dependencies
 task install
-
-# Setup environment
-cp .env.example .env.local
-# Edit .env.local with your API keys
-
-# Initialize database
+cp .env.example .env.local  # Add your API keys
 task db:migrate
 ```
 
-> **Note**: This repository is standardized on `uv` for Python dependency management. PDM is not part of the supported contributor workflow.
+**Prerequisites**: Python 3.14, Node.js 20+, [uv](https://astral.sh/uv), [Bun](https://bun.sh), [Task](https://taskfile.dev)
 
-## OpenSpec Workflow (Required for Non-Trivial Changes)
-
-For feature work, architectural changes, or multi-file refactors, use OpenSpec
-artifacts before implementation.
-
-### Initialize / Refresh OpenSpec Tooling
+## Validation
 
 ```bash
-task tools:openspec:init
-task tools:openspec:update
+task verify     # Pre-push: lint + typecheck + tests + xenon + hooks
+task ci:local   # Full CI mirror (critical changes only)
 ```
 
-### Recommended Workflow
+Pre-commit hooks install automatically via `task install`. They enforce formatting, linting, type checking, security scanning, and architecture boundaries.
 
-```text
-/opsx:explore (optional)
-/opsx:propose <change>
-/opsx:apply <change>
-/opsx:sync <change>   (optional, archive will prompt)
-/opsx:archive <change>
-```
-
-For expanded workflows (if enabled):
-
-```text
-/opsx:new <change>
-/opsx:continue or /opsx:ff
-/opsx:apply <change>
-/opsx:verify <change>
-/opsx:archive <change>
-```
-
-### Validate OpenSpec Artifacts
-
-```bash
-task tools:openspec:validate
-```
-
-This performs strict validation of all specs/changes and validates the
-`ekko-production` schema.
-
-## Pre-Commit Hooks
-
-Pre-commit hooks provide fast local feedback before you commit changes. They are automatically installed when you run `task install`.
-
-### Manual Installation
-
-If hooks are not yet installed:
-
-```bash
-pre-commit install
-```
-
-### What Gets Checked
-
-The project enforces several quality gates at commit time:
-
-**Pre-Commit Stage** (runs on `git commit`):
-
-- Code formatting (ruff, biome)
-- Linting (ruff, yamllint, markdownlint)
-- Type checking (ty)
-- Security scanning (detect-secrets, bandit)
-- **Architecture boundary validation** - Ensures Clean Architecture dependencies flow inward
-- Conventional commit message format
-
-**Pre-Push Stage** (runs on `git push`):
-
-- **Magic string detection** - Flags hardcoded strings that should be constants
-- Unit test suite
-- Integration checks
-
-### Running Hooks Manually
-
-```bash
-# Run all hooks on all files
-pre-commit run --all-files
-
-# Run specific hook
-pre-commit run check-architecture-boundaries --all-files
-pre-commit run check-magic-strings --all-files --hook-stage pre-push
-
-# Run hooks on staged files only
-pre-commit run
-```
-
-### Hook Descriptions
-
-- **check-architecture-boundaries**: Validates Clean Architecture import boundaries. Blocks commits with violations
-  like `core/` importing from `presentation/` or `application/` importing from `infrastructure/`. Fast (< 3 seconds).
-
-- **check-magic-strings**: Detects hardcoded strings that should be extracted to constants or registry.
-  Runs at pre-push stage to allow work-in-progress commits. Provides verbose output with suggested fixes.
-
-### Handling Violations
-
-When a hook fails:
-
-1. Read the error message - it shows the file, line, and reason
-2. Fix the violation before committing
-3. Run the hook again to verify the fix
-4. Commit your changes
-
-If you need to temporarily skip hooks (emergencies only):
-
-```bash
-git commit --no-verify
-```
-
-**Warning**: Skipping hooks may cause CI failures. Use only when you understand the risk.
-
-## Pre-Push Validation
-
-**Always run `task verify` before pushing** to catch CI failures early.
-
-### Quick Check (< 5 min)
-
-```bash
-task verify
-```
-
-Runs essential checks:
-
-- Linting (ruff, biome, yaml)
-- Type checking (ty, tsc)
-- Unit tests
-- Cyclomatic complexity (xenon)
-- Pre-commit hooks
-
-### Full CI Mirror (< 15 min)
-
-For critical changes (architecture, security, infrastructure), run the full pipeline locally:
-
-```bash
-task ci:local
-```
-
-Mirrors the complete GitHub Actions pipeline including:
-
-- All linting and formatting checks
-- Security scans (bandit, pip-audit, detect-secrets)
-- Unit + integration tests
-- Architecture boundary validation
-- Pre-commit hooks
-
-### Individual Checks
-
-```bash
-# Linting
-task lint              # All linters
-task lint:python       # Python (ruff)
-task lint:frontend     # Frontend (biome)
-
-# Type checking
-task typecheck         # Python + Frontend
-
-# Testing
-task test              # Default tests
-task test:unit         # Unit tests only
-task test:integration  # Integration tests
-
-# Security
-task security:audit    # Dependency audit
-task security:scan     # All security scans (bandit + audit + secrets)
-task lint:secrets      # Secret scanning
-
-# Code quality
-task xenon             # Complexity check
-```
-
-### Windows Compatibility
-
-The project uses the `uv run python -m <tool>` pattern for cross-platform CLI invocation, avoiding Windows path resolution issues with script entry points.
-
-## Coding Conventions
+## Conventions
 
 ### Python
 
-- Python 3.12+ features
-- Full type hints on all functions/methods
-- Google-style docstrings with `"""` triple-double-quote delimiters (imperative mood for functions, noun phrase for classes)
-- Keyword-only args with `*` separator for 3+ params
-- `frozen=True, slots=True` on all dataclasses
-- No magic numbers; use named constants
-- Structured logging with structlog (never `print()`)
-- Exception chaining: `raise NewError(...) from original_error`
-
-See `.github/skills/python-conventions/SKILL.md` for complete guidelines.
+- Python 3.14, full type hints, Google-style docstrings
+- `@dataclass(frozen=True, slots=True, kw_only=True)` for value types
+- Named constants (no magic numbers/strings)
+- Structured logging via `logging.getLogger(__name__)` (never `print()`)
+- Exception chaining: `raise X(...) from err`
 
 ### Architecture
 
-Clean Architecture with strict dependency rules:
-
-- `core/` - Pure domain logic (no framework dependencies)
-- `application/` - Use case orchestration
-- `infrastructure/` - External integrations (DB, APIs)
-- `presentation/` - API routes, GraphQL, middleware
-
-**Dependency Rule**: Dependencies always point inward:
-`presentation/infrastructure → application → core`
-
-See `.github/skills/clean-architecture/SKILL.md` for boundaries.
+Clean Architecture — dependencies flow inward: `presentation/infrastructure → application → core`.
+See [docs/architecture.md](docs/architecture.md) for the full layer breakdown.
 
 ### Testing
 
-- Unit tests: `tests/unit/` (fast, isolated, no I/O)
-- Integration tests: `tests/integration/` (DB, API, external services)
-- Property tests: `tests/property/` (Hypothesis)
-- E2E tests: `tests/e2e/` (Playwright)
-- Use factory-boy for test data generation
-- Coverage target: ≥80% on core + application layers
-
-See `.github/skills/testing-conventions/SKILL.md` for patterns.
+- `tests/unit/` (fast, isolated) · `tests/integration/` (DB, API) · `tests/property/` (Hypothesis)
+- factory-boy for test data · Coverage target ≥80%
 
 ### Frontend
 
-- React 19 with TypeScript
-- Functional components only
-- Tailwind CSS v4
-- shadcn/ui for UI components
-- Strict TypeScript (no `any`)
+React 19 + TypeScript strict + Tailwind v4 + shadcn/ui · No `any`
 
-## Commit Messages
+## Commits & Branches
 
-This repository enforces Conventional Commits. Use Commitizen for validated commit messages:
+Format: `type(scope): subject` — Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`
 
-```bash
-# Create a commit using Commitizen
-cz commit
-# or quick alias
-cz c
-```
+Branches: `feature/...`, `fix/...`, `chore/...`, `docs/...`
 
-Format: `type(scope): subject`
+## Code of Conduct
 
-**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`
-
-**Examples**:
-
-```text
-feat(chat): add voice streaming support
-fix(db): correct migration rollback logic
-docs(readme): update pre-push workflow
-test(unit): add property tests for PII anonymizer
-```
-
-The repository includes a `.cz.toml` configuration and a pre-commit `commit-msg` hook for validation.
-
-## Branch Naming
-
-- `feature/...` - New features
-- `fix/...` - Bug fixes
-- `chore/...` - Maintenance, refactoring, tooling
-- `docs/...` - Documentation updates
+Participation in this project is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Security
 
-### Secret Scanning
-
-Secrets are automatically scanned on commit. If you need to add a false positive:
+Secrets are scanned on commit via `detect-secrets`. Update baselines only after confirming false positives:
 
 ```bash
 cd backend && uv run detect-secrets scan --update ../.secrets.baseline
 ```
 
-Review `.secrets.baseline` before committing to ensure no real secrets were added.
+## Pull Requests
 
-### Security Baselines
-
-- **detect-secrets**: `.secrets.baseline`
-- **bandit**: root `bandit.toml`
-
-Update baselines only after confirming false positives.
-
-## Pull Request Process
-
-1. Ensure `task verify` passes locally
-2. Update documentation if you changed APIs or added features
-3. Add tests for new functionality (target ≥80% coverage)
-4. Follow the pull request template
-5. Request review from maintainers
-6. Address review feedback
-7. Squash commits before merge (if requested)
-
-## Code Review
-
-All submissions require code review. Reviews check:
-
-- Adherence to Clean Architecture boundaries
-- Code quality and conventions
-- Test coverage
-- Documentation completeness
-- Security implications
-
-## Getting Help
-
-- **GitHub Issues**: Bug reports and feature requests
-- **GitHub Discussions**: Questions and general discussion
-- **Email**: <lfr@tik-ai.dk>
+1. `task verify` passes
+2. Docs updated for API/behavior changes
+3. Tests added for new functionality
+4. Review requested from maintainers
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree your contributions are licensed under the MIT License.

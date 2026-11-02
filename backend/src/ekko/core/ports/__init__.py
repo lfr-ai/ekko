@@ -6,13 +6,15 @@ Organized into:
 """
 
 from ekko.core.ports.external import (
-    AudioStreamerControllerProtocol,
+    AudioStreamerControllerPort,
     ChatPort,
+    DependencyStatus,
     PIIAnonymizerPort,
-    PromptProvider,
-    PromptProviderError,
-    STTService,
-    TranscriptProtocol,
+    PromptRegistryError,
+    PromptRegistryPort,
+    ReadinessProbe,
+    STTPort,
+    TranscriptPort,
 )
 from ekko.core.ports.repositories import (
     ConversationRepositoryPort,
@@ -21,14 +23,16 @@ from ekko.core.ports.repositories import (
 )
 
 __all__ = [
-    "AudioStreamerControllerProtocol",
+    "AudioStreamerControllerPort",
     "ChatPort",
     "ConversationRepositoryPort",
+    "DependencyStatus",
     "MessageRepositoryPort",
     "PIIAnonymizerPort",
-    "PromptProvider",
-    "PromptProviderError",
-    "STTService",
-    "TranscriptProtocol",
+    "PromptRegistryError",
+    "PromptRegistryPort",
+    "ReadinessProbe",
+    "STTPort",
+    "TranscriptPort",
     "TranscriptRepositoryPort",
 ]

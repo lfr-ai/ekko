@@ -44,18 +44,20 @@ agent-portability tokens used by the configuration guard.
   Add a separate ADR or architecture guide only when operators/developers need a
   stable explanation outside a change history.
 
-## 5. Memory
+## 5. Shared memory
 
-When repository-scoped memory is available, store short verified facts and
-recurring gotchas under `/memories/repo/`:
+Initialize or refresh root `memories/` with short, committed, provider-neutral
+outcomes:
 
-- toolchain commands and non-obvious environment constraints;
-- proven debugging lessons and operational traps;
-- terminology decisions that do not belong in always-on prompts.
+- `project.md`: compact operational state and links to authoritative facts;
+- `decisions.md`: durable choices with rationale and evidence;
+- `lessons.md`: proven debugging and operational gotchas;
+- `handoffs/`: one file per unfinished task/agent to avoid parallel write conflicts.
 
 Memory is not a substitute for committed contracts. Public behavior stays in
 specs; project facts stay in `PROJECT.md`; setup stays in focused docs; temporary
-work stays in session memory. Never store secrets or speculative conclusions.
+work stays in a handoff only while needed. Never store secrets, transcripts,
+private reasoning, or speculative conclusions.
 
 ## 6. Minimal documentation
 
@@ -63,14 +65,15 @@ README remains purpose + quick start + links. Create focused docs only for setup
 operations, architecture, or migration information that a fresh reader cannot
 infer. Prefer one diagram/table over a directory dump; remove stale documents.
 
-Add a root `llms.txt` (llms.txt standard) as the machine-readable entry index that
-links to `AGENTS.md`, `PROJECT.md`, and the knowledge base. Keep it terse — links
-and one-line descriptions, not content.
+Add a root `llms.txt` (start from `.agents/agentic-setup/llms.template.txt`, the
+llms.txt standard) as the machine-readable entry index that links to `AGENTS.md`,
+`PROJECT.md`, and the knowledge base. Keep it terse — links and one-line
+descriptions, not content.
 
 ## 7. Verify onboarding context
 
 - A fresh agent can locate entry points, layers, tests, configs, and validation.
-- `PROJECT.md`, specs, code graph, and memory agree with current code.
+- `PROJECT.md`, specs, code graph, and `memories/` agree with current code.
 - Agent configuration guard and relevant spec validation pass.
 - No generated inventories, copied repository history, secrets, or AI filler were
   added.

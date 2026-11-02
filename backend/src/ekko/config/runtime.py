@@ -49,11 +49,11 @@ def get_config() -> BaseAppConfig:
     from ekko.config.environments.dev import DevelopmentConfig
     from ekko.config.environments.local import LocalConfig
     from ekko.config.environments.prod import ProductionConfig
-    from ekko.config.environments.test_env import TestingConfig
+    from ekko.config.environments.test import TestConfig
 
     config_map: dict[Environment, type[BaseAppConfig]] = {
         Environment.LOCAL: LocalConfig,
-        Environment.TEST: TestingConfig,
+        Environment.TEST: TestConfig,
         Environment.DEV: DevelopmentConfig,
         Environment.PROD: ProductionConfig,
     }

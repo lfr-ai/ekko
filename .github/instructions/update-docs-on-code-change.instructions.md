@@ -24,4 +24,4 @@ interfaces, configuration, dependencies, or setup changes.
 - Update `CHANGELOG.md` only for notable user- or operator-visible changes.
 - Verify examples when practical; remove stale examples and broken links.
 - Never document speculative behavior or add filler, exhaustive inventories, or
-	AI-generated prose that readers will skip.
+  AI-generated prose that readers will skip.

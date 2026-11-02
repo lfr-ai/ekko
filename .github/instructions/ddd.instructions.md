@@ -1,40 +1,28 @@
 ---
 description: Domain-Driven Design patterns for the domain layer
-applyTo: "**/core/**/*.py"
+applyTo: "src/**/core/**/*.py"
 ---
 
 # Domain-Driven Design Instructions
 
-Apply DDD tactical patterns to all code in the core layer.
+Apply DDD tactical patterns to all code in the core layer. Templates, worked
+examples, and the port/adapter enforcement script live in the `ddd` skill
+(`.agents/skills/ddd/SKILL.md`) — pull it up for deep patterns.
 
-## Aggregates
+## Rules
 
-- `@dataclass(frozen=True, kw_only=True, slots=True)` on all aggregate roots
-- All invariants enforced in `__post_init__` — aggregate is always valid after construction
-- Mutations return **new instances** (functional style)
-- One repository per aggregate root (protocol in `core/ports/`)
-- No direct references between aggregates — use IDs only
-
-## Value Objects
-
-- `@dataclass(frozen=True, kw_only=True, slots=True)` — no identity, structural equality
-- Validate all constraints in `__post_init__` with domain exception
-- Place in `core/value_objects/`
-- Self-validating on construction
-
-## Domain Events
-
-- Named in **past tense**: `OrderPlaced`, `PaymentProcessed`
-- `@dataclass(frozen=True, kw_only=True, slots=True)` with only primitive fields
-- Include `occurred_at: datetime` on every event
-- Place in `core/events/`
-
-## Repository Protocols
-
-- Protocols in `core/ports/` using domain language
-- Return domain objects, **never ORM models**
-- Keyword-only arguments (`*`) for all parameters
-- Methods express domain queries
+- Aggregates and value objects: `@dataclass(frozen=True, kw_only=True, slots=True)`;
+  invariants enforced in `__post_init__`; mutations return new instances.
+  One repository per aggregate root; aggregates reference each other by ID only.
+- Domain events: named in past tense (`OrderPlaced`), only primitive/serializable
+  fields, always include `occurred_at: datetime`, placed in `core/events/`.
+- Repository protocols live in `core/ports/`, use domain language, return
+  domain objects (never ORM models), keyword-only parameters.
+- Place compound value objects in `core/value_objects/`; shared scalar types
+  that cross multiple Core contracts go in `core/types.py`.
+- Keep the dataclass-generated `__repr__` by default. Mark sensitive or large
+  payload fields with `field(repr=False)`; scalar national identifiers require
+  an explicit masked, non-reconstructible `__repr__`.
 
 ## Ubiquitous Language
 
@@ -44,6 +32,9 @@ Use domain terms consistently. Forbidden in `core/`:
 - "row"/"record" → use domain entity
 - "request"/"response" → use command, query, DTO
 - "data"/"payload" → use domain-specific term
+
+`*Record` names are reserved for immutable, transport-neutral port snapshots —
+they are not ORM records.
 
 ## Framework Independence
 

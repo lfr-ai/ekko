@@ -1,0 +1,40 @@
+"""Service port protocol template — a Protocol for a single external
+capability (a chat/completion client, a store, a metrics recorder), as
+opposed to the CRUD-shaped `repository_protocol.py.template`.
+
+Use this shape for one-purpose ports — one or a few cohesive methods, keyword-
+only arguments, and domain-scalar-typed parameters (pick the right tier from
+`core/types.py` — value object, structural alias, decoupling alias, NewType,
+or bare primitive — rather than passing raw primitives across the port
+boundary). Shown `async` here as the more common default for new adapters;
+match whichever calling convention (sync or async) this project's existing
+ports already use — do not mix both styles across ports.
+
+Add `@runtime_checkable` only if a real `isinstance(x, ReplaceMePort)` gate is
+needed (e.g. a container test asserting the returned type) — see the
+`python-conventions` skill's `references/polymorphism-patterns.md`. Most ports
+never need it.
+"""
+
+from __future__ import annotations
+
+from typing import Protocol
+
+
+class ReplaceMePort(Protocol):
+    """Port for the ReplaceMe external capability."""
+
+    async def do_something(
+        self,
+        *,
+        input_value: str,
+    ) -> str:
+        """Perform the operation this port exposes.
+
+        Args:
+            input_value (str): Input required to perform the operation.
+
+        Returns:
+            str: Result of the operation.
+        """
+        ...

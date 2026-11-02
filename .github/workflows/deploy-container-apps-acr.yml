@@ -3,9 +3,10 @@ name: Deploy Container Apps (ACR)
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'azure/**'
+      - '!azure/iac/terraform/**'
       - 'docker/Containerfile'
       - 'backend/**'
       - '.github/workflows/deploy-container-apps-acr.yml'
@@ -54,10 +55,10 @@ jobs:
       IMAGE_NAME: ${{ github.event_name == 'push' && 'ekko' || inputs.imageName }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Azure Login (OIDC)
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}

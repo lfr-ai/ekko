@@ -1,4 +1,4 @@
-"""PII anonymizer — scrubs sensitive data before sending to LLM/HMAS."""
+"""PII anonymizer — scrubs sensitive data before sending to LLM services."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import logging
 from ekko.ai.pii.patterns import PII_PATTERNS, PIIPattern
 from ekko.core.value_objects import AnonymizedText, PIIMatch
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class PIIAnonymizer:
@@ -25,7 +25,7 @@ class PIIAnonymizer:
         patterns: tuple[PIIPattern, ...] = PII_PATTERNS,
         *,
         enabled_types: frozenset[str] | None = None,
-    ) -> None:
+    ):
         if enabled_types is not None:
             self._patterns = tuple(p for p in patterns if p.name in enabled_types)
         else:
@@ -51,7 +51,7 @@ class PIIAnonymizer:
             anonymized = pattern.pattern.sub(pattern.replacement, anonymized)
 
         if matches:
-            logger.info("Anonymized %d PII occurrence(s)", len(matches))
+            _logger.info("PII anonymized", extra={"match_count": len(matches)})
 
         return AnonymizedText(
             original_text=text,

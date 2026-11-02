@@ -1,9 +1,6 @@
 ---
 name: deploy-check
 description: Pre-deployment checklist and build verification. Use before building the PyInstaller EXE or deploying.
-disable-model-invocation: true
-effort: high
-argument-hint: "[target]"
 allowed-tools:
   - Bash(task *)
 ---

@@ -1,48 +1,31 @@
-"""Settings module with environment-based factory.
+"""Application settings facets.
 
-Usage::
-
-    from ekko.config.settings import get_settings
-
-    settings = get_settings()
+Each facet owns one cohesive group of ``EKKO_`` environment fields and composes
+into :class:`ekko.config.base.BaseAppConfig`.
 """
 
-from __future__ import annotations
-
-from functools import lru_cache
-from typing import Final
-
-from ekko.config.enums import Environment
-from ekko.config.runtime import ENV
-from ekko.config.settings.base import BaseAppConfig
-from ekko.config.settings.dev import DevelopmentConfig
-from ekko.config.settings.local import LocalConfig
-from ekko.config.settings.prod import ProductionConfig
-from ekko.config.settings.test_env import TestingConfig
-
-_SETTINGS_MAP: Final[dict[Environment, type[BaseAppConfig]]] = {
-    Environment.DEV: DevelopmentConfig,
-    Environment.LOCAL: LocalConfig,
-    Environment.PROD: ProductionConfig,
-    Environment.TEST: TestingConfig,
-}
-
-
-@lru_cache(maxsize=1)
-def get_settings() -> BaseAppConfig:
-    """Create settings instance based on resolved runtime environment.
-
-    Cached so a single instance is reused across the process.
-    """
-    settings_class = _SETTINGS_MAP[ENV]
-    return settings_class()
-
+from ekko.config.settings._shared import ConfiguredSettings
+from ekko.config.settings.audio import AudioSettings
+from ekko.config.settings.database import DatabaseSettings
+from ekko.config.settings.general import GeneralSettings
+from ekko.config.settings.graphql import GraphQLSettings
+from ekko.config.settings.llm import LLMSettings
+from ekko.config.settings.paths import PathSettings
+from ekko.config.settings.prompts import PromptSettings
+from ekko.config.settings.redis import RedisSettings
+from ekko.config.settings.server import ServerSettings
+from ekko.config.settings.speech import SpeechSettings
 
 __all__ = [
-    "BaseAppConfig",
-    "DevelopmentConfig",
-    "LocalConfig",
-    "ProductionConfig",
-    "TestingConfig",
-    "get_settings",
+    "AudioSettings",
+    "ConfiguredSettings",
+    "DatabaseSettings",
+    "GeneralSettings",
+    "GraphQLSettings",
+    "LLMSettings",
+    "PathSettings",
+    "PromptSettings",
+    "RedisSettings",
+    "ServerSettings",
+    "SpeechSettings",
 ]

@@ -1,0 +1,48 @@
+"""SQLAlchemy ORM model template — copy into infrastructure/persistence/orm/.
+
+ORM models are infrastructure-only: they never appear in core/ or application/
+signatures. A repository adapter maps rows to domain-shaped records at the
+boundary (see repository_adapter.py.template).
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from uuid import UUID, uuid4
+
+from sqlalchemy import TIMESTAMP, func
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class ORMBase(DeclarativeBase):
+    """Base class for ORM table models."""
+
+
+class _CreatedOnMixin:
+    """Mixin providing a server-defaulted created_on timestamp column."""
+
+    created_on: Mapped[datetime] = mapped_column(
+        TIMESTAMP,
+        nullable=False,
+        server_default=func.now(),
+    )
+
+
+class ReplaceMeModel(ORMBase, _CreatedOnMixin):
+    """ORM model for the ReplaceMe entity.
+
+    Attributes:
+        id (UUID): Unique identifier.
+        name (str): Display name.
+        created_on (datetime): Record creation timestamp.
+    """
+
+    __tablename__ = "replace_me"
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    name: Mapped[str] = mapped_column(nullable=False)

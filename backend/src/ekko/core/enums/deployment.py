@@ -9,6 +9,8 @@ from ekko.core.enums.base import ParseableEnum
 
 @unique
 class DeploymentTarget(ParseableEnum):
+    """Supported deployment targets."""
+
     LOCAL = auto()
     DOCKER = auto()
     KUBERNETES = auto()
@@ -18,8 +20,10 @@ class DeploymentTarget(ParseableEnum):
 
 @unique
 class FeatureFlag(ParseableEnum):
+    """Runtime feature toggles."""
+
     RAG_ENABLED = auto()
-    ENABLE_TELEMETRY = auto()
+    STRUCTURED_LOGGING = auto()
 
 
 __all__ = ["DeploymentTarget", "FeatureFlag"]

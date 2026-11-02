@@ -1,0 +1,41 @@
+"""Enum template — copy anywhere a closed set of named values is needed.
+
+Use ``StrEnum`` (wire-friendly, JSON/logging-safe) unless the values are
+purely internal ordering, in which case ``IntEnum`` is acceptable. Always
+``@unique`` — a duplicate value is a silent bug, not a style nit. Document
+every member in a ``Members:`` docstring section (no ``Returns:``).
+"""
+
+from enum import StrEnum, unique
+
+
+@unique
+class ReplaceMeStatus(StrEnum):
+    """One-line noun-phrase description of what this enumerates.
+
+    Members:
+        PENDING (str): Not yet processed.
+        APPROVED (str): Processed and accepted.
+        REJECTED (str): Processed and rejected.
+    """
+
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+# Prefer auto() when the member NAME is the only thing that matters (the
+# string value is never serialized externally, e.g. an internal prompt-stage
+# identifier) — auto() assigns the lowercase member name as the StrEnum value.
+#
+# from enum import auto
+#
+# @unique
+# class ReplaceMeStage(StrEnum):
+#     """Members:
+#         FIRST (str): First stage.
+#         SECOND (str): Second stage.
+#     """
+#
+#     FIRST = auto()
+#     SECOND = auto()

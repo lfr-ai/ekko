@@ -7,18 +7,26 @@ extend = "../ruff.toml"
 "tests/**/*.py" = [
     "S101",    # assert allowed in tests
     "S106",    # hardcoded test secrets
+    "D",       # docstrings not required in tests
+    "ANN",     # annotations not required in tests
+    "EM",      # inline exception messages fine in tests
     "ARG",     # unused args (fixtures)
     "PLR2004", # magic values
     "SLF001",  # private access in tests
     "T20",     # print in tests
     "PLC0415", # lazy imports in test fixtures
+    "FBT",     # tests deliberately exercise boolean inputs
+    "DTZ",     # naive datetimes acceptable in tests
+    "INP001",  # test packages need no __init__
 ]
 "alembic/**/*.py" = [
     "ERA001", # commented-out code in migrations
     "I001",   # isort — alembic has its own convention
     "UP",     # pyupgrade — alembic templates need compat
+    "D",      # migration scripts and callbacks follow Alembic signatures
     "INP001", # namespace package
     "T20",    # print
+    "ARG001", # Alembic callback signature includes unused context/revision
 ]
 "src/ekko/infrastructure/audio_streamer/**/*.py" = [
     "T20", # print allowed in subprocess code
@@ -39,9 +47,6 @@ extend = "../ruff.toml"
 ]
 "src/ekko/presentation/api/exception_handlers.py" = [
     "ARG001", # FastAPI exception handlers require request/exc params
-]
-"src/ekko/presentation/api/responses.py" = [
-    "UP040", # TypeAlias kept for Python 3.12 compat until min version is 3.13
 ]
 "src/ekko/presentation/api/routes/**/*.py" = [
     "PLC0415", # lazy DI imports in route handlers

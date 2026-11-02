@@ -58,10 +58,9 @@ coverage/
 .cache
 nosetests.xml
 .benchmarks/
-backend/keploy/reports/
-backend/keploy/debug-*.log
-backend/keploy/*/secret.yaml
-backend/keploy-logs.txt
+
+# Generated OpenAPI contract artifacts (regenerate via `task lint:api`)
+docs/api/
 
 # DuckDB analytics (runtime-generated)
 *.duckdb
@@ -117,6 +116,7 @@ frontend/.storybook-static/
 frontend/dist/
 frontend/build/
 frontend/coverage/
+frontend/~/
 .eslintcache
 .biome/
 .bun-cache/
@@ -143,9 +143,9 @@ backend/logs/*
 .env
 .env.local
 .env.*.local
-.env.dev
-.env.prod
 !.env.example
+!.env.dev
+!.env.prod
 !.secrets.baseline
 *.pem
 *.key
@@ -217,12 +217,7 @@ CLAUDE.local.md
 # ═══════════════════════════════════════════════════════════════
 # Postman (keep collection, ignore environments with secrets)
 # ═══════════════════════════════════════════════════════════════
-postman/**/*.postman_environment.json
-postman/reports/
-postman/reports/**
-postman/**/*.postman_globals.json
-postman/.postman/
-postman/**/exports/
+postman/*.postman_environment.json
 
 # ═══════════════════════════════════════════════════════════════
 # Jupyter Notebooks
@@ -240,14 +235,6 @@ postman/**/exports/
 .tmp/
 tmp/
 
-# Local cleanup/audit artifacts
-.cleanup_*.txt
-.gsd_*scan*.txt
-.history-rewrite/
-.forensics/
-frontend/node_modules_stuck/
-frontend/~/
-
 # ═══════════════════════════════════════════════════════════════
 # Build Artifacts (PyInstaller)
 # ═══════════════════════════════════════════════════════════════
@@ -258,7 +245,42 @@ backend/dist/
 # Project-Specific (accidental root-level dirs)
 # ═══════════════════════════════════════════════════════════════
 /config
-
-# Azure IaC generated ARM JSON (compiled from Bicep)
-azure/iac/**/*.json
 /core
+
+# ═══════════════════════════════════════════════════════════════
+# Terraform (azure/iac/terraform/)
+# ═══════════════════════════════════════════════════════════════
+# State files (MUST NOT be committed)
+*.tfstate
+*.tfstate.*
+
+# Terraform directories (cache and plugins)
+.terraform/
+.tflint.d/
+
+# Plan artifacts (MUST NOT be committed; validation-only tasks do not generate these)
+*.tfplan
+tfplan.*
+
+# Local override files (may contain secrets)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+backend.*.hcl
+
+# CLI cache and configuration
+.terraformrc
+terraform.rc
+.terraform.d/
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Exclude override files, but keep variable files
+!*.tfvars
+!*.tfvars.json
+
+# Ignore CLI configuration file
+cli-config.tfrc

@@ -1,19 +1,8 @@
 {
-  "$schema": "https://json.schemastore.org/vscode-mcp.json",
   "servers": {
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
-    },
-    "shadcn": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "shadcn@latest",
-        "mcp"
-      ],
-      "cwd": "${workspaceFolder}/frontend"
     },
     "gitnexus": {
       "type": "stdio",
@@ -23,15 +12,46 @@
       ],
       "cwd": "${workspaceFolder}"
     },
+    "microsoft-learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "chrome-devtools-mcp@1.9.0",
+        "--isolated",
+        "--headless",
+        "--no-usage-statistics",
+        "--no-performance-crux"
+      ]
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
     "playwright": {
       "type": "stdio",
-      "command": "npx",
+      "command": "bunx",
       "args": [
-        "-y",
-        "@playwright/mcp@latest",
+        "@playwright/mcp@0.0.80",
         "--isolated",
         "--headless"
       ]
+    },
+    "shadcn": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "shadcn@4.21.0",
+        "mcp"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    "postman": {
+      "type": "http",
+      "url": "https://mcp.postman.com/minimal"
     },
     "storybook": {
       "type": "http",

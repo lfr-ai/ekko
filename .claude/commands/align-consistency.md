@@ -124,7 +124,7 @@ checklist and tick items off.
   for test drift, `align-tests`; for skill-mirror parity, follow `agent-config`
   and run `uv run .agents/skills/agent-config/scripts/sync.py --apply`.
 - After renaming, moving, or adding a module or folder, refresh the code graph
-  (`task graph`) so code intelligence stays accurate for the next pass.
+  with the command documented in `PROJECT.md`.
 - After each tree or logical group, re-check just what changed before moving on.
 
 ## Phase 6 — Full validation (iterate until clean)

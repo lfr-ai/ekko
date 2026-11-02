@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# Run with: bash azure/scripts/deploy.azcli <project-name> <image-name> <image-tag>
 set -euo pipefail
 
 # Deploy Ekko infrastructure to Azure.

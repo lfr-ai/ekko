@@ -1,0 +1,46 @@
+{
+  "name": "REPLACE_ME_WEB_PACKAGE",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "bun@REPLACE_ME_BUN_VERSION",
+  "scripts": {
+    "dev": "bun --bun vite",
+    "build": "tsc --noEmit && bun --bun vite build",
+    "preview": "bun --bun vite preview",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check . && tsc --noEmit && vitest run",
+    "check:fix": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "REPLACE_ME_VERSION",
+    "class-variance-authority": "REPLACE_ME_VERSION",
+    "clsx": "REPLACE_ME_VERSION",
+    "lucide-react": "REPLACE_ME_VERSION",
+    "react": "REPLACE_ME_VERSION",
+    "react-dom": "REPLACE_ME_VERSION",
+    "tailwind-merge": "REPLACE_ME_VERSION",
+    "tailwindcss": "REPLACE_ME_VERSION"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "REPLACE_ME_VERSION",
+    "@playwright/test": "REPLACE_ME_VERSION",
+    "@testing-library/jest-dom": "REPLACE_ME_VERSION",
+    "@testing-library/react": "REPLACE_ME_VERSION",
+    "@testing-library/user-event": "REPLACE_ME_VERSION",
+    "@types/react": "REPLACE_ME_VERSION",
+    "@types/react-dom": "REPLACE_ME_VERSION",
+    "@vitejs/plugin-react": "REPLACE_ME_VERSION",
+    "@vitest/coverage-v8": "REPLACE_ME_VERSION",
+    "happy-dom": "REPLACE_ME_VERSION",
+    "shadcn": "REPLACE_ME_VERSION",
+    "typescript": "REPLACE_ME_VERSION",
+    "vite": "REPLACE_ME_VERSION",
+    "vitest": "REPLACE_ME_VERSION"
+  }
+}

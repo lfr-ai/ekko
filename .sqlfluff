@@ -1,0 +1,12 @@
+[sqlfluff]
+dialect = sqlite
+templater = raw
+max_line_length = 120
+# `core` is SQLFluff's recommended starting rule bundle (parsing + high-value
+# correctness rules). Ekko has no committed SQL yet; this config keeps any
+# future `*.sql` (reporting/backtest/query templates) lintable the moment it
+# lands, and the sqlfluff-lint pre-commit hook is a no-op until then.
+rules = core
+
+[sqlfluff:indentation]
+tab_space_size = 4

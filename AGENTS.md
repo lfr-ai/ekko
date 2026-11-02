@@ -137,17 +137,32 @@ no extra prose. Omit the `tldr;` only when the user explicitly requests otherwis
 
 ## Agent Profiles
 
-| Agent           | Use For                                                                  |
-| --------------- | ------------------------------------------------------------------------ |
-| `ddd`           | Domain-Driven Design, domain modeling, bounded contexts, aggregates      |
-| `sdd`           | Specification-Driven Development, executable specs, living documentation |
-| `tdd`           | Test-Driven Development, Red-Green-Refactor cycles, test suites          |
-| `debug`         | Defect isolation, root cause analysis, systematic troubleshooting        |
-| `deep-thinking` | Complex problem analysis, architectural trade-offs, strategic decisions  |
-| `devops`        | Docker, CI/CD, infrastructure, deployment, containerization              |
-| `modernization` | Large-scale analysis, documentation, migration planning                  |
-| `refactor`      | Code refactoring, technical debt reduction, code smell elimination       |
-| `testing`       | Test strategy, quality assurance, coverage analysis                      |
+| Agent | Use for |
+| --- | --- |
+| `orchestrator` | Delegate and integrate broad multi-step work |
+| `fullstack` | Default full-stack implementation |
+| `ddd` | Domain modeling and bounded contexts |
+| `sdd` | Executable specifications |
+| `tdd` | Test-first implementation |
+| `debug` | Defect isolation and root-cause analysis |
+| `deep-thinking` | Architectural trade-offs |
+| `devops` | Infrastructure, containers, and CI/CD |
+| `frontend` | React and TypeScript implementation |
+| `modernization` | Whole-system analysis and migration planning |
+| `refactor` | Behavior-preserving code transformations |
+| `testing` | Test strategy and quality assurance |
+| `backend-implementer` | Bounded backend implementation worker |
+| `frontend-implementer` | Bounded frontend implementation worker |
+| `devops-implementer` | Bounded infrastructure implementation worker |
+| `planner` | Read-only task planning worker |
+| `plan-architect` | Read-only plan architecture review worker |
+| `codebase-researcher` | Read-only codebase discovery worker |
+| `test-author` | Bounded test authoring worker |
+| `docs-writer` | Bounded documentation worker |
+| `code-reviewer` | Read-only correctness review worker |
+| `solid-review` | Read-only architecture review worker |
+| `security-reviewer` | Read-only security review worker |
+| `contract-iac-lint` | Read-only API and IaC review worker |
 
 All agents use identical names and responsibilities across platforms. When a task
 clearly matches a profile, apply that profile's workflow end-to-end.
@@ -176,10 +191,18 @@ Do not restrict per-agent tools unless there is a documented security reason.
 8. **No secrets in code**: Use environment variables or secret management
 9. **No git commands by agents**: All git operations are manual by the user
 
+## Code intelligence
+
+When a code graph is configured, use its impact view before changing shared
+symbols, warn before proceeding on high-risk results, and use graph-aware rename
+tools. Repository-specific index names, resources, and refresh commands belong
+in `PROJECT.md`; see the GitNexus skill family for workflows. Agents never run
+Git shell commands.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ekko** (4341 symbols, 6584 relationships, 82 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ekko** (4319 symbols, 6489 relationships, 85 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -211,11 +234,11 @@ This project is indexed by GitNexus as **ekko** (4341 symbols, 6584 relationship
 
 | Task | Read this skill file |
 |------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/cli/SKILL.md` |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->

@@ -101,10 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     print("Destructive actions in this plan:")
     for finding in findings:
         print(f"  {finding}")
-    print(
-        f"\n{len(findings)} resource(s) will be destroyed or replaced — "
-        "confirm this is expected before applying."
-    )
+    print(f"\n{len(findings)} resource(s) will be destroyed or replaced — confirm this is expected before applying.")
     return 1
 
 

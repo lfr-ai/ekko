@@ -1,0 +1,80 @@
+"""Application-layer use-case template — AKA orchestrator, pipeline, or
+application service. Copy into application/orchestrators/ or
+application/services/, rename to match the process it coordinates.
+
+Compose Core ports (Protocols) and other application services to run one
+end-to-end business process. Owns sequencing and error translation only —
+never business rules (those live in Core entities/value objects) and never
+transport concerns (those live in presentation). Constructor-injected,
+`__slots__`-based, keyword-only dependencies wired by the composition
+container.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Protocol, final
+from uuid import UUID
+
+_logger = logging.getLogger(__name__)
+
+
+class ReplaceMeRepositoryPort(Protocol):
+    """Core port this use case depends on — defined in core/ports/, not here."""
+
+    def get_by_id(self, resource_id: UUID) -> object | None: ...
+
+    def save(self, resource: object) -> UUID: ...
+
+
+# Import the named, `@final`, `DomainError`-only not-found type from
+# core/exceptions.py instead of declaring one here — see the `ddd` skill's
+# `assets/domain_exceptions.py.template` (`ReplaceMeNotFoundError`). Never
+# inherit stdlib `LookupError`: a presentation handler registered for that
+# whole family also catches an accidental `KeyError`/`IndexError` bug as a
+# false 404 instead of a loud 500.
+from replace_me.core.exceptions import ReplaceMeNotFoundError
+
+
+@final
+class ReplaceMeUseCase:
+    """Orchestrate the end-to-end ReplaceMe process."""
+
+    __slots__ = ("_repository",)
+
+    def __init__(self, *, repository: ReplaceMeRepositoryPort):
+        """Initialize the use case with its collaborating ports.
+
+        Args:
+            repository (ReplaceMeRepositoryPort): Port for resource persistence.
+        """
+        self._repository = repository
+
+    def execute(self, *, resource_id: UUID) -> object:
+        """Run the process for one resource, end to end.
+
+        Args:
+            resource_id (UUID): Identifier of the resource to process.
+
+        Returns:
+            object: Result DTO describing the outcome (replace with a real DTO).
+
+        Raises:
+            ReplaceMeNotFoundError: If the resource cannot be resolved.
+        """
+        resource = self._repository.get_by_id(resource_id)
+        if resource is None:
+            raise ReplaceMeNotFoundError
+
+        result = self._process(resource)
+        self._repository.save(result)
+        _logger.info("replace_me_use_case_completed resource_id=%s", resource_id)
+        return result
+
+    def _process(self, resource: object) -> object:
+        """Apply the process's business steps to one loaded resource.
+
+        Split into private methods like this one — not inlined into
+        `execute` — once a step is independently testable or reused.
+        """
+        return resource

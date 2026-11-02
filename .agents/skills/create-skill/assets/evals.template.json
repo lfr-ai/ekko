@@ -1,0 +1,20 @@
+{
+  "skill": "<skill-name>",
+  "description": "Realistic trigger/output cases proving the skill helps. Copy into the new skill's assets/, then measure with-skill output against a no-skill baseline.",
+  "cases": [
+    {
+      "id": "happy-path",
+      "prompt": "<a realistic request a user would phrase that should trigger this skill>",
+      "expect": {
+        "invokes_skill": true,
+        "must_mention": ["<a required step, command, or guardrail the answer must include>"],
+        "must_not": ["<a forbidden action, e.g. a destructive command or skipped gate>"]
+      }
+    },
+    {
+      "id": "negative-trigger",
+      "prompt": "<a nearby request that must NOT trigger this skill>",
+      "expect": { "invokes_skill": false }
+    }
+  ]
+}

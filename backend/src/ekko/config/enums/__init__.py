@@ -25,7 +25,6 @@ class DatabaseBackend(StrEnum):
     """Supported runtime database backends."""
 
     SQLITE = auto()
-    POSTGRESQL = auto()
 
 
 @unique

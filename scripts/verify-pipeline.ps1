@@ -43,7 +43,7 @@ Invoke-Step -Name "Backend format check" -Action {
 Invoke-Step -Name "Backend typecheck" -Action {
     Push-Location backend
     try {
-        uv run ty check src/ekko
+        uv run python -m ty check src/ekko tests ../tests ../tools ../scripts ../registry alembic
     }
     finally {
         Pop-Location
@@ -107,7 +107,7 @@ if ($Full) {
     Invoke-Step -Name "Security: Bandit" -Action {
         Push-Location backend
         try {
-            uv run python -m bandit -c bandit.toml -r src/ekko
+            uv run python -m bandit -c ../bandit.toml -r src/ekko
         }
         finally {
             Pop-Location
@@ -125,7 +125,13 @@ if ($Full) {
     }
 
     Invoke-Step -Name "Security: detect-secrets" -Action {
-        uv run python -m detect_secrets scan --baseline .secrets.baseline
+        Push-Location backend
+        try {
+            uv run python -m detect_secrets scan --baseline ../.secrets.baseline
+        }
+        finally {
+            Pop-Location
+        }
     }
 
     Invoke-Step -Name "Integration tests" -Action {
@@ -139,7 +145,7 @@ if ($Full) {
     }
 
     Invoke-Step -Name "Architecture boundary check" -Action {
-        uv run python tools/security/check_architecture_boundaries.py
+        uv run --project backend python tools/security/check_architecture_boundaries.py
     }
 }
 

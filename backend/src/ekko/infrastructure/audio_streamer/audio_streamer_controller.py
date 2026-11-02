@@ -1,15 +1,23 @@
 """Controller for managing the audio streamer subprocess lifecycle."""
 
+from __future__ import annotations
+
 import asyncio
 import builtins
 import json
 import logging
 import subprocess  # nosec B404
 import sys
-from asyncio.subprocess import Process
+from typing import TYPE_CHECKING
 
-from ekko.config.settings import BaseAppConfig
-from ekko.infrastructure.audio_streamer.audio_streamer import AudioStreamer
+from ekko.infrastructure.metrics import AUDIO_STREAMS_ACTIVE
+
+if TYPE_CHECKING:
+    from asyncio.subprocess import Process
+
+    from ekko.config.base import BaseAppConfig
+
+_logger = logging.getLogger(__name__)
 
 
 class AudioStreamerController:
@@ -17,7 +25,6 @@ class AudioStreamerController:
 
     def __init__(self, settings: BaseAppConfig):
         self.settings = settings
-        self.audio_streamer = AudioStreamer(settings)  # For device info and potential future use
         self.subprocess: Process | None = None
         self.previous_device_names: dict[str, str] | None = None
 
@@ -40,47 +47,46 @@ class AudioStreamerController:
         )
         # Running a short subprocess to query device names; this is executed
         # with a list of args (no shell) to avoid shell injection risks.  # nosec B603
-        result = subprocess.run(  # nosec B603  # noqa: S603
+        result = await asyncio.to_thread(
+            subprocess.run,  # nosec B603
             [sys.executable, "-c", code],
             capture_output=True,
             text=True,
             check=False,
         )
 
-        # Log raw probe output for debugging in CI/test environments
-        logging.getLogger(__name__).debug(
-            "Device probe rc=%s stdout=%r stderr=%r",
-            result.returncode,
-            result.stdout,
-            result.stderr,
-        )
-
         if result.returncode != 0 or not result.stdout:
-            logging.getLogger(__name__).debug(
-                "Failed to query audio device names; return defaults. rc=%s, stderr=%s",
-                result.returncode,
-                (result.stderr or "").strip(),
+            _logger.debug(
+                "Device probe failed",
+                extra={"return_code": result.returncode, "stderr": (result.stderr or "").strip()},
             )
             return {"sys_name": "loopback_default", "mic_name": "mic_default"}
 
         try:
-            return json.loads(result.stdout)
+            device_names = json.loads(result.stdout)
         except json.JSONDecodeError:
-            logging.getLogger(__name__).debug("Device probe returned non-json output; using defaults")
+            _logger.debug("Device probe returned invalid JSON", extra={"stdout": result.stdout})
             return {"sys_name": "loopback_default", "mic_name": "mic_default"}
+
+        _logger.debug(
+            "Device probe completed",
+            extra={"sys_name": device_names.get("sys_name"), "mic_name": device_names.get("mic_name")},
+        )
+        return device_names
 
     async def start(self) -> None:
         """Start audio streamer subprocess."""
         self.previous_device_names = await self._get_device_names()
         self.subprocess = await self._launch_subprocess()
+        AUDIO_STREAMS_ACTIVE.inc()
 
     async def stop(self) -> None:
         """Stop the audio streamer subprocess."""
         if self.subprocess and self.subprocess.returncode is None:
             try:
                 await self.send_command("stop")
-            except Exception as e:
-                logging.getLogger(__name__).debug("Failed to send stop command: %s", e)
+            except Exception as exc:  # noqa: BLE001  # best-effort stop before force-terminate
+                _logger.debug("Failed to send stop command", extra={"error": str(exc)})
             try:
                 await asyncio.wait_for(self.subprocess.wait(), timeout=self.settings.wait_timeout_seconds)
             except builtins.TimeoutError:
@@ -90,6 +96,7 @@ class AudioStreamerController:
                 except builtins.TimeoutError:
                     self.subprocess.kill()
                     await self.subprocess.wait()
+            AUDIO_STREAMS_ACTIVE.dec()
 
     async def device_check(self) -> None:
         """Restart subprocess if system/mic devices have changed."""
@@ -102,9 +109,11 @@ class AudioStreamerController:
     async def send_command(self, cmd: str) -> str:
         """Send a command to the audio-streamer subprocess via TCP."""
         reader, writer = await asyncio.open_connection(self.settings.host, self.settings.audio_streamer_tcp_port)
-        writer.write(cmd.encode())
-        await writer.drain()
-        response = await reader.read(self.settings.max_read_bytes)
-        writer.close()
-        await writer.wait_closed()
-        return response.decode().strip()
+        try:
+            writer.write(cmd.encode())
+            await writer.drain()
+            response = await reader.read(self.settings.max_read_bytes)
+            return response.decode().strip()
+        finally:
+            writer.close()
+            await writer.wait_closed()

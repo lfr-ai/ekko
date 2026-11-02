@@ -1,0 +1,55 @@
+# PyInstaller spec for myapp — build with: pyinstaller myapp.spec [-- --debug]
+# Debug: onedir + console. Release: onefile, windowed. See the `pyinstaller` skill.
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--debug", action="store_true")
+options = parser.parse_args()
+
+data = [
+    # ("src/myapp/templates", "myapp/templates"),
+]
+hiddenimports = [
+    # "myapp.plugins.registered",
+]
+excludes = [
+    "tkinter",
+]
+runtime_options = [
+    ("hash_seed=0", None, "OPTION"),  # deterministic hashing
+    ("X utf8", None, "OPTION"),
+]
+
+a = Analysis(
+    ["src/myapp/__main__.py"],
+    pathex=["src"],
+    data=data,
+    binaries=[],
+    hiddenimports=hiddenimports,
+    excludes=excludes,
+    noarchive=False,
+)
+pyz = PYZ(a.pure)
+
+if options.debug:
+    exe = EXE(
+        pyz,
+        a.scripts,
+        runtime_options,
+        exclude_binaries=True,
+        name="myapp",
+        console=True,
+    )
+    coll = COLLECT(exe, a.binaries, a.data, name="myapp")
+else:
+    exe = EXE(
+        pyz,
+        a.scripts,
+        a.binaries,
+        a.data,
+        runtime_options,
+        name="myapp",
+        console=False,
+        upx=True,
+    )

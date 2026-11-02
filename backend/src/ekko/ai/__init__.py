@@ -1,1 +1,1 @@
-"""AI stack — LangChain + CrewAI integration layer."""
+"""AI stack — LLM integration, PII anonymization, and prompt management."""

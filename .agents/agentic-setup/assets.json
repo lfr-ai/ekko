@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "description": "Copyable agent-facing asset bundles keyed by project shape.",
+  "assets": {
+    "agent-knowledge-base": {
+      "path": "assets/agent-knowledge-base",
+      "shapes": ["shared"],
+      "description": "Template for a repository-specific agent knowledge base."
+    },
+    "backend-blueprint": {
+      "path": "assets/backend",
+      "shapes": ["backend", "fullstack"],
+      "description": "Checklist for copying the backend agent capabilities into another repository."
+    },
+    "frontend-blueprint": {
+      "path": "assets/frontend",
+      "shapes": ["frontend", "fullstack"],
+      "description": "Checklist for copying the frontend agent capabilities into another repository."
+    }
+  }
+}

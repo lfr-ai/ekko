@@ -1,0 +1,15 @@
+projects:
+  frontend:
+    schema:
+      - http://localhost:8000/graphql
+    documents:
+      - frontend/src/infrastructure/graphql/operations/**/*.graphql
+
+  backend-tests:
+    schema:
+      - http://localhost:8000/graphql
+    documents:
+      - tests/fixtures/graphql/**/*.graphql
+      - backend/tests/fixtures/graphql/**/*.graphql
+      - "!tests/fixtures/graphql/queries/malformed.graphql"
+      - "!backend/tests/fixtures/graphql/queries/malformed.graphql"

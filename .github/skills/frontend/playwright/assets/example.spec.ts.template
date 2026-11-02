@@ -1,0 +1,13 @@
+import { expect, test } from "@playwright/test";
+
+// Copy-rename: replace "Feature"/the journey below with the real one.
+// Prefer accessible locators (getByRole/getByLabel) over test IDs.
+test.describe("Feature: [Feature Name]", () => {
+  test("should [expected behavior] when [user action]", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "Submit" }).click();
+
+    await expect(page.getByRole("alert")).toBeVisible();
+  });
+});

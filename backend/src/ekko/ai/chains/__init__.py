@@ -1,1 +1,1 @@
-"""LangChain chains for orchestrating LLM workflows."""
+"""Conversational chains for orchestrating LLM workflows."""

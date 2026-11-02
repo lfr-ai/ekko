@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bun .agents/guard/license-guardian.ts",
+        "timeout": 45,
+        "env": {
+          "LICENSE_GUARD_LOG_DIR": "logs/copilot/tool-guardian"
+        }
+      }
+    ]
+  }
+}

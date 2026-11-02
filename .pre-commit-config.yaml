@@ -6,7 +6,7 @@
 minimum_pre_commit_version: '4.0'
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 default_language_version:
-  python: python3.12
+  python: python3.14
 
 repos:
   # ---------------------------------------------------------------
@@ -28,14 +28,12 @@ repos:
       - id: check-docstring-first
       - id: check-added-large-files
         args: [--maxkb=1000]
-        exclude: ^(backend/\.venv_old/|frontend/~/)
       - id: check-case-conflict
       - id: check-illegal-windows-names
       - id: check-symlinks
       - id: destroyed-symlinks
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
-        exclude: ^hooks/scripts/.*\.sh$
       - id: detect-private-key
       - id: fix-byte-order-marker
       - id: mixed-line-ending
@@ -54,14 +52,12 @@ repos:
   # Python Linting and Formatting
   # ---------------------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.11
+    rev: v0.16.10
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
-        files: ^backend/src/ekko/.*\.py$
         types_or: [python, pyi]
       - id: ruff-format
-        files: ^backend/src/ekko/.*\.py$
         types_or: [python, pyi]
 
   # ---------------------------------------------------------------
@@ -86,7 +82,7 @@ repos:
           - --baseline
           - .secrets.baseline
           - --exclude-files
-          - (^|[\\/])tests[\\/]|(^|[\\/])storybook-static[\\/]|(^|[\\/])backend[\\/]src[\\/]ekko[\\/]ai[\\/]prompts[\\/]versions[\\/]registry\.json$
+          - (^|[\\/])tests[\\/]|(^|[\\/])storybook-static[\\/]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.9.4
@@ -105,12 +101,13 @@ repos:
       - id: yamllint
         args: [-c, .yamllint.yaml]
         types: [yaml]
+        stages: [manual]
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.0
     hooks:
       - id: markdownlint-cli2
-        exclude: ^(\.gsd/|\.agents/|\.claude/|frontend/storybook-static/|CHANGELOG\.md)
+        exclude: ^(\.gsd/|frontend/storybook-static/|CHANGELOG\.md)
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
@@ -119,6 +116,7 @@ repos:
         args: [--severity=warning]
         exclude: \.zsh$
         types: [shell]
+        stages: [manual]
 
   # ---------------------------------------------------------------
   # Dockerfile Linting
@@ -126,7 +124,7 @@ repos:
   - repo: https://github.com/hadolint/hadolint
     rev: v2.14.0
     hooks:
-      - id: hadolint
+      - id: hadolint-docker
         args: [-c, .hadolint.yaml]
         exclude: \.dockerignore$
 
@@ -139,6 +137,7 @@ repos:
       - id: typos
         exclude: ^(frontend/storybook-static/|\.lock$)
         args: []
+        stages: [manual]
 
   - repo: https://github.com/rubik/xenon
     rev: v0.9.3
@@ -157,7 +156,6 @@ repos:
       - id: lychee-docker
         args: [--no-progress, -c, .lychee.toml]
         types_or: [markdown, html, rst, text]
-        stages: [manual]
 
   # ---------------------------------------------------------------
   # GitHub Actions Validation
@@ -174,12 +172,20 @@ repos:
   - repo: local
     hooks:
       - id: check-architecture-boundaries
-        name: check architecture boundaries
-        entry: python tools/security/check_architecture_boundaries.py
+        name: check architecture boundaries (import-linter)
+        entry: uv run --project backend python tools/security/check_architecture_boundaries.py
         language: system
         pass_filenames: false
         types: [python]
-        stages: [manual]
+        stages: [pre-commit]
+
+      - id: check-frontend-architecture
+        name: check frontend architecture boundaries
+        entry: node frontend/scripts/check-architecture.mjs
+        language: system
+        pass_filenames: false
+        files: ^frontend/src/.*\.(ts|tsx)$
+        stages: [pre-commit]
 
       - id: check-magic-strings
         name: check magic strings
@@ -191,7 +197,9 @@ repos:
 
       - id: ty-check
         name: type check with ty
-        entry: uv run --project backend --no-sync python -m ty check backend/src/ekko
+        entry: >-
+          uv run --project backend python -m ty check backend/src/ekko
+          backend/tests tests tools scripts registry backend/alembic
         language: system
         pass_filenames: false
         types: [python]
@@ -203,7 +211,15 @@ repos:
         language: system
         pass_filenames: false
         types: [python]
-        stages: [manual]
+        stages: [pre-commit]
+
+      - id: agent-config-guard
+        name: validate agent configuration parity and policy
+        entry: uv run --project backend python .agents/guard/verify_agent_config.py
+        language: system
+        pass_filenames: false
+        files: ^(AGENTS\.md|CLAUDE\.md|\.github/|\.claude/|\.agents/|\.vscode/mcp\.json|\.mcp\.json)
+        stages: [pre-commit]
 
       - id: dependency-audit
         name: dependency vulnerability audit
@@ -214,10 +230,12 @@ repos:
 
       - id: jscpd
         name: jscpd copy-paste detection
-        entry: npx jscpd -c jscpd.json .
+        entry: >-
+          bunx jscpd@5.4.0 --config jscpd.json .
         language: system
         pass_filenames: false
         always_run: true
+        stages: [manual]
 
       - id: lychee
         name: link checker

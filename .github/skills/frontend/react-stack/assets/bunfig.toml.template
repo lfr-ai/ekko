@@ -1,0 +1,7 @@
+[install]
+# Project execution must never resolve undeclared packages from Bun's global cache.
+auto = "disable"
+# Direct dependencies are deliberate and reviewable; bun.lock pins transitives.
+exact = true
+# Reduce exposure to newly published supply-chain attacks (three days).
+minimumReleaseAge = 259200

@@ -1,8 +1,10 @@
 ---
-name: modernization
+name: Modernization
 description: Large-scale modernization, analysis, migration planning, and architectural recommendations
-agents: ['*']
+agents: ['planner', 'plan-architect', 'codebase-researcher', 'docs-writer', 'code-reviewer', 'solid-review', 'security-reviewer', 'contract-iac-lint']
 user-invocable: false
+disable-model-invocation: true
+tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Agent, mcp__gitnexus__*, mcp__context7__*, mcp__microsoft-learn__*, mcp__github__*, mcp__azure-devops__*
 ---
 
 # Modernization Agent

@@ -1,9 +1,11 @@
 """Intent classification value object."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class IntentClassification:
     """Result of intent detection from user speech."""
 

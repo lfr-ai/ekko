@@ -7,7 +7,7 @@ Configuration-level enums (Environment, ChatModel, LLMProvider, DatabaseBackend)
 live in ``ekko.config.enums`` and should be imported directly from there.
 """
 
-from ekko.core.enums.ai import STTProvider
+from ekko.core.enums.ai import Prompt, STTProvider
 from ekko.core.enums.audio import (
     AudioChannel,
     AudioFormat,
@@ -35,6 +35,7 @@ __all__ = [
     "LogLevel",
     "MessageRole",
     "ParseableEnum",
+    "Prompt",
     "QueueName",
     "RecognitionMode",
     "STTProvider",

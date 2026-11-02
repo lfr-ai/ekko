@@ -1,0 +1,35 @@
+"""Plain dataclass template — a data-holder that is NOT a domain concept.
+
+Use this for infrastructure-local records (adapter-internal snapshots, mapper
+intermediates, config-facet groupings) — anything without domain identity or
+invariants worth a name in the ubiquitous language. A entity/value object/
+domain event belongs in the `ddd` skill's templates instead
+(`core/entities/`, `core/value_objects/`, `core/events/`), not here.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class ReplaceMeRecord:
+    """One-line noun-phrase description of what this record holds."""
+
+    identifier: str
+    label: str
+
+
+# Mutable variant — only when the instance is genuinely built up over time
+# (e.g. an in-progress accumulator) rather than constructed once. Keep
+# `kw_only=True` and `slots=True`; drop only `frozen=True`.
+#
+# @dataclass(kw_only=True, slots=True)
+# class ReplaceMeAccumulator:
+#     """One-line noun-phrase description of what this accumulates."""
+#
+#     total: int = 0
+#
+#     def add(self, amount: int) -> None:
+#         """Add an amount to the running total."""
+#         self.total += amount

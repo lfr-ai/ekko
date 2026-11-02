@@ -1,8 +1,8 @@
 # Base compose -- shared service definitions.
 # Keep this file minimal (app + optional reverse proxy).
 #
-# Optional observability stack is defined in:
-#   docker/compose.observability.yaml
+# Optional analytics stack is defined in:
+#   docker/compose.analytics.yaml
 
 name: ekko
 
@@ -22,6 +22,10 @@ services:
     environment:
       EKKO_DISABLE_AUDIO: "true"
       EKKO_HOST: "0.0.0.0"
+      EKKO_REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - backend
     healthcheck:
@@ -34,6 +38,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  # Shared store for rate limiting and cross-replica transcript fan-out.
+  # Required for correctness once the app scales beyond one replica.
+  redis:
+    image: redis:8.8-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   caddy:
     image: caddy:2.11-alpine

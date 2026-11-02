@@ -1,0 +1,73 @@
+"""Service adapter template — copy into infrastructure/clients/ (or stores/,
+metrics/), implementing this skill's `service_port_protocol.py.template` port.
+
+Explicitly subclasses the port (`ReplaceMePort`) rather than relying on
+structural typing alone, so every method can carry `@override` — a
+type-checker-enforced guarantee that the adapter's signature actually matches
+the port it claims to implement. See `scripts/check_port_adapter_binding.py`
+in this skill for the automated version of this check.
+
+Built via `from_config`, following the `configuration` skill's pattern: the
+adapter subclasses `FromConfigMixin[_ReplaceMeClientConfig]` and never imports
+the concrete app config; `_ReplaceMeClientConfig` is a private structural
+Protocol nesting one Protocol per config facet — mirroring the real facet's
+own nesting rather than flattening it away. Declare nested-facet accessors as
+`@property` (read-only/covariant); a plain attribute here is checked
+invariantly and a concrete settings class then fails to satisfy it structurally
+even though every field matches (PEP 544 — see the `configuration` skill's
+`assets/from_config_component.py.template`).
+"""
+
+from __future__ import annotations
+
+from typing import Protocol, Self, final, override
+
+# Replace with the real port this adapter implements.
+from myapp.core.ports.replace_me import ReplaceMePort
+from myapp.infrastructure._from_config import FromConfigMixin
+
+
+class _ReplaceMeFacetConfig(Protocol):
+    """Structural view of the nested facet's fields this adapter reads."""
+
+    @property
+    def api_key(self) -> str: ...
+
+
+class _ReplaceMeClientConfig(Protocol):
+    """Structural view of the config fields this adapter reads."""
+
+    @property
+    def replace_me_facet(self) -> _ReplaceMeFacetConfig: ...
+
+
+@final
+class ReplaceMeClient(ReplaceMePort, FromConfigMixin[_ReplaceMeClientConfig]):
+    """Adapter implementing ReplaceMePort against the real external service."""
+
+    def __init__(self, *, api_key: str):
+        """Initialize with the connection parameters this adapter owns.
+
+        Args:
+            api_key (str): Credential for the external service.
+        """
+        self._api_key = api_key
+
+    @classmethod
+    @override
+    def from_config(cls, config: _ReplaceMeClientConfig, /) -> Self:
+        """Build the adapter from application configuration.
+
+        Args:
+            config (_ReplaceMeClientConfig): Configuration view exposing only
+                the fields this adapter reads.
+
+        Returns:
+            Self: Configured adapter instance.
+        """
+        return cls(api_key=config.replace_me_facet.api_key)
+
+    @override
+    async def do_something(self, *, input_value: str) -> str:
+        """Perform the operation this port exposes."""
+        raise NotImplementedError("Call the real external service here.")

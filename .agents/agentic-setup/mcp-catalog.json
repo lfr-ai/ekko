@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "description": "Opt-in MCP servers that require a local or external service. Active servers remain in .mcp.json, .vscode/mcp.json, and .claude/mcp.json.",
+  "servers": {
+    "storybook": {
+      "description": "Storybook component-workbench MCP for a running local Storybook server.",
+      "shapes": ["frontend", "fullstack"],
+      "docs": "https://storybook.js.org/docs/next/ai/mcp/overview/",
+      "config": {
+        "type": "http",
+        "url": "http://localhost:6006/mcp"
+      }
+    },
+    "figma": {
+      "description": "Figma remote MCP for opt-in design-to-code work.",
+      "shapes": ["frontend", "fullstack"],
+      "docs": "https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Dev-Mode-MCP-Server",
+      "config": {
+        "type": "http",
+        "url": "https://mcp.figma.com/mcp"
+      }
+    }
+  }
+}

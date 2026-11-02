@@ -1,0 +1,34 @@
+"""Nested settings facet template — copy into configs/settings/<concern>.py
+(intrinsic app concern) or configs/settings/integrations/<provider>.py
+(vendor/provider concern), rename.
+
+Every settings concern — intrinsic (database, server) or vendor/provider (an
+OAuth2 client, an AI model provider) — takes this identical shape: composed as
+a *field* on the aggregate config, never via multiple inheritance. Assumes a
+shared `NestedSettings` base (defined once per project,
+`configs/settings/_shared.py`) that sets `extra="forbid"` and `frozen=True`.
+The aggregate's `env_nested_delimiter="__"` sources each field from
+`<PREFIX>_REPLACE_ME_FACET__<FIELD>` — this class declares no `env_prefix` of
+its own. If the aggregate gives this facet a default instance, its
+`ConfiguredSettings` base should also set `nested_model_default_partial_update=True`
+so one env override preserves the facet's other defaults.
+"""
+
+from __future__ import annotations
+
+from pydantic import SecretStr
+
+from replace_me.configs.settings._shared import NestedSettings
+
+
+class ReplaceMeFacetSettings(NestedSettings):
+    """Replace-me concern connection settings.
+
+    Attributes:
+        endpoint (str): Service endpoint.
+        api_key (SecretStr): Service API key, sourced from the environment
+            only — never a literal default.
+    """
+
+    endpoint: str = "https://replace-me.example.com"
+    api_key: SecretStr

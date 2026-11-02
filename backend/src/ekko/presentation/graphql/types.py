@@ -1,216 +1,26 @@
-"""Strawberry GraphQL types for the Ekko API."""
+"""Strawberry types for the prompt catalog GraphQL API."""
 
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TC003 — Strawberry needs runtime access
-from enum import Enum
-
 import strawberry
-
-# ── Domain types ─────────────────────────────────────────────
-
-
-@strawberry.type
-class DependencyHealthType:
-    """Health status of a single service dependency."""
-
-    name: str
-    healthy: bool
-    detail: str = ""
+from strawberry.types import Info
 
 
 @strawberry.type
-class HealthType:
-    """Application health check result."""
+class PromptType:
+    """Prompt catalog entry."""
 
-    status: str
-    environment: str
-    dependencies: list[DependencyHealthType]
+    key: str
 
-
-@strawberry.type
-class TranscriptType:
-    """A speech-to-text transcript."""
-
-    text: str
-    source: str
-    timestamp: str
+    @strawberry.field
+    async def content(self, info: Info) -> str:
+        """Load template content when selected by the client."""
+        return info.context["prompt_catalog_service"].get_content(self.key)
 
 
 @strawberry.type
-class StreamStatusType:
-    """Current audio stream status."""
+class PromptCatalogType:
+    """Active prompt catalog."""
 
-    active: bool
-    message: str
-
-
-@strawberry.type
-class ConversationType:
-    """A voice conversation session."""
-
-    id: str
-    started_at: datetime
-    ended_at: datetime | None = None
-    summary: str | None = None
-    is_active: bool = True
-
-
-@strawberry.type
-class MessageType:
-    """A single message in a conversation."""
-
-    id: str
-    conversation_id: str
-    role: str
-    content: str
-    created_at: datetime
-
-
-@strawberry.type
-class AgentResultType:
-    """Result from a CrewAI agent execution."""
-
-    agent_name: str
-    task_name: str
-    output: str
-    execution_time_seconds: float
-
-
-@strawberry.type
-class DomainErrorType:
-    """Structured domain error surfaced to GraphQL clients."""
-
-    code: str
-    message: str
-
-
-@strawberry.type
-class PIIResultType:
-    """Result of PII anonymization."""
-
-    anonymized_text: str
-    pii_found: bool
-    match_count: int
-    errors: list[DomainErrorType] = strawberry.field(default_factory=list)
-
-
-@strawberry.type
-class InsuranceConditionOptionType:
-    """Insurance condition option for claim intake selection."""
-
-    id: str
-    code: str
-    label: str
-
-
-@strawberry.type
-class ClaimIntakeSubmissionType:
-    """Submission metadata returned for a claim intake request."""
-
-    reference_id: str
-    accepted_at_iso: str
-    pii_found_in_notes: bool
-    anonymized_notes: str | None = None
-
-
-# ── Enum types ───────────────────────────────────────────────
-
-
-@strawberry.enum
-class ConversationStatus(Enum):
-    ACTIVE = "active"
-    ENDED = "ended"
-    ARCHIVED = "archived"
-
-
-# ── Input types ──────────────────────────────────────────────
-
-
-@strawberry.input
-class StreamCommandInput:
-    """Input for stream control mutations."""
-
-    action: str  # "start" or "pause"
-
-
-@strawberry.input
-class StartConversationInput:
-    """Input for starting a new conversation."""
-
-    metadata: str | None = None
-
-
-@strawberry.input
-class SendMessageInput:
-    """Input for sending a message."""
-
-    conversation_id: str
-    content: str
-    role: str = "user"  # Strawberry needs literal default for schema generation
-
-
-@strawberry.input
-class AnonymizeTextInput:
-    """Input for PII anonymization."""
-
-    text: str
-    enabled_types: list[str] | None = None
-
-
-@strawberry.input
-class ClaimAttachmentInput:
-    """Input attachment metadata for claim intake submission."""
-
-    id: str
-    source: str
-    name: str
-    mime_type: str | None = None
-    size_bytes: int | None = None
-    url: str | None = None
-
-
-@strawberry.input
-class ClaimIntakeInput:
-    """Input payload for claim intake submission."""
-
-    cpr: str
-    insurance_condition_id: str
-    coverage_start_date: str
-    coverage_end_date: str
-    payout_amount: float
-    has_multiple_policies: bool
-    has_paid: bool
-    has_prior_cases_in_ks: bool
-    notes: str | None = None
-    attachments: list[ClaimAttachmentInput]
-
-
-# ── Pagination ───────────────────────────────────────────────
-
-
-@strawberry.type
-class PageInfo:
-    """Relay-style pagination info."""
-
-    has_next_page: bool
-    has_previous_page: bool
-    start_cursor: str | None = None
-    end_cursor: str | None = None
-
-
-@strawberry.type
-class ConversationEdge:
-    """Edge in a conversation connection."""
-
-    cursor: str
-    node: ConversationType
-
-
-@strawberry.type
-class ConversationConnection:
-    """Paginated list of conversations."""
-
-    edges: list[ConversationEdge]
-    page_info: PageInfo
-    total_count: int
+    version_set: str
+    prompts: list[PromptType]

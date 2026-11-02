@@ -1,0 +1,42 @@
+# Ekko
+
+> Local-first AI-assisted voice platform: captures desktop audio, transcribes
+> speech, runs AI pipelines (summarization, PII scrubbing), and presents
+> results through a local web UI. Package `ekko` lives in `backend/src/ekko/`;
+> environment prefix `EKKO_`; built with uv + Task (backend, SQLite) and Bun +
+> Vite (frontend), under strict Clean Architecture.
+
+This is the agent-facing entry point for the repository — the LLM analogue to a
+human `docs/` index, following the llms.txt convention (https://llmstxt.org).
+Agent operating policy is canonical in `AGENTS.md`; project-specific facts live
+in `PROJECT.md`; durable, synthesized codebase knowledge lives in
+`.agents/knowledge-base/`. Read those before changing code.
+
+## Policy and project facts
+
+- [AGENTS.md](AGENTS.md): Canonical, cross-runtime agent operating policy — hard rules, execution workflow, and agent profiles. Start here.
+- [PROJECT.md](PROJECT.md): Project-specific facts — toolchain commands, architecture layers, and structure.
+- [memories/README.md](memories/README.md): Shared cross-session facts, decisions, lessons, and unfinished agent handoffs.
+- [CLAUDE.md](CLAUDE.md): Claude Code entry point; imports AGENTS.md and adds Claude-specific notes.
+- [.github/copilot-instructions.md](.github/copilot-instructions.md): VS Code / Copilot discovery layer over AGENTS.md.
+
+## Codebase knowledge base
+
+- [.agents/knowledge-base/README.md](.agents/knowledge-base/README.md): Index of durable, agent-facing codebase knowledge and its authoritative sources.
+- [.agents/knowledge-base/architecture.md](.agents/knowledge-base/architecture.md): Clean Architecture layers, the dependency rule, and the module map.
+- [.agents/knowledge-base/domain-glossary.md](.agents/knowledge-base/domain-glossary.md): Ubiquitous language and domain concepts.
+- [.agents/knowledge-base/flows.md](.agents/knowledge-base/flows.md): The capture -> transcribe -> summarize pipeline and its data model.
+- [.agents/knowledge-base/design-decisions.md](.agents/knowledge-base/design-decisions.md): ADR-style records of why the code is shaped this way.
+
+## Specs and conventions
+
+- [openspec/specs/](openspec/specs/): Living specification of behavior (capabilities and Given-When-Then scenarios); validate with `openspec validate --all`.
+- [openspec/changes/](openspec/changes/): In-flight change proposals with design notes and delta specs.
+- [.github/instructions/](.github/instructions/): Path-scoped coding conventions, auto-loaded by glob and paired with `.claude/rules/`.
+- [.agents/agentic-setup/profiles.json](.agents/agentic-setup/profiles.json): Portable capability profiles for bootstrapping this setup elsewhere.
+
+## Optional
+
+- [README.md](README.md): Human-facing project overview and setup.
+- [docs/](docs/): Human-facing documentation — architecture and roadmap.
+- [CHANGELOG.md](CHANGELOG.md): Release history.

@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { applicationQueryClient } from "@/application/query-client";
-import { App } from "./App";
+import { App } from "./app";
 import "@/presentation/styles/tailwind.css";
 
 const rootEl = document.getElementById("root");

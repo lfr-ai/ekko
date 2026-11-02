@@ -7,6 +7,10 @@ paths:
   - ".gitignore"
   - "**/.gitignore"
   - "**/.gitkeep"
+  - "copier.yml"
+  - "copier.yaml"
+  - "**/copier.yml"
+  - "**/copier.yaml"
   - "renovate.json"
   - "renovate.json5"
   - ".renovaterc.json"
@@ -30,12 +34,14 @@ paths:
   the placeholder must be empty and removed once a real tracked file exists.
 - Keep `llms.txt` a terse machine-readable index of relative, existing sources of
   truth. Link rather than duplicate policy, architecture, or setup prose.
+- Copier questions use stable snake_case names, typed choices/defaults, `_exclude`
+  for non-template files, and conditional rendering instead of post-generation
+  deletion. Never template secrets or machine-specific paths.
 - Renovate config (`renovate.json`) references its `$schema`, prefers shared
-  `extends` presets over inlined rules, scopes `packageRules` narrowly, and
-  never embeds registry credentials — private-feed auth comes from
+  `extends` presets over inlined rules, scopes `customManagers`/`packageRules`
+  narrowly, and never embeds registry credentials — private-feed auth comes from
   runtime-injected secrets, not the committed file.
 - XML must be well-formed, UTF-8, and schema-validated when an XSD or tool schema
   exists. Disable external entity resolution for untrusted input and preserve the
   owning tool's element/attribute order when it is significant.
-- Generated manifests (`core/registry_constants.py`, `openapi.json`) are changed
-  through their owning generator, not by hand.
+- Generated manifests are changed through their owning generator, not by hand.

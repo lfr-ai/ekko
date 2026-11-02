@@ -1,0 +1,22 @@
+{
+  "$schema": "prompt_registry_schema.json",
+  "description": "Prompt version registry — maps named version sets to specific prompt file versions.",
+  "version_sets": {
+    "development": {
+      "description": "Current development prompt versions.",
+      "prompts": {
+        "summary_chunks": "v1.0",
+        "summarizer_system": "v1.0",
+        "conversational_system": "v1.0"
+      }
+    },
+    "production": {
+      "description": "Current production prompt versions.",
+      "prompts": {
+        "summary_chunks": "v1.0",
+        "summarizer_system": "v1.0",
+        "conversational_system": "v1.0"
+      }
+    }
+  }
+}

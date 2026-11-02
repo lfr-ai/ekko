@@ -146,8 +146,8 @@ file, apply the Phase 2 checklist, and:
   understands the call graph across mirrored trees; update every call site and
   `__all__` in the same change-set.
 - Remove dead code (unused methods, constants, imports, stale helpers) as you go.
-- After renaming, moving, or adding a module/folder, refresh the code graph
-  (`task graph`) so code intelligence stays accurate for the next pass.
+- After renaming, moving, or adding a module/folder, refresh the code graph with
+  the command documented in `PROJECT.md`.
 - After each module or logical group, re-check just that file
   (`uv run ruff check <path>`, and `uv run ty check <path>` where practical).
 

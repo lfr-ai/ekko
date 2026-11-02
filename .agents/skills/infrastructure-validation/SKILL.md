@@ -64,10 +64,10 @@ orchestration stack for checklist completeness.
 - `.devcontainer/` (`devcontainer.json`, `Containerfile.dev`, `compose.yml`)
   follows the same container-hygiene rules as the runtime image; validate with
   `devcontainer read-configuration` when the `@devcontainers/cli` is available,
-  otherwise a Compose config render is sufficient. Its `extensions.json` is
-  intentionally narrower than the host `.vscode/extensions.json` (container
-  workflows omit frontend/remote-host-only extensions) — do not blind-sync
-  the two lists into parity.
+  otherwise a Compose config render is sufficient. Keep container-installed
+  extensions in `devcontainer.json` under `customizations.vscode.extensions`;
+  host recommendations in `.vscode/extensions.json` serve a different context
+  and should not be blindly mirrored.
 - Validate proxy security headers, TLS ownership, upstream timeouts, and trusted
   proxy boundaries.
 - Keep metric names/labels stable and low-cardinality. Dashboards and alerts must

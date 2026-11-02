@@ -20,296 +20,65 @@ paths:
 - **Shebang**: `#!/usr/bin/env zsh`
 - **Options**: `emulate -L zsh` and `setopt ERR_EXIT PIPE_FAIL`
 
-### Bash (.sh)
-- **Use for**: Portable POSIX scripts, CI/CD
-- **Shebang**: `#!/usr/bin/env bash`
-- **Options**: `set -euo pipefail`
+### POSIX shell (.sh)
+- **Use for**: Portable scripts and CI/CD
+- **Default shebang**: `#!/usr/bin/env sh`
+- **Default options**: `set -eu`
+- Use Bash and `set -euo pipefail` only when arrays, `[[ ... ]]`, `BASH_SOURCE`,
+  or another documented Bash feature is required.
 
 ## PowerShell Standards
 
-```powershell
-#Requires -Version 7.0
-
-<#
-.SYNOPSIS
-    Brief description of what the script does.
-
-.DESCRIPTION
-    Detailed description.
-
-.PARAMETER ParameterName
-    Description of parameter.
-
-.EXAMPLE
-    ./script.ps1 -ParameterName value
-#>
-
-[CmdletBinding()]
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$RequiredParam,
-
-    [Parameter(Mandatory=$false)]
-    [string]$OptionalParam = "default"
-)
-
-$ErrorActionPreference = "Stop"
-
-# Script body
-try {
-    Write-Verbose "Starting operation..."
-    # ... operations
-    Write-Output "Success"
-} catch {
-    Write-Error "Operation failed: $_"
-    exit 1
-}
-```
+Use `#Requires -Version 7.0`, `[CmdletBinding()]`, typed `param()` blocks, and
+`$ErrorActionPreference = "Stop"`. Wrap risky operations in `try`/`catch` and
+`exit 1` on failure (see Error Handling below).
 
 ## Zsh Standards
 
-```zsh
-#!/usr/bin/env zsh
-# Script description
+`#!/usr/bin/env zsh`, then `emulate -L zsh` and `setopt ERR_EXIT PIPE_FAIL`.
+Declare path constants with `readonly` (e.g. `readonly SCRIPT_DIR="${0:A:h}"`).
 
-emulate -L zsh
-setopt ERR_EXIT PIPE_FAIL
+## POSIX sh Standards
 
-# Constants
-readonly SCRIPT_DIR="${0:A:h}"
-readonly PROJECT_ROOT="${SCRIPT_DIR}/.."
-
-# Functions
-function main() {
-    local arg1="$1"
-    local arg2="${2:-default}"
-
-    # Implementation
-    echo "Processing: ${arg1}"
-}
-
-# Entry point
-main "$@"
-```
-
-## Bash Standards
-
-```bash
-#!/usr/bin/env bash
-# Script description
-
-set -euo pipefail
-
-# Constants
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly PROJECT_ROOT="${SCRIPT_DIR}/.."
-
-# Functions
-main() {
-    local arg1="$1"
-    local arg2="${2:-default}"
-
-    # Implementation
-    echo "Processing: ${arg1}"
-}
-
-# Entry point
-main "$@"
-```
+`#!/usr/bin/env sh` with `set -eu`. Resolve the script directory portably:
+`SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"`.
 
 ## Taskfile.yml
 
-### Structure
-```yaml
-version: '3'
-
-vars:
-  PROJECT_NAME: myapp
-  PYTHON_VERSION: '3.13'
-
-includes:
-  backend:
-    taskfile: ./tasks/backend.yml
-    dir: .
-
-tasks:
-  default:
-    desc: Show available tasks
-    cmds:
-      - task --list
-
-  install:
-    desc: Install all dependencies
-    cmds:
-    - uv sync
-      - task: backend:install
-
-  test:
-    desc: Run all tests
-    cmds:
-      - task: backend:test
-
-  lint:
-    desc: Run all linters
-    cmds:
-      - task: backend:lint
-
-  check:
-    desc: Run all checks (lint + test)
-    deps:
-      - lint
-      - test
-```
-
-### Task Best Practices
-1. **Always add `desc:`** for discoverability
-2. **Use `deps:`** for dependencies (run in parallel)
-3. **Use `cmds:`** for sequential commands
-4. **Use `dir:`** to change working directory
-5. **Use `silent: true`** for status/help tasks
+Every task declares `desc:` for discoverability. Use `deps:` for tasks that can
+run in parallel, `cmds:` for sequential steps, `dir:` to change working
+directory, and `silent: true` for status/help-only tasks.
 
 ## Error Handling
 
-### PowerShell
-```powershell
-try {
-    # Risky operation
-    Invoke-Command -ScriptBlock { ... }
-} catch {
-    Write-Error "Operation failed: $_"
-    Write-Error $_.ScriptStackTrace
-    exit 1
-}
-```
-
-### Bash/Zsh
-```bash
-# Exit on error
-set -e
-
-# Custom error handler
-function error_handler() {
-    echo "Error on line $1" >&2
-    exit 1
-}
-trap 'error_handler $LINENO' ERR
-
-# Risky operation
-if ! command_that_might_fail; then
-    echo "Command failed" >&2
-    exit 1
-fi
-```
+- **PowerShell**: wrap risky calls in `try`/`catch`, log `$_`/`$_.ScriptStackTrace`,
+  `exit 1` on failure.
+- **Bash/Zsh**: `set -e` (or a `trap 'handler $LINENO' ERR`) plus an explicit
+  `if ! command; then ...; exit 1; fi` check for commands whose failure must be
+  handled explicitly rather than just aborting.
 
 ## Common Patterns
 
-### Check Command Exists
-```bash
-# Bash/Zsh
-if ! command -v uv >/dev/null 2>&1; then
-    echo "Error: uv not found" >&2
-    exit 1
-fi
-```
-
-```powershell
-# PowerShell
-if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-    Write-Error "uv not found"
-    exit 1
-}
-```
-
-### Environment Variables
-```bash
-# Bash/Zsh with default
-DATABASE_URL="${DATABASE_URL:-postgresql://localhost/myapp}"
-
-# Required variable
-: "${DATABASE_URL:?DATABASE_URL is required}"
-```
-
-```powershell
-# PowerShell with default
-$DatabaseUrl = $env:DATABASE_URL ?? "postgresql://localhost/myapp"
-
-# Required variable
-if (-not $env:DATABASE_URL) {
-    throw "DATABASE_URL is required"
-}
-```
-
-### Colored Output
-```bash
-# Bash/Zsh
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-echo -e "${GREEN}Success${NC}"
-echo -e "${RED}Error${NC}"
-```
-
-```powershell
-# PowerShell
-Write-Host "Success" -ForegroundColor Green
-Write-Host "Error" -ForegroundColor Red
-Write-Host "Warning" -ForegroundColor Yellow
-```
+- **Check a command exists** before using it: `command -v uv` (POSIX/Zsh) or
+  `Get-Command uv -ErrorAction SilentlyContinue` (PowerShell).
+- **Environment variables**: default with `${VAR:-default}` (POSIX/Zsh) or
+  `$env:VAR ?? "default"` (PowerShell); require with `: "${VAR:?VAR is required}"`
+  (POSIX/Zsh) or an explicit `if (-not $env:VAR) { throw "VAR is required" }`.
+- **Colored output**: ANSI codes in Bash/Zsh, `Write-Host -ForegroundColor` in
+  PowerShell.
 
 ## Security
 
-### No Secrets in Scripts
-```bash
-# Bad
-export API_KEY="secret123" # pragma: allowlist secret
-
-# Good: Load from secure source
-source .env
-export API_KEY="${API_KEY:?API_KEY not set}"
-```
-
-### Input Validation
-```bash
-# Good: Validate input
-if [[ ! "$input" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    echo "Invalid input" >&2
-    exit 1
-fi
-```
-
-### Use Quoted Variables
-```bash
-# Good: Prevents word splitting
-echo "Processing: ${file_name}"
-rm "${temp_file}"
-
-# Bad: Vulnerable to spaces in filenames
-echo "Processing: $file_name"
-rm $temp_file
-```
+- **No secrets in scripts** — load from `.env`/a secret manager, never a
+  hardcoded literal value; require it explicitly
+  (`export API_KEY="${API_KEY:?API_KEY not set}"`).
+- **Validate input** against an explicit allow-pattern before use (for example
+  `[[ "$input" =~ ^[a-zA-Z0-9_-]+$ ]]`).
+- **Quote variables** (`"${file_name}"`, `"${temp_file}"`) to prevent word
+  splitting on spaces — never leave a path/filename variable unquoted.
 
 ## Documentation
 
-Every script must have:
-1. **Synopsis**: One-line description at top
-2. **Usage**: How to run the script
-3. **Parameters**: What each parameter does
-4. **Examples**: At least one usage example
-
-```bash
-#!/usr/bin/env bash
-# Deploy application to specified environment
-#
-# Usage:
-#   ./deploy.sh <environment> [--force]
-#
-# Parameters:
-#   environment: Target environment (local, dev, prod)
-#   --force: Skip confirmation prompts
-#
-# Examples:
-#   ./deploy.sh dev
-#   ./deploy.sh prod --force
-```
+Every script states, at the top: a one-line synopsis, usage, each parameter,
+and at least one example invocation (PowerShell: comment-based help; POSIX/Zsh:
+a leading comment block).

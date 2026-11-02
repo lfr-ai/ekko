@@ -1,243 +1,113 @@
 {
-  "yaml.schemas": {
-    "https://json.schemastore.org/grafana-datasource.json": "docker/observability/grafana/provisioning/datasources/*.yaml",
-    "https://json.schemastore.org/grafana-dashboard-provider.json": "docker/observability/grafana/provisioning/dashboards/*.yaml"
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": false,
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:USERPROFILE}\\.local\\bin;${env:PATH}"
   },
-
-  // ═══════════════════════════════════════════════════════════
-  // Workspace Settings — Optimized for AI-Assisted Development
-  // ═══════════════════════════════════════════════════════════
-
-  // ──────────────────────────────────────────────────────────
-  // Editor Configuration
-  // ──────────────────────────────────────────────────────────
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit"
+  "editor.tabCompletion": "on",
+  "editor.rulers": [
+    120
+  ],
+  "files.trimTrailingWhitespace": true,
+  // Repo lives under OneDrive sync; excluding generated/cache dirs from the
+  // watcher and search index avoids double-churn with the cloud sync client.
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/.tox/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/__pycache__/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.hypothesis/**": true,
+    "**/.gitnexus/**": true,
+    "**/logs/**": true,
+    "**/node_modules/**": true
   },
-  "editor.rulers": [88, 120],
-  "editor.tabSize": 4,
-  "editor.insertSpaces": true,
-  "editor.trimAutoWhitespace": true,
-  "editor.renderWhitespace": "boundary",
-  "editor.wordWrap": "on",
-  "editor.wordWrapColumn": 120,
-  "editor.inlineSuggest.enabled": true,
-  "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true,
-
-  // ──────────────────────────────────────────────────────────
-  // GitHub Copilot Configuration
-  // ──────────────────────────────────────────────────────────
-  "github.copilot.enable": {
-    "*": true,
-    "plaintext": false,
-    "markdown": true,
-    "scminput": false,
-    "yaml": true,
-    "python": true,
-    "typescript": true,
-    "typescriptreact": true,
-    "javascript": true,
-    "javascriptreact": true
+  "search.exclude": {
+    "**/.venv": true,
+    "**/.tox": true,
+    "**/__pycache__": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.pytest_cache": true,
+    "**/.hypothesis": true,
+    "**/.gitnexus": true,
+    "**/logs": true,
+    "**/node_modules": true,
+    "**/uv.lock": true,
+    "**/bun.lock": true
   },
-  "github.copilot.editor.enableAutoCompletions": true,
-  "chat.agent.enabled": true,
+  "cSpell.language": "en, da",
+  // Let the workflow tooling own CI YAML instead of the generic YAML schema
+  // (avoids false schema errors on GitHub Actions).
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml",
+    "azure-pipelines.yml",
+    "azure-pipelines.yaml"
+  ],
+  // Even Better TOML: keep array formatting stable across pyproject/config edits.
+  "evenBetterToml.formatter.arrayAutoCollapse": true,
+  "evenBetterToml.formatter.arrayAutoExpand": true,
+  // SonarLint: focus findings on new/changed code (clean-as-you-code).
+  "sonarlint.focusOnNewCode": true,
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "timonwong.shellcheck",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.shellcheck": "explicit"
+    }
+  },
+  "chat.useAgentSkills": true,
+  "chat.defaultModel": "sonnet",
+  "github.copilot.chat.claudeAgent.enabled": true,
+  "github.copilot.chat.githubMcpServer.enabled": true,
+  "chat.hookFilesLocations": {
+    ".github/hooks": true,
+    ".claude/settings.json": false,
+    ".claude/settings.local.json": false,
+    "~/.claude/settings.json": false
+  },
+  "chat.useClaudeHooks": false,
+  "chat.useAgentsMdFile": true,
+  "chat.useClaudeMdFile": false,
   "chat.mcp.discovery.enabled": {
     "claude-desktop": false,
     "windsurf": false,
     "cursor-global": false,
     "cursor-workspace": false
   },
-  "chat.mcp.autoStart": true,
-
-  // ──────────────────────────────────────────────────────────
-  // Python Configuration
-  // ──────────────────────────────────────────────────────────
-  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
-  "python.terminal.activateEnvironment": true,
-  "python.analysis.typeCheckingMode": "strict",
-  "python.analysis.diagnosticMode": "workspace",
-  "python.analysis.autoImportCompletions": true,
-  "python.analysis.completeFunctionParens": true,
-  "python.analysis.inlayHints.functionReturnTypes": true,
-  "python.analysis.inlayHints.variableTypes": true,
-  "python.analysis.inlayHints.pytestParameters": true,
-  "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": [
-    "tests",
-    "--tb=short",
-    "-v"
-  ],
-  "python.testing.cwd": "${workspaceFolder}/backend",
-  "python.languageServer": "Pylance",
-
-  // Ruff (Python linter/formatter)
-  "[python]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
-    },
-    "editor.defaultFormatter": "charliermarsh.ruff"
-  },
-  "ruff.nativeServer": true,
-  "ruff.importStrategy": "fromEnvironment",
-
-  // ──────────────────────────────────────────────────────────
-  // TypeScript/JavaScript Configuration
-  // ──────────────────────────────────────────────────────────
-  "typescript.tsdk": "${workspaceFolder}/frontend/node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "javascript.suggest.autoImports": true,
-  "javascript.updateImportsOnFileMove.enabled": "always",
-
-  // Biome (JavaScript/TypeScript linter/formatter)
-  "[typescript]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[typescriptreact]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[javascript]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[javascriptreact]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // JSON/YAML Configuration
-  // ──────────────────────────────────────────────────────────
-  "[json]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[jsonc]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[yaml]": {
-    "editor.formatOnSave": true,
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // Markdown Configuration
-  // ──────────────────────────────────────────────────────────
-  "[markdown]": {
-    "editor.formatOnSave": true,
-    "editor.wordWrap": "on",
-    "editor.quickSuggestions": {
-      "comments": "on",
-      "strings": "on",
-      "other": "on"
-    }
-  },
-  "markdown.preview.breaks": true,
-
-  // ──────────────────────────────────────────────────────────
-  // File Associations
-  // ──────────────────────────────────────────────────────────
-  "files.associations": {
-    "*.env.example": "properties",
-    ".env.*": "properties",
-    "Containerfile*": "dockerfile",
-    "Caddyfile": "caddyfile",
-    "*.caddy": "caddyfile"
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // File Exclusions
-  // ──────────────────────────────────────────────────────────
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/.pytest_cache": true,
-    "**/.ruff_cache": true,
-    "**/.ty_cache": true,
-    "**/*.pyc": true,
-    "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/build": true,
-    "**/.next": true
-  },
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/build": true,
-    "**/.venv": true,
-    "**/__pycache__": true,
-    "**/.pytest_cache": true,
-    "**/.ruff_cache": true,
-    "**/*.lock": true,
-    "**/.next": true
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // Git Configuration
-  // ──────────────────────────────────────────────────────────
-  "git.enableSmartCommit": true,
-  "git.confirmSync": false,
-  "git.autofetch": true,
-  "git.suggestSmartCommit": true,
-
-  // ──────────────────────────────────────────────────────────
-  // Terminal Configuration
-  // ──────────────────────────────────────────────────────────
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "terminal.integrated.cwd": "${workspaceFolder}",
-  "terminal.integrated.env.windows": {
-    "UV_LINK_MODE": "copy"
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // Task Runner Configuration
-  // ──────────────────────────────────────────────────────────
-  "task.autoDetect": "on",
-  "task.problemMatchers.neverPrompt": false,
-
-  // ──────────────────────────────────────────────────────────
-  // Testing Configuration
-  // ──────────────────────────────────────────────────────────
-  "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
-  "testing.openTesting": "neverOpen",
-
-  // ──────────────────────────────────────────────────────────
-  // Tailwind CSS Configuration
-  // ──────────────────────────────────────────────────────────
-  "tailwindCSS.experimental.classRegex": [
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ],
-  "tailwindCSS.emmetCompletions": true,
-
-  // ──────────────────────────────────────────────────────────
-  // Emmet Configuration
-  // ──────────────────────────────────────────────────────────
-  "emmet.includeLanguages": {
-    "typescript": "html",
-    "typescriptreact": "html"
-  },
-
-  // ──────────────────────────────────────────────────────────
-  // Miscellaneous
-  // ──────────────────────────────────────────────────────────
-  "explorer.confirmDelete": false,
-  "explorer.confirmDragAndDrop": false,
-  "workbench.startupEditor": "none",
-  "workbench.editor.enablePreview": false,
-  "security.workspace.trust.untrustedFiles": "open",
-  "diffEditor.ignoreTrimWhitespace": false,
-  "diffEditor.renderSideBySide": true,
-  "testing.automaticallyOpenTestResults": "neverOpen"
+  "chat.mcp.autostart": "never",
+  "chat.agent.maxRequests": 250,
+  "github.copilot.chat.summarizeAgentConversationHistory.enabled": true,
+  "chat.tools.compressOutput.enabled": true
 }
