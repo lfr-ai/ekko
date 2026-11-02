@@ -5,8 +5,6 @@ import pytest
 from ekko.config.enums import Environment, LLMProvider
 from ekko.core.enums import (
     AudioFormat,
-    DeploymentTarget,
-    FeatureFlag,
     MessageRole,
     Prompt,
     QueueName,
@@ -65,8 +63,6 @@ class TestEnumValues:
             QueueName,
             TranscriptStatus,
             MessageRole,
-            DeploymentTarget,
-            FeatureFlag,
         ]:
             vals = enum_values(enum_cls)
             assert len(vals) > 0
@@ -83,8 +79,6 @@ class TestEnumUniqueness:
             QueueName,
             TranscriptStatus,
             MessageRole,
-            DeploymentTarget,
-            FeatureFlag,
         ]:
             values = [m.value for m in enum_cls]
             assert len(values) == len(set(values)), f"Duplicate values in {enum_cls.__name__}"

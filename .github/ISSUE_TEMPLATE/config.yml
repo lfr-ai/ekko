@@ -3,3 +3,6 @@ contact_links:
   - name: Security vulnerability
     url: https://github.com/lfr-ai/ekko/security/policy
     about: Report vulnerabilities privately — see SECURITY.md, do not open a public issue.
+  - name: Support
+    url: https://github.com/lfr-ai/ekko/blob/main/SUPPORT.md
+    about: Where to ask questions and get help.

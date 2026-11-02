@@ -16,4 +16,3 @@ class PathSettings(ConfiguredSettings):
     package_dir_path: Path = src_dir_path / "ekko"
     logs_dir_path: Path = root_dir_path / "logs"
     prompt_dir_path: Path = package_dir_path / "ai" / "prompts"
-    interaction_dir_path: Path = package_dir_path / "interaction"

@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `CODE_OF_CONDUCT.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and GitHub
   issue forms (bug report, feature request) to complete the repository's
   community-standards checklist.
+- Added `SUPPORT.md` and an issue-chooser link to it.
 
 ### Fixed
 
@@ -79,6 +80,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dead handler/DTO code (unused conversation placeholders).
 - Stale docs references.
+- Unused `DeploymentTarget`/`FeatureFlag` enums, the unused
+  `PathSettings.interaction_dir_path`, and the stray root
+  `TERRAFORM_VALIDATION_FINAL.txt` report.
 
 ## [0.1.0] - 2026-05-02
 
