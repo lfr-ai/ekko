@@ -27,7 +27,7 @@ ARG TASK_VERSION=v3.48.0
 
 FROM oven/bun:${BUN_VERSION} AS bun
 FROM ghcr.io/astral-sh/uv:0.12.5 AS uv
-FROM ghcr.io/hadolint/hadolint:v2.14.0-debian AS hadolint
+FROM ghcr.io/hadolint/hadolint:v2.15.1-debian AS hadolint
 FROM mcr.microsoft.com/devcontainers/python:1-3.14-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
